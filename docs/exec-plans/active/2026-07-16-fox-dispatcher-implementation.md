@@ -1,10 +1,10 @@
 # Fox Dispatcher: implementation outcome
 
-Status: Phase 2 completed and verified in the working tree
+Status: Phase 3 complete and verified in the working tree; Phase 1 and Phase 2 published
 
 Deployment target: Vercel
 
-Current gate: Phase 3 waits for a direct command; Phase 1 and Phase 2 changes remain uncommitted and unpushed
+Current gate: wait for a direct Phase 4 command; current Phase 3 changes remain uncommitted and unpushed
 
 Authority boundary: phases, commits, and pushes wait for separate direct user commands
 
@@ -78,7 +78,9 @@ If `obs_005.suspicion_level` changes from 3 to 10 under the default 80/20 policy
 
 ### Current repository state
 
-Phase 0 materialized the repository map, product specification, interface specification, architecture, and three accepted decision records. The original Phase 0 documentation was committed and published at `cbaf165bda86ab629b30ed19f226d81af14ed35e` on `main`. Phase 1 adds the verified package/toolchain, bounded-context source tree, validated assignment fixture, responsive application shell, import-boundary enforcement, tests, CI, and browser evidence. Phase 2 adds exact scoring and ordering, an application Summary query, the leader/ranking/contribution interface, synchronized policy controls, and production-preview evidence. Phase 1 and Phase 2 remain uncommitted and unpushed. External Vercel project configuration remains a later outcome.
+Phase 0 materialized the repository map, product specification, interface specification, architecture, and three accepted decision records in `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Phase 1 added the verified package/toolchain, bounded-context source tree, validated assignment fixture, responsive application shell, import-boundary enforcement, tests, CI, and browser evidence. Phase 2 added exact scoring and ordering, an application Summary query, the leader/ranking/contribution interface, synchronized policy controls, and production-preview evidence. Phases 1 and 2, including their verification documents, were published together on `main` in `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`; `HEAD` and `origin/main` point to that revision at this plan update.
+
+The working tree now contains the completed Phase 3 report filtering, selected-fox/evidence view models, location activity, recent observations, shared Summary/Observations scope, deterministic filter-chip focus, focused tests, a repository-native production e2e gate, and desktop/mobile browser artifacts. It also contains a repository-native Phase 1 browser-smoke command and Node-type alignment corrections. These verified changes remain uncommitted and unpushed. External Vercel project configuration remains a later outcome.
 
 Relevant existing context:
 
@@ -228,9 +230,9 @@ Boundary validation covers a 2 MiB UTF-8 pre-parse limit, unique non-empty IDs, 
 | Concern | Decision |
 |---|---|
 | Application | React, TypeScript, Vite |
-| State | `useReducer` plus focused selectors; no external state library initially |
+| State | Focused React state through Phase 3; Phase 4 consolidates mutation, undo, recovery, and persistence through a reducer or equivalent application state machine; no external state library initially |
 | Validation | Zod at JSON and persistence boundaries |
-| Styling | CSS Modules and global design tokens |
+| Styling | One inspectable global stylesheet and global design tokens; split by feature only when it reduces ownership ambiguity |
 | Visualisation | Semantic HTML, CSS, and small inspectable SVG; no chart library |
 | Persistence | Versioned browser local storage |
 | Unit and integration tests | Vitest and React Testing Library |
@@ -257,7 +259,7 @@ Preparing the original plan did not itself authorize Git mutation. Phase 0 was s
 
 ## Execution slices
 
-Phases 0, 1, and 2 are complete. Phase 2 reconciled the scoring work with the approved contract, corrected the composition dependency, and passed the focused, full, and production-browser gates on 2026-07-16. Phases 3 through 8 remain pending and start only after a direct user command.
+Phases 0, 1, and 2 are complete and published. Phase 3 is complete and verified in the working tree on 2026-07-16. Phases 4 through 8 remain pending and start only after a direct user command.
 
 ### Phase 0: Materialize the approved contract
 
@@ -306,11 +308,11 @@ Completion notes:
 - [Decision 0003](../../decisions/0003-vercel-deployment.md) accepts Vercel Git integration, `dist` output, preview review, and production evidence.
 - Boundary details resolved in Phase 0: unknown import fields are contract errors, filters start cleared in a new session, dataset reset and scoring reset are separate, and initial top-level destinations use hash addressing.
 - The follow-up consistency audit resolved exact decimal arithmetic, equal-time/location order, selected-fox fallback, import size, storage version recovery, dependency wiring, focus/undo behavior, and the production header/release policy.
-- Phase 0 itself produced documentation only. The original contract is present in published commit `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Concurrent uncommitted Phase 1 scaffold/dependency/test files appeared during this audit and remain outside its reviewed change set; the Vercel connection is still untouched. This audit performs no commit or push.
+- Phase 0 itself produced documentation only. The original contract is present in published commit `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Concurrent Phase 1 scaffold/dependency/test files appeared during that historical audit and remained outside its reviewed change set; they were later reconciled with Phase 2 and published in `c53d1f1`. The Vercel connection is still untouched.
 
 ### Phase 1: Deliver the walking skeleton
 
-Status: completed and consistency-audited on 2026-07-16; no commit or push performed
+Status: completed and consistency-audited on 2026-07-16; later published with Phase 2 in `c53d1f1`
 
 Target outcome: the application boots locally and renders the unmodified starter dataset through the defined boundaries.
 
@@ -334,6 +336,7 @@ Implementation steps:
 Verification commands:
 
 - `npm run test -- navigation` checks the three links, `lang`, title, `aria-current`, destination `h1` focus, and back/forward behavior;
+- `npm run test:browser` builds and checks the same Phase 1 shell behavior in a production-preview Chrome session, including 320 px overflow;
 - `npm run check:boundaries` passes the allowed graph and its negative fixture;
 - `npm run verify` runs the full Phase 1 gate.
 
@@ -354,7 +357,7 @@ Completion notes:
 
 ### Phase 2: Make the explainable ranking interactive
 
-Status: completed on 2026-07-16; no commit or push performed
+Status: completed on 2026-07-16 and published in `c53d1f1`
 
 Target outcome: the Summary screen identifies the correct leader, explains the arithmetic, and changes leader when prey influence changes.
 
@@ -395,7 +398,7 @@ Completion notes:
 
 ### Phase 3: Connect ranking to evidence and activity
 
-Status: pending
+Status: completed and verified in the working tree on 2026-07-16; uncommitted and unpushed
 
 Target outcome: a reviewer can move from the leader to raw evidence and understand where observations are concentrated.
 
@@ -405,7 +408,7 @@ Files and interfaces:
 - evidence strip and observation list;
 - location aggregation and semantic bars;
 - global filter state, chips, reset, and calculation-scope label;
-- responsive ranking cards and mobile inspector.
+- stacked responsive ranking/inspector baseline; final mobile inspector and filter sheets remain owned by Phase 6.
 
 Implementation steps:
 
@@ -420,10 +423,20 @@ Implementation steps:
 Verification commands:
 
 - `npm run test -- report-scope` checks North Clearing produces 3 observations and 2 foxes.
-- `npm run test:e2e -- summary-evidence` checks selection, filters, reset, and keyboard operation.
+- `npm run test -- summary` checks selection persistence, fallback, filters, zero results, reset, and the published scoring-policy flow.
+- `npm run test:e2e` checks production-build selection, all filter types, combined status copy, chip-removal focus, empty-state copy/actions, reset, keyboard operation, shared Observations scope, and 320 px overflow.
 - `npm run verify` remains clean.
 
 Estimated effort: 3-4 hours.
+
+Completion notes:
+
+- `application/report-scope.ts` and its five focused tests cover deterministic options, case-insensitive fox search, exact location/color/prey filters, the 3-of-5 North Clearing scope, and selected-fox fallback.
+- The Summary view model and UI render selected-fox evidence, time/suspicion markers, source records, report scope, filter chips, location activity, and recent observations. The read-only Observations destination consumes the same filtered array.
+- Component tests cover explicit selection through policy recalculation, filter fallback without focus movement, atomic scope announcements, zero results, full reset, and next/previous/scope-label focus recovery after chip removal.
+- The Summary uses the canonical zero-result copy, one atomic polite announcement per accepted filter command, and an opaque sticky header that keeps scrolled mobile evidence legible.
+- `npm run test:e2e` runs the production build through the repository-local official Playwright CLI. It verifies keyboard fox selection, selection preservation at 30%, each filter type, a four-filter combination, chip focus, empty/reset behavior, location-driven scope, the scoped Observations ledger, 320 px overflow, and zero browser errors.
+- [Phase 3 evidence](../../verification/phase-3-evidence-and-activity.md) records the focused, full, browser, and visual results. Phase 4 was not started.
 
 ### Phase 4: Add observation management and persistence
 
@@ -447,6 +460,8 @@ Implementation steps:
 4. Implement delete with persistent-until-dismissed-or-next-mutation undo and correct unique-fox recalculation.
 5. Persist observations and scoring policy in the strict v1 envelope.
 6. Add distinct recovery paths for corrupt, unsupported-version, unavailable, and save-failure storage without overwriting recoverable raw data.
+
+The add command consumes an injected `ObservationIdGenerator`. Production creates `obs_<uuid>` through `crypto.randomUUID()`; tests inject fixed values. Generated IDs pass the normal length/schema and active-set uniqueness checks before the atomic transition. Generation or collision failure preserves state and returns a form-level error.
 
 Verification commands:
 
@@ -478,6 +493,8 @@ Implementation steps:
 4. Apply a valid replacement atomically after confirmation.
 5. Export the full unfiltered observation array.
 6. Cover empty dataset, duplicate IDs, unknown fields, oversized input, and invalid time.
+
+The export adapter produces `fox-dispatcher-observations.json` as UTF-8 `application/json;charset=utf-8`, two-space formatted with a trailing newline, in authoritative array order. It revokes the temporary object URL after starting the download.
 
 Verification commands:
 
@@ -574,6 +591,8 @@ Implementation steps:
 6. After direct authorization fast-forwards `main` to the exact previewed commit, require `preview Git SHA == production Git SHA == approved release-candidate SHA`, then smoke-test desktop and mobile, including reload, persistence, score change, observation edit, and AI Worklog. Any different commit returns to preview review.
 7. Record fresh evidence and move this plan to `docs/exec-plans/completed/` only after every acceptance statement is satisfied.
 
+Before fixing the CSP, inventory the production bundle and the current React `style` attributes used for data-driven CSS custom properties. Either remove those inline attributes or permit only the minimum required style-attribute policy and record the tested exception; the deployed header claim must match actual rendering.
+
 Verification commands and expected evidence:
 
 - `npm run verify` passes from the release revision.
@@ -622,4 +641,4 @@ When all phases finish, the repository should contain:
 
 Execution order is Phase 0 through Phase 8. Later slices depend on the product and architecture contract established in Phase 0, while focused domain tests, UI review, accessibility review, and documentation review can run independently inside an authorized phase once their interfaces are stable.
 
-The next authority gate is **Phase 3: Connect ranking to evidence and activity**. Phase 2 is verified in unit, component, architecture, build, and production-browser checks. No commit, push, Vercel connection, or deployment is implied by Phase 2 completion.
+The next authority gate is **Phase 4: Add observation management and persistence**. Phase 2 is published in `c53d1f1`; Phase 3 is verified in the working tree and remains uncommitted and unpushed. No Phase 4 implementation, commit, push, Vercel connection, or deployment begins without a separate direct command.

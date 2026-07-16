@@ -2,6 +2,10 @@ import { type MouseEvent, useRef } from "react";
 
 import type { ObservationSetOverview } from "@/observation-monitoring/application/create-observation-set-overview";
 import type { SummaryViewModel } from "@/observation-monitoring/application/create-summary-view-model";
+import type {
+  ReportFilterOptions,
+  ReportFilters,
+} from "@/observation-monitoring/application/report-scope";
 import { WorklogPage } from "@/observation-monitoring/ui/ai-worklog/WorklogPage";
 import { ObservationsPage } from "@/observation-monitoring/ui/observations/ObservationsPage";
 import { SummaryPage } from "@/observation-monitoring/ui/summary/SummaryPage";
@@ -11,8 +15,12 @@ export type Destination = "observations" | "summary" | "worklog";
 interface ApplicationShellProps {
   readonly announcement: string;
   readonly destination: Destination;
+  readonly filterOptions: ReportFilterOptions;
+  readonly filters: ReportFilters;
+  readonly onFiltersChange: (filters: ReportFilters) => void;
   readonly onPreyWeightChange: (preyWeightPercent: number) => void;
   readonly onPreyWeightCommit: (preyWeightPercent: number) => void;
+  readonly onSelectFox: (foxId: string) => void;
   readonly overview: ObservationSetOverview;
   readonly summary: SummaryViewModel;
 }
@@ -29,8 +37,12 @@ const destinations: readonly {
 export function ApplicationShell({
   announcement,
   destination,
+  filterOptions,
+  filters,
+  onFiltersChange,
   onPreyWeightChange,
   onPreyWeightCommit,
+  onSelectFox,
   overview,
   summary,
 }: ApplicationShellProps) {
@@ -92,13 +104,20 @@ export function ApplicationShell({
         {destination === "summary" && (
           <SummaryPage
             announcement={announcement}
+            filterOptions={filterOptions}
+            filters={filters}
+            onFiltersChange={onFiltersChange}
             onPreyWeightChange={onPreyWeightChange}
             onPreyWeightCommit={onPreyWeightCommit}
+            onSelectFox={onSelectFox}
             viewModel={summary}
           />
         )}
         {destination === "observations" && (
-          <ObservationsPage overview={overview} />
+          <ObservationsPage
+            overview={overview}
+            scopeLabel={summary.scope.label}
+          />
         )}
         {destination === "worklog" && <WorklogPage />}
       </main>

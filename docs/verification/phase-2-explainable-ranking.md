@@ -1,8 +1,10 @@
 # Phase 2 explainable-ranking evidence
 
-Status: Phase 2 passed in the working tree; no commit or push performed
+Status: Phase 2 passed and was later published on `main` in `c53d1f1`; evidence collection itself performed no commit or push
 
 Evidence date: 2026-07-16
+
+Published revision: `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`
 
 ## Verified outcome
 

@@ -6,6 +6,14 @@ Fox Dispatcher is a static local-first web application that converts editable ob
 
 The durable product contract lives in [docs/product-specs/fox-dispatcher.md](docs/product-specs/fox-dispatcher.md). The active delivery sequence lives in [docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md](docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md).
 
+## Delivery status
+
+- The published `c53d1f1` baseline contains the complete Phase 1 shell and Phase 2 scoring/report slice.
+- Phase 3 is complete but uncommitted in the working tree: application report filtering, selected evidence, location activity, recent observations, deterministic chip focus, and shared Summary/Observations scope pass focused, full, production-browser, and narrow-reflow gates.
+- [Phase 3 evidence](docs/verification/phase-3-evidence-and-activity.md) is the architectural acceptance record. Phases 4-8 remain target architecture rather than current runtime behavior.
+
+Sections below use **implemented** for the published or focused-tested working-tree behavior and **planned** for later ports, commands, adapters, public content, and deployment policy.
+
 ## System context
 
 ```text
@@ -34,7 +42,7 @@ Core domain language:
 - **Report** — summary metrics, ranked assessments, location activity, latest observation, and calculation scope.
 - **Evidence volume** — number of observations supporting an assessment; context rather than a scoring signal.
 
-## Layer map
+## Target layer map
 
 ```text
 src/
@@ -110,7 +118,7 @@ Score and mean comparisons use safe-integer cross multiplication under the 1000-
 
 ### Application
 
-The application layer coordinates user intent:
+The application layer coordinates user intent. Summary queries, scoring-policy updates, report filters, selected-fox fallback, and view-model translation are implemented through Phase 3; the following mutation and persistence commands remain planned:
 
 - initialize from starter or persisted state;
 - update scoring policy;
@@ -135,9 +143,14 @@ ObservationImportParser
 
 ObservationExporter
   createFile(observations): ExportArtifact
+
+ObservationIdGenerator
+  create(): ObservationId
 ```
 
 JSON parsing and starter-data validation are boundary adapters that produce domain-ready observations or structured validation failures.
+
+The production ID adapter will create `obs_<uuid>` values through the secure browser `crypto.randomUUID()` API. The application validates the generated value against the normal 64-character ID boundary and the active dataset before accepting an add command; tests inject deterministic IDs. Generation or collision failure leaves state unchanged and returns a form-level error.
 
 ### Adapters
 
@@ -172,6 +185,8 @@ React renders application view models and emits commands. The UI has three desti
 - AI Worklog — 5-7 structured public checkpoints with evidence references.
 
 The [interface specification](docs/design-docs/interface.md) owns composition, copy, responsive behavior, and accessibility.
+
+Through Phase 3 the composition root uses focused React state for destination, policy, filters, selection, and announcement. Phase 4 may consolidate mutation, undo, recovery, and persistence transitions behind a reducer or equivalent application state machine; the architectural requirement is one accepted-state transition path, not a particular React hook.
 
 ## Data flow
 
@@ -243,6 +258,8 @@ Vercel's Vite defaults are the starting configuration. A repository `vercel.json
 Vercel installs the committed lockfile with `npm ci` under repository-pinned Node and npm versions. The production branch is `main`. One release-candidate commit SHA receives the preview smoke first; after authorization, `main` is fast-forwarded to that exact commit. Production smoke begins only when Vercel reports the same Git SHA for production. A merge, rebuild from a different commit, or changed tree creates a new candidate and requires a new preview smoke.
 
 Production headers enforce the browser boundary: self-hosted static resource directives, `connect-src 'none'`, `object-src 'none'`, `base-uri 'none'`, `frame-ancestors 'none'`, `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, and a minimal `Permissions-Policy`. Phase 8 tests the exact policy against the built bundle and deployed responses.
+
+The current Summary implementation uses React `style` attributes for data-driven CSS custom properties on contribution, evidence, and location bars. Before fixing the Phase 8 CSP, implementation must either move those values to a CSP-compatible representation or explicitly allow the minimum required style attributes and record that tested exception. The release gate must not claim a self-only style policy that the built UI violates.
 
 The deployment decision is recorded in [docs/decisions/0003-vercel-deployment.md](docs/decisions/0003-vercel-deployment.md).
 

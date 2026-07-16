@@ -34,12 +34,63 @@ export interface SummaryMetricViewModel {
   readonly value: string;
 }
 
+export interface EvidenceObservationViewModel {
+  readonly accessibleLabel: string;
+  readonly color: string;
+  readonly hasPrey: boolean;
+  readonly id: string;
+  readonly location: string;
+  readonly preyLabel: string;
+  readonly suspicionLevel: number;
+  readonly time: string;
+  readonly timelinePositionPercent: number;
+}
+
+export interface SelectedFoxViewModel extends RankedFoxViewModel {
+  readonly evidence: readonly EvidenceObservationViewModel[];
+  readonly observations: readonly EvidenceObservationViewModel[];
+  readonly timeRangeLabel: string;
+}
+
+export interface LocationActivityViewModel {
+  readonly location: string;
+  readonly observationCount: number;
+  readonly percentage: number;
+  readonly percentageLabel: string;
+}
+
+export interface RecentObservationViewModel {
+  readonly color: string;
+  readonly foxId: string;
+  readonly hasPrey: boolean;
+  readonly id: string;
+  readonly location: string;
+  readonly preyLabel: string;
+  readonly suspicionLevel: number;
+  readonly time: string;
+}
+
+export interface SummaryScopeViewModel {
+  readonly filteredObservationCount: number;
+  readonly label: string;
+  readonly totalObservationCount: number;
+}
+
 export interface SummaryViewModel {
   readonly leader?: RankedFoxViewModel;
+  readonly locationActivity: readonly LocationActivityViewModel[];
   readonly metrics: readonly SummaryMetricViewModel[];
   readonly preyWeightPercent: number;
   readonly ranking: readonly RankedFoxViewModel[];
+  readonly recentObservations: readonly RecentObservationViewModel[];
+  readonly scope: SummaryScopeViewModel;
+  readonly selectedFox?: SelectedFoxViewModel;
   readonly suspicionWeightPercent: number;
+}
+
+export interface SummaryViewModelOptions {
+  readonly selectedFoxId?: string;
+  readonly totalObservationCount?: number;
 }
 
 export const DEFAULT_PREY_WEIGHT_PERCENT =
@@ -48,6 +99,7 @@ export const DEFAULT_PREY_WEIGHT_PERCENT =
 export function createSummaryViewModel(
   observations: readonly Observation[],
   preyWeightPercent: number,
+  options: SummaryViewModelOptions = {},
 ): SummaryViewModel {
   const report = calculateSuspicionReport(
     observations,
@@ -55,9 +107,25 @@ export function createSummaryViewModel(
   );
   const ranking = report.assessments.map(createRankedFoxViewModel);
   const leadingLocation = report.locationActivity[0];
+  const selectedRankingItem =
+    ranking.find(({ foxId }) => foxId === options.selectedFoxId) ?? ranking[0];
+  const totalObservationCount =
+    options.totalObservationCount ?? observations.length;
 
   return {
     leader: ranking[0],
+    locationActivity: report.locationActivity.map((activity) => ({
+      location: activity.location,
+      observationCount: activity.observationCount,
+      percentage:
+        report.observationCount === 0
+          ? 0
+          : (activity.observationCount / report.observationCount) * 100,
+      percentageLabel: formatPercentage(
+        activity.observationCount,
+        report.observationCount,
+      ),
+    })),
     metrics: [
       {
         label: "Уникальные лисы",
@@ -82,6 +150,18 @@ export function createSummaryViewModel(
     ],
     preyWeightPercent,
     ranking,
+    recentObservations: [...observations]
+      .sort(compareObservationRecency)
+      .slice(0, 3)
+      .map(createRecentObservationViewModel),
+    scope: {
+      filteredObservationCount: observations.length,
+      label: `Отчёт по ${observations.length} из ${totalObservationCount} наблюдений`,
+      totalObservationCount,
+    },
+    selectedFox: selectedRankingItem
+      ? createSelectedFoxViewModel(selectedRankingItem, observations)
+      : undefined,
     suspicionWeightPercent: 100 - preyWeightPercent,
   };
 }
@@ -141,6 +221,140 @@ function createRankedFoxViewModel(
 
 function formatTenths(tenths: number): string {
   return `${Math.floor(tenths / 10)},${tenths % 10}`;
+}
+
+function createSelectedFoxViewModel(
+  assessment: RankedFoxViewModel,
+  observations: readonly Observation[],
+): SelectedFoxViewModel {
+  const foxObservations = observations
+    .filter(({ fox_id }) => fox_id === assessment.foxId)
+    .sort(compareObservationRecency);
+  const chronologicalObservations = [...foxObservations].sort(
+    compareObservationChronology,
+  );
+  const observationMinutes = chronologicalObservations.map(({ time }) =>
+    timeToMinutes(time),
+  );
+  const earliestMinutes = observationMinutes[0] ?? 0;
+  const latestMinutes = observationMinutes.at(-1) ?? earliestMinutes;
+  const timeSpan = latestMinutes - earliestMinutes;
+  const evidence = chronologicalObservations.map((observation) =>
+    createEvidenceObservationViewModel(
+      observation,
+      timeSpan === 0
+        ? 50
+        : 10 +
+            ((timeToMinutes(observation.time) - earliestMinutes) / timeSpan) *
+              80,
+    ),
+  );
+
+  return {
+    ...assessment,
+    evidence,
+    observations: foxObservations.map((observation) =>
+      createEvidenceObservationViewModel(
+        observation,
+        evidence.find(({ id }) => id === observation.id)
+          ?.timelinePositionPercent ?? 50,
+      ),
+    ),
+    timeRangeLabel:
+      evidence.length > 1
+        ? `${evidence[0]?.time}–${evidence.at(-1)?.time}`
+        : (evidence[0]?.time ?? "Нет наблюдений"),
+  };
+}
+
+function createEvidenceObservationViewModel(
+  observation: Observation,
+  timelinePositionPercent: number,
+): EvidenceObservationViewModel {
+  const preyLabel = observation.has_prey ? "С добычей" : "Без добычи";
+
+  return {
+    accessibleLabel: `${observation.id}, ${observation.time}, оценка ${observation.suspicion_level}, ${preyLabel.toLowerCase()}, ${observation.location}`,
+    color: observation.color,
+    hasPrey: observation.has_prey,
+    id: observation.id,
+    location: observation.location,
+    preyLabel,
+    suspicionLevel: observation.suspicion_level,
+    time: observation.time,
+    timelinePositionPercent,
+  };
+}
+
+function createRecentObservationViewModel(
+  observation: Observation,
+): RecentObservationViewModel {
+  return {
+    color: observation.color,
+    foxId: observation.fox_id,
+    hasPrey: observation.has_prey,
+    id: observation.id,
+    location: observation.location,
+    preyLabel: observation.has_prey ? "С добычей" : "Без добычи",
+    suspicionLevel: observation.suspicion_level,
+    time: observation.time,
+  };
+}
+
+function formatPercentage(count: number, total: number): string {
+  if (total === 0) {
+    return "0%";
+  }
+
+  const percentageTenths = Math.round((count / total) * 1000);
+
+  return percentageTenths % 10 === 0
+    ? `${percentageTenths / 10}%`
+    : `${formatTenths(percentageTenths)}%`;
+}
+
+function compareObservationRecency(
+  left: Observation,
+  right: Observation,
+): number {
+  if (left.time !== right.time) {
+    return left.time < right.time ? 1 : -1;
+  }
+
+  if (left.id < right.id) {
+    return -1;
+  }
+
+  if (left.id > right.id) {
+    return 1;
+  }
+
+  return 0;
+}
+
+function compareObservationChronology(
+  left: Observation,
+  right: Observation,
+): number {
+  if (left.time !== right.time) {
+    return left.time < right.time ? -1 : 1;
+  }
+
+  if (left.id < right.id) {
+    return -1;
+  }
+
+  if (left.id > right.id) {
+    return 1;
+  }
+
+  return 0;
+}
+
+function timeToMinutes(time: string): number {
+  const [hours = 0, minutes = 0] = time.split(":").map(Number);
+
+  return hours * 60 + minutes;
 }
 
 function formatRecordCount(count: number): string {

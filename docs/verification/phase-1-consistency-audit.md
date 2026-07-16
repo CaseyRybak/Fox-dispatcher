@@ -8,6 +8,8 @@ Runtime: Node `24.17.0`, npm `11.13.0`
 
 Authority boundary: this audit performed no commit, push, deployment, or Phase 2 implementation.
 
+Publication follow-up: the core corrected Phase 1 and verified Phase 2 state was later published on `main` in `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`. The `test:browser` automation and Node-type alignment additions recorded below are a later uncommitted follow-up, not part of that revision. The audit-time chronology remains historical evidence.
+
 ## Outcome
 
 The Phase 1 walking-skeleton design is consistent with the implementation plan: the exact assignment fixture crosses adapter, application, domain, and UI boundaries; the three hash destinations render; the pinned build succeeds; and Phase 2 behavior was not part of the reviewed Phase 1 snapshot.
@@ -25,15 +27,16 @@ The owner subsequently authorized Phase 2. The scoring work was then reviewed ag
 
 ## Traceability
 
-| Phase 1 claim | Current evidence | Result |
+| Phase 1 claim | Phase 1 evidence | Result at the recorded boundary |
 |---|---|---|
-| Pinned toolchain | `.nvmrc`, `.node-version`, `packageManager`, exact lockfile; commands below | Pass |
+| Pinned toolchain | `.nvmrc`, `.node-version`, `packageManager`, Node 24 type definitions, exact lockfile; commands below | Pass |
 | Exact starter fixture | focused adapter test checks all fields, five records, four fox IDs | Pass |
 | Accessible hash navigation | focused test covers all destinations, language, title, current link, heading focus, Back/Forward, and skip-link route preservation | Pass |
 | Layer boundaries | twelve production source files plus one positive and thirteen negative fixtures, including root imports, shared isolation, and browser globals | Pass |
 | Production build | TypeScript and Vite build on the pinned runtime | Pass |
 | Runtime notices | `public/third-party-notices.txt` is copied byte-for-byte to `dist/` | Pass |
-| Full repository gate | `npm run verify` | Pass |
+| Reproducible browser smoke | `npm run test:browser` builds, starts the production preview, and checks the three routes in Chrome | Added after the historical gate; sandbox execution is socket-blocked |
+| Full repository gate | `npm run verify` | Passed for the corrected Phase 1/2 snapshot; current Phase 3 blockers are recorded separately |
 
 ## Changes made by the audit
 
@@ -42,6 +45,8 @@ The owner subsequently authorized Phase 2. The scoring work was then reviewed ag
 - `eslint.config.js`, `scripts/check-boundaries.mjs`, and `scripts/boundary-fixtures/` enforce the documented matrix and report fixture evidence even when production code fails.
 - `src/app/styles.css` restores `moss-muted` to `#607269` and uses `pine-structure` on tinted metric/table backgrounds.
 - `public/third-party-notices.txt` bundles the exact React, React DOM, Scheduler, Zod, Vite-runtime, Onest, and Unbounded notices and is linked from the application footer.
+- `scripts/run-phase-1-browser-smoke.mjs` and `scripts/phase-1-browser-smoke.js` make the Phase 1 browser checks reproducible through `npm run test:browser`.
+- `@types/node` now uses the Node 24 definitions branch, matching the pinned Node 24 runtime instead of exposing Node 26-only APIs to TypeScript.
 
 Contrast calculations after the change:
 
@@ -94,9 +99,11 @@ An offline production-dependency audit reported zero cached vulnerabilities. It 
 
 ## Browser and scope boundary
 
-The existing Phase 1 screenshots remain valid evidence for the original walking-skeleton snapshot, but not for the concurrently changed Phase 2 UI. This sandbox did not permit opening a new local listening socket, so the audit did not claim a fresh browser screenshot or console/network pass. Repository-native Playwright smoke automation remains planned for later browser slices.
+The existing Phase 1 screenshots remain valid evidence for the original walking-skeleton snapshot, but not for the concurrently changed Phase 2 UI. This sandbox did not permit opening a new local listening socket, so the audit did not claim a fresh browser screenshot or console/network pass. Repository-native smoke automation is now available as `npm run test:browser`; it checks all three destinations, navigation state and history, the skip link, the five-record/four-fox starter fixture, console errors, and page overflow at 320 px. Run it in a normal local or CI environment with Chrome installed.
 
 Bottom navigation, mobile observation cards, complete axe/keyboard/zoom/text-spacing/screen-reader evidence, and final visual polish remain assigned to Phase 6. They are not reclassified as missing Phase 1 behavior.
+
+The current working tree is no longer the green Phase 1/2 snapshot: the in-progress Phase 3 CSS formatting and an application-test adapter import make `npm run verify` fail. [Phase 3 evidence](phase-3-evidence-and-activity.md) owns those current blockers; they do not retroactively change this historical audit result.
 
 ## Assessment
 

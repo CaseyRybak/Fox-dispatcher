@@ -1,10 +1,12 @@
 # Phase 0 contract audit
 
-Status: Phase 0 contract passed; concurrent uncommitted Phase 1 work is present but outside this audit; no commit or push performed by this audit
+Status: historical Phase 0 contract passed; Phase 1 work was uncommitted and outside scope at audit time, then later reconciled and published in `c53d1f1`
 
 Audit date: 2026-07-16
 
 Baseline revision: `cbaf165bda86ab629b30ed19f226d81af14ed35e` (`main`, equal to `origin/main` before the audit)
+
+Publication follow-up: the Phase 1 and Phase 2 implementation and their evidence were later published together in `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`. This does not change the historical baseline or scope recorded below.
 
 ## Scope and evidence boundary
 
@@ -55,7 +57,7 @@ The original MOX assignment text is not stored in this repository. Therefore the
 
 These are not missing Phase 0 deliverables:
 
-- application scaffold, `package.json`, lockfile, runtime code, and tests are Phase 1-owned; concurrent uncommitted versions are now present but not Phase 0 evidence;
+- application scaffold, `package.json`, lockfile, runtime code, and tests were Phase 1-owned; concurrent uncommitted versions present at audit time were not Phase 0 evidence and were later reviewed separately;
 - domain-level `src/observation-monitoring/AGENTS.md` — created with the source tree;
 - README and public AI Worklog data — Phase 7;
 - `vercel.json`, Vercel connection, screenshots, accessibility report, and production URL — Phases 6 and 8;
@@ -160,4 +162,4 @@ Observed result: 28 local targets resolved and no failures were printed.
 
 ## Readiness conclusion
 
-The amended Phase 0 contract is internally consistent. Before accepting Phase 1 or starting Phase 2, the owner of the concurrently created scaffold must reconcile it with this contract and run the Phase 1 gate. The other residual verification boundary is comparison with the external assignment source, which is not a repository artifact. Runtime, browser, accessibility, and deployment claims remain planned evidence rather than completed behavior.
+The amended Phase 0 contract was internally consistent for its historical scope. The required Phase 1/2 reconciliation later occurred and is recorded in their verification artifacts and `c53d1f1`. The residual Phase 0 boundary remains comparison with the external assignment source, which is not a repository artifact; later-phase runtime, accessibility, and deployment claims require their own evidence.

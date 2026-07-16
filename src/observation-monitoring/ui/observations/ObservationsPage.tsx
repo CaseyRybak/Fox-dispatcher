@@ -2,23 +2,27 @@ import type { ObservationSetOverview } from "@/observation-monitoring/applicatio
 
 interface ObservationsPageProps {
   readonly overview: ObservationSetOverview;
+  readonly scopeLabel: string;
 }
 
-export function ObservationsPage({ overview }: ObservationsPageProps) {
+export function ObservationsPage({
+  overview,
+  scopeLabel,
+}: ObservationsPageProps) {
   return (
     <div className="page">
       <header className="page-heading">
         <p className="eyebrow">Проверенный стартовый набор</p>
         <h1 tabIndex={-1}>Наблюдения</h1>
         <p>
-          Сейчас журнал доступен для чтения. Управление записями появится в
-          отдельной фазе и будет использовать тот же доменный контракт.
+          Фильтры сводки сохраняют область журнала. Управление записями появится
+          в отдельной фазе и будет использовать тот же доменный контракт.
         </p>
       </header>
 
       <div className="table-frame">
         <table>
-          <caption>{overview.observationCount} исходных наблюдений</caption>
+          <caption>{scopeLabel}</caption>
           <thead>
             <tr>
               <th scope="col">Время</th>

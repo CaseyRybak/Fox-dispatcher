@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { App } from "./App";
@@ -80,6 +81,156 @@ describe("interactive suspicion summary", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "Лидер изменился: fox_001, 7,8.",
     );
+  });
+
+  it("keeps an explicit fox selection while the ranking recalculates", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Показать доказательства fox_002, индекс 4,0",
+      }),
+    );
+
+    const inspector = screen.getByRole("complementary", {
+      name: "Расчёт выбранной лисы fox_002",
+    });
+
+    expect(within(inspector).getByText("obs_002")).toBeInTheDocument();
+    expect(within(inspector).getByText("Туманная тропа")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: "Показать доказательства fox_002, индекс 4,0",
+      }),
+    ).toHaveAttribute("aria-pressed", "true");
+
+    const slider = screen.getByRole("slider", { name: "Влияние добычи" });
+    fireEvent.change(slider, { target: { value: "30" } });
+    fireEvent.pointerUp(slider);
+
+    expect(getLeaderHeading("fox_003")).toBeInTheDocument();
+    expect(
+      screen.getByRole("complementary", {
+        name: "Расчёт выбранной лисы fox_002",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("applies report-wide filters, falls back cleanly, and resets the scope", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Показать доказательства fox_003, индекс 7,6",
+      }),
+    );
+
+    const locationFilter = screen.getByRole("combobox", {
+      name: "Локация",
+    });
+    await user.selectOptions(locationFilter, "Северная поляна");
+
+    expect(locationFilter).toHaveFocus();
+    expect(screen.getByText("Отчёт по 3 из 5 наблюдений")).toBeInTheDocument();
+    expect(
+      within(
+        screen.getByRole("list", { name: "Рейтинг подозрительности" }),
+      ).getAllByRole("listitem"),
+    ).toHaveLength(2);
+    expect(
+      screen.getByRole("complementary", {
+        name: "Расчёт выбранной лисы fox_001",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Фильтры применены: 3 из 5 наблюдений. Выбрана лиса fox_001.",
+    );
+    expect(
+      screen.getByRole("button", {
+        name: "Удалить фильтр Локация: Северная поляна",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      within(
+        screen.getByRole("region", { name: "Активность по локациям" }),
+      ).getByText("3 из 3 · 100%"),
+    ).toBeInTheDocument();
+
+    await user.type(
+      screen.getByRole("searchbox", { name: "Найти fox_id" }),
+      "missing",
+    );
+
+    expect(
+      screen.getByRole("heading", {
+        name: "В этой выборке ничего не найдено",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Отчёт по 0 из 5 наблюдений")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Сбросить всё" }));
+
+    expect(screen.getByText("Отчёт по 5 из 5 наблюдений")).toBeInTheDocument();
+    expect(getLeaderHeading("fox_001")).toBeInTheDocument();
+  });
+
+  it("moves focus predictably while report filter chips are removed", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(
+      screen.getByRole("searchbox", { name: "Найти fox_id" }),
+      "fox_001",
+    );
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: "Локация" }),
+      "Северная поляна",
+    );
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: "Цвет" }),
+      "рыжая",
+    );
+    await user.click(screen.getByRole("radio", { name: "Нет" }));
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Удалить фильтр Лиса: fox_001",
+      }),
+    );
+
+    expect(
+      screen.getByRole("button", {
+        name: "Удалить фильтр Локация: Северная поляна",
+      }),
+    ).toHaveFocus();
+
+    await user.click(
+      screen.getByRole("button", { name: "Удалить фильтр Цвет: рыжая" }),
+    );
+
+    expect(
+      screen.getByRole("button", { name: "Удалить фильтр Добыча: нет" }),
+    ).toHaveFocus();
+
+    await user.click(
+      screen.getByRole("button", { name: "Удалить фильтр Добыча: нет" }),
+    );
+
+    expect(
+      screen.getByRole("button", {
+        name: "Удалить фильтр Локация: Северная поляна",
+      }),
+    ).toHaveFocus();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: "Удалить фильтр Локация: Северная поляна",
+      }),
+    );
+
+    expect(screen.getByText("Отчёт по 5 из 5 наблюдений")).toHaveFocus();
   });
 });
 

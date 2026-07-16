@@ -4,7 +4,7 @@ Status: historical Phase 1 snapshot passed; the current tree is not a Phase 1-on
 
 Evidence date: 2026-07-16
 
-Consistency follow-up: [Phase 1 consistency audit](phase-1-consistency-audit.md) records scoped corrections and a fresh green repository gate. The later [Phase 2 evidence](phase-2-explainable-ranking.md) reconciles and replaces the then-concurrent Summary UI as current browser evidence. No commit or push was performed.
+Consistency follow-up: [Phase 1 consistency audit](phase-1-consistency-audit.md) records scoped corrections and a fresh green repository gate. The later [Phase 2 evidence](phase-2-explainable-ranking.md) reconciles and replaces the then-concurrent Summary UI as current browser evidence. Evidence collection itself performed no commit or push; the completed Phase 1/2 repository state was later published in `c53d1f1`.
 
 ## Verified outcome
 
