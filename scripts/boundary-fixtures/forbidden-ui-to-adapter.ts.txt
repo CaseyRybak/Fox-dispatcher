@@ -1,0 +1,3 @@
+import { starterObservations } from "../adapters/starter-data/starter-observations";
+
+export const boundaryFixture = starterObservations;

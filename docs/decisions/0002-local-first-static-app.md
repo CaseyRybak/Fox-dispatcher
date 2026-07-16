@@ -31,16 +31,22 @@ Planned storage shape:
 {
   schemaVersion: 1,
   observations: Observation[],
-  scoringPolicy: { preyWeight: number },
+  scoringPolicy: { preyWeightPercent: number },
   updatedAt: string
 }
 ```
+
+The stable key is `fox-dispatcher.dashboard`; the envelope carries the version. Loading returns one of `missing`, `valid`, `corrupt`, `unsupported-version`, or `unavailable`. The envelope is strict: observations and scoring policy reuse their boundary schemas, `schemaVersion` is exactly `1`, `updatedAt` is a UTC ISO 8601 instant produced by `new Date().toISOString()`, and unknown fields are rejected. Version 1 has no implicit migration path.
 
 Filters represent a current analysis scope and start cleared on a new browser session. Data reset and scoring-policy reset remain separate actions.
 
 ## Boundary behavior
 
 Import accepts an observation array only after all records satisfy the product schema. Invalid import preserves the current dataset. Unknown fields are treated as contract errors so data is not discarded silently.
+
+File and pasted input share a 2 MiB UTF-8 limit checked before `JSON.parse`; the validated array remains limited to 1000 records. Oversized input produces a boundary error without mutating application state.
+
+Corrupt and unsupported stored values are not treated as first run. Autosave remains blocked until the user explicitly chooses recovery, and the raw value stays available for copying. An unavailable store or save failure leaves the accepted state in memory and exposes a memory-only status.
 
 The application renders imported strings as text. Runtime content does not require HTML interpretation. Public build review covers accidental external requests, secrets, private paths, and debug artifacts.
 
@@ -63,5 +69,6 @@ The task measures AI-first development process, not the presence of an AI API in
 - The production artifact is static and has a small operational footprint.
 - Reviewer edits survive reload in the same browser.
 - Browser storage limitations and recovery states are part of the visible UX.
+- Unknown future storage versions cannot be silently overwritten by starter data.
 - Cross-device synchronization and accounts remain outside this version.
 - Agents can reproduce the full product locally and in browser automation without external services.

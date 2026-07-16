@@ -1,0 +1,3 @@
+import type { ObservationSetOverview } from "@/observation-monitoring/application";
+
+export type BoundaryFixture = ObservationSetOverview;

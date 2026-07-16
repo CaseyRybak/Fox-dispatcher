@@ -68,10 +68,23 @@ src/
 Dependency direction:
 
 ```text
-app ──────────────────────────────┐
-ui ──────────────> application ───┼─> domain
-adapters ─────────> application ──┘
+app (composition root) ──> ui
+        │                 └─> application ──> domain
+        └───────────────> adapters ─────────> application
 ```
+
+Allowed imports are explicit:
+
+| Source | May import | Must not import |
+|---|---|---|
+| `domain` | domain modules | React, browser APIs, application, adapters, UI, app |
+| `application` | domain, application modules | React, browser APIs, concrete adapters, UI, app |
+| `adapters` | application port types | UI, app, direct domain modules |
+| `ui` | application API/view models, `shared/ui` | concrete adapters, browser persistence, domain calculations |
+| `shared/ui` | other shared presentation modules | observation-monitoring, app |
+| `app` | UI, application bootstrap, concrete adapters | new domain rules or duplicated calculations |
+
+`app` is the only composition root: it creates concrete adapters and injects them into the application boundary. ESLint restrictions plus `npm run check:boundaries` enforce this matrix against production source and positive/negative fixtures.
 
 ### Domain
 
@@ -85,6 +98,16 @@ The domain contains plain types and pure calculations:
 
 Inputs and outputs are serializable values. Tests can supply arrays and policies without mounting React or browser storage.
 
+Scores are represented as integer fractions rather than floating-point display values:
+
+```text
+scoreNumerator = sumSuspicion * (100 - weightPercent)
+               + preyCount * 10 * weightPercent
+scoreDenominator = observationCount * 100
+```
+
+Score and mean comparisons use safe-integer cross multiplication under the 1000-record boundary. Decimal display uses half-up rounding to one place. Chronology uses `time` descending then observation `id` ascending; string tie-breaks use locale-independent UTF-16 ordinal order. Location activity uses count descending then location name ascending.
+
 ### Application
 
 The application layer coordinates user intent:
@@ -97,13 +120,18 @@ The application layer coordinates user intent:
 - request persistence after accepted state transitions;
 - convert domain reports into small UI view models.
 
+The initially selected fox is the current leader. Explicit selection survives recalculation while the fox remains in scope; otherwise the application selects the new leader or no fox for an empty report. Automatic fallback updates status without moving focus.
+
 Planned outbound ports:
 
 ```text
 DashboardStateStore
-  load(): StoredDashboardState | LoadFailure
+  load(): Missing | ValidState | CorruptState | UnsupportedVersion | Unavailable
   save(state): SaveResult
   clear(): ClearResult
+
+ObservationImportParser
+  preview(rawText): ImportPreview | ImportFailure
 
 ObservationExporter
   createFile(observations): ExportArtifact
@@ -126,12 +154,14 @@ The storage envelope is planned as:
 {
   schemaVersion: 1,
   observations: Observation[],
-  scoringPolicy: { preyWeight: number },
+  scoringPolicy: { preyWeightPercent: number },
   updatedAt: string
 }
 ```
 
-Corrupt and unavailable storage become explicit recovery results that the application presents to the user.
+The stable key is `fox-dispatcher.dashboard`; the envelope, not the key name, carries the schema version. It is parsed strictly: version `1`, validated observations and policy, UTC ISO 8601 `updatedAt`, and no unknown fields. `corrupt`, `unsupported-version`, and `unavailable` are distinct recovery results. Corrupt or future-version raw values are not overwritten and autosave stays blocked until an explicit recovery choice; a save failure keeps the accepted state in memory and exposes memory-only status.
+
+File and pasted imports are rejected above 2 MiB of UTF-8 before `JSON.parse`, then checked against the 1000-record and field limits. `ObservationImportParser` returns a preview or field paths rooted at the input array, such as `[2].suspicion_level`; it never mutates application state.
 
 ### UI
 
@@ -170,13 +200,15 @@ The executable contract planned for tests includes:
 - `has_prey` is boolean;
 - `suspicion_level` is an integer from 0 through 10;
 - `time` is a real 24-hour `HH:mm` value;
-- prey weight is a number from 0 through 1 in 0.05 steps;
+- prey weight percent is an integer from 0 through 100 in 5-point steps;
 - report scores remain from 0 through 10;
 - input array order does not change the ranking;
 - tie-breaks are deterministic;
+- exact `7.45` displays as `7.5` with decimal half-up rounding;
+- equal-time observations and tied location counts have deterministic secondary order;
 - observation count, location, color, and time contribute no hidden score.
 
-Mechanical checks in the planned TypeScript and ESLint setup express dependency direction. Domain tests express scoring and data invariants.
+TypeScript, ESLint restrictions, and executable boundary fixtures express dependency direction. Domain tests grow the scoring and data-invariant contract phase by phase.
 
 ## Public content boundary
 
@@ -190,6 +222,8 @@ The AI Worklog UI consumes a structured public source under `docs/ai-worklog/`. 
 
 The public-content check planned in Phase 7 covers secret-like values, private absolute paths, credentials, and accidental transcript dumps before the worklog enters the production bundle.
 
+Each evidence reference has `label`, `kind`, and a public HTTPS `href` pinned to a GitHub repository revision or a public Vercel artifact. Build-time checks reject local filesystem paths, unsafe URL schemes, unresolved repository links, and unpinned mutable evidence where a revision is available.
+
 ## Deployment topology
 
 ```text
@@ -197,7 +231,7 @@ GitHub branch or pull request
           │
           v
 Vercel Git integration
-          │ npm install from lock + npm run build
+          │ npm ci + npm run build
           v
        dist/
           ├─ preview deployment for review revisions
@@ -205,6 +239,10 @@ Vercel Git integration
 ```
 
 Vercel's Vite defaults are the starting configuration. A repository `vercel.json` becomes an explicit artifact when tested headers, routing, or build behavior need an override. Hash-based top-level navigation keeps static reload behavior simple.
+
+Vercel installs the committed lockfile with `npm ci` under repository-pinned Node and npm versions. The production branch is `main`. One release-candidate commit SHA receives the preview smoke first; after authorization, `main` is fast-forwarded to that exact commit. Production smoke begins only when Vercel reports the same Git SHA for production. A merge, rebuild from a different commit, or changed tree creates a new candidate and requires a new preview smoke.
+
+Production headers enforce the browser boundary: self-hosted static resource directives, `connect-src 'none'`, `object-src 'none'`, `base-uri 'none'`, `frame-ancestors 'none'`, `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, and a minimal `Permissions-Policy`. Phase 8 tests the exact policy against the built bundle and deployed responses.
 
 The deployment decision is recorded in [docs/decisions/0003-vercel-deployment.md](docs/decisions/0003-vercel-deployment.md).
 
@@ -220,6 +258,6 @@ The planned feedback layers are:
 | Browser | Playwright for reviewer journey, keyboard, mobile, reload, import, and Worklog |
 | Accessibility | axe plus manual keyboard, zoom, reflow, and screen-reader evidence |
 | Build | Typecheck, ESLint, formatting, unit tests, and Vite production build through `npm run verify` |
-| Deployment | Playwright smoke against the Vercel preview and production URLs |
+| Deployment | Header assertions and Playwright smoke against SHA-matched Vercel preview and production URLs |
 
 Fresh results and screenshots are recorded under `docs/verification/` during their authorized phases.

@@ -1,0 +1,3 @@
+import type { Observation } from "./observation";
+
+export type BoundaryFixture = Pick<Observation, "id">;

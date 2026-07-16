@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Verify pinned toolchain
+        run: |
+          test "$(node --version)" = "v$(cat .node-version)"
+          test "npm@$(npm --version)" = "$(node -p "require('./package.json').packageManager")"
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Verify repository
+        run: npm run verify

@@ -4,9 +4,11 @@ Fox Dispatcher is an interactive local-first dashboard for a forest observer. Th
 
 ## Current delivery state
 
-- Phase 0 is complete: product, interface, architecture, and deployment decisions are repository artifacts.
-- Phase 1 is the next execution slice and awaits a direct user command.
-- The application scaffold and runtime code arrive in Phase 1.
+- Phase 0 is complete and contract-audited: product, interface, architecture, deployment decisions, and traceability evidence are repository artifacts.
+- Phase 1 is complete: the walking skeleton and its consistency corrections establish the pinned toolchain, validated starter boundary, navigation, architecture checks, and shared verification gate.
+- Phase 2 is complete in the working tree: exact scoring, deterministic ranking, contribution explanations, the live prey-weight policy, and the responsive Summary experience are verified.
+- [Phase 2 evidence](docs/verification/phase-2-explainable-ranking.md) records focused tests, the full gate, production-preview interactions, accessibility snapshots, console results, and 320 px reflow.
+- Phase 3 is the next pending slice. Phase 1 and Phase 2 changes remain uncommitted and unpushed.
 - Deployment target: Vercel through the GitHub repository integration.
 
 ## Start here
@@ -14,7 +16,8 @@ Fox Dispatcher is an interactive local-first dashboard for a forest observer. Th
 - [Active implementation plan](docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md) — execution slices, acceptance evidence, and current gate.
 - [Product specification](docs/product-specs/fox-dispatcher.md) — user outcomes, field semantics, scoring contract, states, and examples.
 - [Interface specification](docs/design-docs/interface.md) — information hierarchy, responsive layout, interactions, visual language, and accessibility.
-- [Architecture](ARCHITECTURE.md) — bounded context, layers, dependency direction, ports, and planned repository structure.
+- [Architecture](ARCHITECTURE.md) — bounded context, layers, dependency direction, ports, and repository structure.
+- [Phase 0 contract audit](docs/verification/phase-0-contract-audit.md) — requirement traceability, consistency findings, commands, and remaining external-source boundary.
 
 ## Decision history
 
@@ -34,7 +37,7 @@ observation-monitoring
 └── ui              Summary, Observations, AI Worklog
 ```
 
-The planned source location is `src/observation-monitoring/`. A domain-level `AGENTS.md` becomes its local map when that source tree is created.
+The source context lives under [`src/observation-monitoring/`](src/observation-monitoring/). Its [domain map](src/observation-monitoring/AGENTS.md) points agents to current entry points and phase ownership.
 
 ## Durable knowledge
 
@@ -54,6 +57,6 @@ Project-local skills live in `.agents/skills/`. The [skills audit](docs/research
 
 Repository skills capture proven repeatable procedures. Specifications, execution state, and unresolved work remain discoverable through the document areas above.
 
-## Planned verification entry points
+## Verification entry points
 
-Phase 1 introduces the executable scripts and pinned toolchain. The shared verification entry point is planned as `npm run verify`, with focused Vitest and Playwright scripts described in the active plan. Release evidence culminates in a browser smoke run against the Vercel production URL.
+Phase 1 established the pinned Node/npm toolchain and shared `npm run verify` gate. Phase 2 adds `npm run test -- scoring` and `npm run test -- summary` for exact ranking and interactive policy behavior. `npm run test -- navigation` focuses hash-route behavior, while `npm run check:boundaries` proves allowed production imports and rejected dependency directions. Browser artifacts live under `output/playwright/`; final release evidence culminates in a smoke run against the Vercel production URL.

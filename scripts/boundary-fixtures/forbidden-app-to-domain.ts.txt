@@ -1,0 +1,3 @@
+import type { Observation } from "@/observation-monitoring/domain/observation";
+
+export type BoundaryFixture = Observation;

@@ -1,10 +1,10 @@
 # Fox Dispatcher: implementation outcome
 
-Status: Phase 0 complete; Phase 1 not started
+Status: Phase 2 completed and verified in the working tree
 
 Deployment target: Vercel
 
-Current gate: ready for Phase 1 after a direct user command
+Current gate: Phase 3 waits for a direct command; Phase 1 and Phase 2 changes remain uncommitted and unpushed
 
 Authority boundary: phases, commits, and pushes wait for separate direct user commands
 
@@ -38,6 +38,8 @@ The primary reviewer journey should take less than one minute:
 | D-02 | Observations can be added, edited, and removed | Browser flow demonstrates immediate report recalculation |
 | D-03 | User state persists locally | Reload restores observations and scoring policy |
 | D-04 | JSON import is atomic | Invalid import identifies the field and leaves current state unchanged |
+| D-05 | Calculation and report ordering are deterministic | Exact rational tests cover `7.45 -> 7.5`, mathematical ties, equal times, tied locations, Unicode IDs, and input permutations |
+| D-06 | Untrusted import and storage fail safely | Oversized raw input is rejected before parsing; corrupt or future-version storage stays recoverable and is not overwritten automatically |
 | F-01 | The interface answers how many foxes were observed | Starter result is 4; CRUD updates the count |
 | F-02 | The interface identifies the main activity location | Starter result is `Северная поляна`, 3 of 5 observations, 60% |
 | F-03 | The interface names the exact scoring inputs | Only `suspicion_level` and `has_prey` contribute to the score |
@@ -45,10 +47,13 @@ The primary reviewer journey should take less than one minute:
 | F-05 | Changing a parameter changes the report | At 30% prey influence, `fox_003` leads with 7.9 |
 | I-01 | Filters have a visible calculation scope | The report states `N из M наблюдений` and recalculates from that selection |
 | I-02 | Result, ranking, locations, evidence, and raw observations form one path | Selecting a ranking row updates its evidence inspector without losing context |
+| I-03 | Selection and focus survive dynamic updates predictably | Selected fox fallback, chip removal, dialogs, route changes, and persistent undo have browser focus/status assertions |
 | W-01 | AI Worklog is available inside the product | Main navigation opens 5-7 real, public-safe checkpoints |
 | W-02 | Worklog claims are traceable | Checkpoints link to a plan, decision, commit, test, or screenshot |
 | A-01 | Domain logic is independent of React and storage | Import-boundary checks and unit tests enforce dependency direction |
+| A-02 | The production browser boundary prevents observation egress | Tested CSP uses `connect-src 'none'`; deployed headers and browser requests match the allowlist |
 | Q-01 | Completion claims have fresh evidence | Typecheck, lint, tests, build, accessibility, browser, and deployed smoke evidence are recorded |
+| Q-02 | WCAG-facing manual claims are recorded | Keyboard, 320 px reflow, 200% zoom, text spacing, contrast preferences, and one screen-reader pass have a dated evidence artifact |
 
 ### Deterministic starter examples
 
@@ -73,7 +78,7 @@ If `obs_005.suspicion_level` changes from 3 to 10 under the default 80/20 policy
 
 ### Current repository state
 
-Phase 0 has materialized the repository map, product specification, interface specification, architecture, and three accepted decision records. The repository has no application scaffold, package manifest, runtime code, tests, or external Vercel project configuration; those remain outcomes of later authorized phases.
+Phase 0 materialized the repository map, product specification, interface specification, architecture, and three accepted decision records. The original Phase 0 documentation was committed and published at `cbaf165bda86ab629b30ed19f226d81af14ed35e` on `main`. Phase 1 adds the verified package/toolchain, bounded-context source tree, validated assignment fixture, responsive application shell, import-boundary enforcement, tests, CI, and browser evidence. Phase 2 adds exact scoring and ordering, an application Summary query, the leader/ranking/contribution interface, synchronized policy controls, and production-preview evidence. Phase 1 and Phase 2 remain uncommitted and unpushed. External Vercel project configuration remains a later outcome.
 
 Relevant existing context:
 
@@ -142,7 +147,7 @@ score(f) =
   + preySignal(f) * preyWeight
 ```
 
-`preyWeight` is one user-controlled value from 0% to 100%, step 5%, default 20%. The remaining weight belongs to `suspicion_level` automatically.
+`preyWeightPercent` is one user-controlled integer value from 0 to 100, step 5, default 20. The formula uses `preyWeight = preyWeightPercent / 100`; the remaining weight belongs to `suspicion_level` automatically.
 
 The score is an attention index, not a probability or a claim that the fox is dangerous. The interface explains that treating prey as a signal is a configurable observer policy. A 0% value produces the literal `suspicion_level`-only ranking.
 
@@ -156,6 +161,16 @@ Field semantics:
 
 Sorting uses the unrounded score, then mean suspicion, latest observation time, and `fox_id`. The UI displays one decimal place.
 
+Implementation stores weight as an integer percent and represents a score as the exact fraction:
+
+```text
+[sumSuspicion * (100 - weightPercent) + preyCount * 10 * weightPercent]
+-----------------------------------------------------------------------
+                       observationCount * 100
+```
+
+Score and mean ties use safe-integer cross multiplication; display uses decimal half-up rounding, so exact `7.45` renders as `7.5`. Equal-time observations use `id` ascending, and all final string tie-breaks use locale-independent UTF-16 ordinal order. Location rows use count descending then name ascending.
+
 ### 2. "Current" means the active data selection
 
 The input includes time but no date. Copy uses `текущая выборка` and avoids unsupported claims about today, recency, or live forest state. Time does not receive a hidden risk weight.
@@ -163,6 +178,8 @@ The input includes time but no date. Copy uses `текущая выборка` a
 ### 3. Filters define the whole report scope
 
 Search by `fox_id` and filters for location, color, and prey update metrics, ranking, location activity, evidence, and raw observations together. A persistent scope label states `Отчёт по N из M наблюдений`. Removable filter chips and `Сбросить всё` make the scope explicit.
+
+The inspector selects the leader initially, preserves an explicit user selection while that fox remains in scope, and falls back to the current leader or an empty inspector when mutations or filters remove it. Automatic fallback announces status without moving focus.
 
 ### 4. Interface direction is a modern field ledger
 
@@ -204,7 +221,7 @@ A geographic map is excluded because the data has location names but no coordina
 
 Starter data is bundled with the application. A versioned local storage envelope holds observations, prey weight, and update time. JSON import follows parse -> validate -> preview -> confirm replacement. An invalid record leaves current state untouched. Export includes the full observation array, independent of filters.
 
-Boundary validation covers unique non-empty IDs, trimmed strings, strict booleans, integer suspicion from 0 through 10, real `HH:mm` time, bounded collection size, and a documented policy for unknown fields. Corrupt or unavailable storage produces a recoverable UI state rather than silent replacement.
+Boundary validation covers a 2 MiB UTF-8 pre-parse limit, unique non-empty IDs, trimmed strings, strict booleans, integer suspicion from 0 through 10, real `HH:mm` time, bounded collection size, and a documented policy for unknown fields. The strict v1 storage envelope distinguishes missing, valid, corrupt, unsupported-version, and unavailable states. Corrupt or future-version raw values are not overwritten before an explicit recovery choice; save failure keeps accepted state in memory.
 
 ### 7. Stack and deployment
 
@@ -222,25 +239,25 @@ Boundary validation covers unique non-empty IDs, trimmed strings, strict boolean
 | CI | GitHub Actions |
 | Deployment | **Vercel**, connected to the GitHub repository |
 
-Vercel should build with the locked Node version and repository build command, publish `dist`, provide preview deployments for review branches, and publish production from the agreed production branch. Vite is statically deployable; `vercel.json` is added only if a tested routing, headers, or build override requires it. The initial navigation can use hashes, avoiding an unnecessary SPA fallback.
+Vercel should use `npm ci` with repository-pinned Node/npm versions, run the repository build command, publish `dist`, provide a preview for the release-candidate SHA, and publish production from `main` only after explicit authorization. Vite is statically deployable; Phase 8 adds and tests the response-header configuration required by the CSP and privacy boundary. The initial navigation can use hashes, avoiding an unnecessary SPA fallback.
 
 Production has no backend, runtime AI API, analytics, or remote font dependency. User observations remain in the browser.
 
 ### 8. Accessibility and responsive contract
 
-The main journey works at 320 CSS pixels, 200% zoom, and by keyboard. Desktop ranking becomes mobile cards; the desktop detail inspector becomes a full-screen mobile sheet; filters become a mobile sheet; the page does not acquire horizontal overflow.
+The main journey works at 320 CSS pixels, 200% zoom, and by keyboard. The Russian document title, current hash destination, `h1`, focus, and back/forward behavior remain synchronized. Desktop ranking becomes mobile cards; the desktop detail inspector becomes a full-screen mobile sheet; filters become a mobile sheet with draft/apply/cancel behavior; the page does not acquire horizontal overflow.
 
-Controls have visible labels and focus, dialogs manage and restore focus, sortable headers expose their state, validation errors connect to fields, score changes receive a concise polite announcement, charts retain exact text alternatives, and color never carries meaning alone. Motion respects reduced-motion preferences.
+Controls have visible labels and focus, dialogs manage and restore focus, sorted headers expose their state, validation errors connect to fields through a focused summary, every completed score change receives one concise polite announcement, undo has no automatic timeout, charts retain exact text alternatives, and color never carries meaning alone. Motion respects reduced-motion preferences.
 
 ### 9. Git and agent execution model
 
 The implementation is divided into short independently verifiable slices. A slice can use an isolated worktree and focused agent context when execution is authorized. Review packages contain the changed scope and evidence rather than unrelated repository content. `main` remains releasable, and Vercel preview deployment becomes part of review after Git integration is configured.
 
-No commit or push is part of preparing this plan. Git integration, branch publication, and Vercel deployment occur only in their authorized execution slices.
+Preparing the original plan did not itself authorize Git mutation. Phase 0 was subsequently recorded and published in the separately created commit `cbaf165bda86ab629b30ed19f226d81af14ed35e`; that historical fact does not authorize future commits or pushes. Further branch publication and Vercel deployment occur only in their authorized execution slices.
 
 ## Execution slices
 
-Phase 0 is complete. Phases 1 through 8 are pending and start only after a direct user command.
+Phases 0, 1, and 2 are complete. Phase 2 reconciled the scoring work with the approved contract, corrected the composition dependency, and passed the focused, full, and production-browser gates on 2026-07-16. Phases 3 through 8 remain pending and start only after a direct user command.
 
 ### Phase 0: Materialize the approved contract
 
@@ -262,7 +279,7 @@ Files and interfaces:
 Implementation steps:
 
 1. Transfer the assignment facts and approved product decisions into durable documents without inventing new signals.
-2. Record the formula and starter calculations as executable acceptance examples.
+2. Record the formula and starter calculations as test-ready deterministic acceptance examples.
 3. Record the chosen field-ledger UI and the rejected map-first alternative.
 4. Record Vercel as the deployment target and Git integration as the release mechanism.
 5. Cross-link the product, design, architecture, decisions, and active plan from the repository map.
@@ -270,8 +287,9 @@ Implementation steps:
 Verification commands and expected evidence:
 
 - `git diff --check` returns clean.
-- `rg -n "7\.8|7\.9|Северная поляна|Vercel" AGENTS.md ARCHITECTURE.md docs` finds the approved acceptance facts and deployment target in their canonical documents.
-- A document review maps every assignment requirement to at least one acceptance statement.
+- focused `rg` checks independently find `fox_001` 7.8, `fox_003` 7.9, `Северная поляна` 3/5 and 60%, and Vercel in their canonical product/decision documents rather than matching this plan alone;
+- local Markdown links resolve to existing paths;
+- [Phase 0 contract audit](../../verification/phase-0-contract-audit.md) maps each normalized assignment-facing requirement to acceptance IDs and canonical artifacts, records the external-source boundary, and captures command results.
 
 Estimated effort: 2-3 hours.
 
@@ -287,13 +305,14 @@ Completion notes:
 - [Decision 0002](../../decisions/0002-local-first-static-app.md) accepts the browser-only versioned persistence and atomic import boundary.
 - [Decision 0003](../../decisions/0003-vercel-deployment.md) accepts Vercel Git integration, `dist` output, preview review, and production evidence.
 - Boundary details resolved in Phase 0: unknown import fields are contract errors, filters start cleared in a new session, dataset reset and scoring reset are separate, and initial top-level destinations use hash addressing.
-- Phase 0 produced documentation only. The application scaffold, dependencies, runtime code, tests, Vercel connection, commit, and push remain untouched.
+- The follow-up consistency audit resolved exact decimal arithmetic, equal-time/location order, selected-fox fallback, import size, storage version recovery, dependency wiring, focus/undo behavior, and the production header/release policy.
+- Phase 0 itself produced documentation only. The original contract is present in published commit `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Concurrent uncommitted Phase 1 scaffold/dependency/test files appeared during this audit and remain outside its reviewed change set; the Vercel connection is still untouched. This audit performs no commit or push.
 
 ### Phase 1: Deliver the walking skeleton
 
-Status: pending
+Status: completed and consistency-audited on 2026-07-16; no commit or push performed
 
-Target outcome: the application boots locally and renders the unmodified starter dataset through the planned boundaries.
+Target outcome: the application boots locally and renders the unmodified starter dataset through the defined boundaries.
 
 Files and interfaces:
 
@@ -307,20 +326,35 @@ Files and interfaces:
 Implementation steps:
 
 1. Scaffold React, TypeScript, and Vite with pinned dependencies.
-2. Establish aliases and mechanical import-boundary checks.
+2. Establish aliases and `check:boundaries` from the architecture allow/deny matrix, including a fixture that proves a forbidden import fails.
 3. Add the exact five starter observations as a validated adapter fixture.
 4. Create accessible navigation for Summary, Observations, and AI Worklog.
 5. Add `npm run verify` for format check, lint, typecheck, tests, and production build.
 
-Verification command: `npm run verify`.
+Verification commands:
 
-Expected evidence: production build succeeds and a component test sees exactly 5 starter records and 4 unique fox IDs.
+- `npm run test -- navigation` checks the three links, `lang`, title, `aria-current`, destination `h1` focus, and back/forward behavior;
+- `npm run check:boundaries` passes the allowed graph and its negative fixture;
+- `npm run verify` runs the full Phase 1 gate.
+
+Expected evidence: production build succeeds, a component test sees exactly 5 starter records and 4 unique fox IDs, navigation assertions pass, and the positive/negative boundary fixtures prove dependency enforcement.
 
 Estimated effort: 2-3 hours.
 
+Completion notes:
+
+- Node `24.17.0`, npm `11.13.0`, exact application dependencies, and `package-lock.json` define the reproducible toolchain; Vercel-compatible `24.x`/`11.x` engines are explicit.
+- The Zod starter adapter rejects malformed data before the application receives it; tests prove the exact five assignment records and four unique fox IDs.
+- The responsive field-ledger shell exposes Summary, Observations, and AI Worklog through hash links. Route changes synchronize Russian document language, destination title, `aria-current`, focusable `h1`, and browser history.
+- ESLint restrictions cover domain, application, adapter, UI, app-composition, browser-global, persistence, and shared directions. `npm run check:boundaries` checks production source, one allowed fixture, and thirteen forbidden fixtures.
+- GitHub Actions uses the pinned Node version, `npm ci`, and the same `npm run verify` gate used locally.
+- [Phase 1 verification evidence](../../verification/phase-1-walking-skeleton.md) records the final commands and desktop/mobile browser artifacts. Phase 2 behavior was not introduced in that reviewed snapshot.
+- The follow-up [Phase 1 consistency audit](../../verification/phase-1-consistency-audit.md) fixed the skip-link/hash collision, expanded the boundary matrix to one allowed and thirteen forbidden fixtures, corrected muted-text contrast, and bundled runtime license notices.
+- During that audit, later-slice scoring files appeared outside the Phase 1 review scope. The subsequently authorized Phase 2 reconciled and verified that work; the Phase 1 screenshots remain historical evidence for the walking skeleton.
+
 ### Phase 2: Make the explainable ranking interactive
 
-Status: pending
+Status: completed on 2026-07-16; no commit or push performed
 
 Target outcome: the Summary screen identifies the correct leader, explains the arithmetic, and changes leader when prey influence changes.
 
@@ -334,8 +368,8 @@ Files and interfaces:
 
 Implementation steps:
 
-1. Write focused tests for 80/20, 70/30, 0/100, 100/0, empty input, one observation, ties, and input order invariance.
-2. Implement pure report calculation until the tests pass.
+1. Write focused tests for 80/20, exact `7.45 -> 7.5`, 70/30, 0/100, 100/0, empty input, one observation, mathematical fractional ties, equal times, Unicode IDs, tied locations, and input order invariance.
+2. Implement exact fraction comparison and pure report calculation until the tests pass; floating display values never determine ordering.
 3. Render the dominant leader result and ranked rows.
 4. Render exact contribution values and scoring-policy explanation.
 5. Add the live prey-weight control, reset to 20%, and concise score-change announcement.
@@ -343,10 +377,21 @@ Implementation steps:
 Verification commands:
 
 - `npm run test -- scoring` confirms exact domain examples.
-- `npm run test -- summary` confirms `fox_001` at 20% and `fox_003` at 30%.
+- `npm run test -- summary` confirms `fox_001` at 20%, `fox_003` at 30%, and one final polite status for both leader-changing and leader-preserving weight changes.
 - `npm run verify` remains clean.
 
 Estimated effort: 3-4 hours.
+
+Completion notes:
+
+- `scoring-policy.ts` validates the integer 0-100 policy in steps of 5; `suspicion-report.ts` calculates exact fractions and compares them by cross multiplication before any display rounding.
+- Eleven focused domain tests cover the exact 80/20 and 70/30 examples, `7.45 -> 7.5`, literal 0% and 100% boundaries, empty and singleton inputs, mathematical ties, equal times, Unicode IDs, tied locations, input permutations, and invalid policy values.
+- The application view model exposes Russian display values and concise leader-changing or leader-preserving announcements without moving formula logic into React.
+- The Summary route now presents one dominant leader, four report metrics, a semantic ranked list, an exact two-part contribution ledger, synchronized range/number controls, and a 20% reset.
+- Component tests cover the default report, immediate preview, one committed polite announcement, leader-preserving exact input, and reset behavior.
+- The production preview completed the 20% -> 30% reviewer flow: `fox_001` 7.8 changed to `fox_003` 7.9, with exact 4.9 + 3.0 contributions and one live status. The console reported 0 errors and 0 warnings.
+- At 320 px the document and body widths both equal the 320 px viewport; the leader, metrics, ranking, calculation, and controls remain semantically present without horizontal overflow.
+- [Phase 2 verification evidence](../../verification/phase-2-explainable-ranking.md) records commands, interaction results, scope, and screenshots. Phase 3 behavior was not introduced.
 
 ### Phase 3: Connect ranking to evidence and activity
 
@@ -370,6 +415,7 @@ Implementation steps:
 4. Render location activity with counts, percentages, and explicit metric definition.
 5. Apply fox search, location, color, and prey filters to the whole report.
 6. Show `Отчёт по N из M наблюдений` and recover cleanly from a zero-result selection.
+7. Preserve explicit fox selection while it remains in scope; otherwise fall back without moving focus and announce the new inspector state.
 
 Verification commands:
 
@@ -398,14 +444,14 @@ Implementation steps:
 1. Add observation validation shared by manual input and import boundaries.
 2. Implement add with generated immutable ID.
 3. Implement edit with atomic save and unsaved-change handling.
-4. Implement delete with undo and correct unique-fox recalculation.
-5. Persist observations and scoring policy in a versioned envelope.
-6. Add recovery paths for corrupt or unavailable storage.
+4. Implement delete with persistent-until-dismissed-or-next-mutation undo and correct unique-fox recalculation.
+5. Persist observations and scoring policy in the strict v1 envelope.
+6. Add distinct recovery paths for corrupt, unsupported-version, unavailable, and save-failure storage without overwriting recoverable raw data.
 
 Verification commands:
 
 - `npm run test -- mutations persistence` checks add, edit, delete, undo, reload, and recovery.
-- `npm run test:e2e -- manage-observations` demonstrates `obs_005 = 10` making `fox_004` the leader.
+- `npm run test:e2e -- manage-observations` demonstrates add, edit (`obs_005 = 10` makes `fox_004` leader), remove, persistent undo, focus recovery, and reload.
 - `npm run verify` remains clean.
 
 Estimated effort: 4 hours.
@@ -426,7 +472,7 @@ Files and interfaces:
 
 Implementation steps:
 
-1. Parse and validate without mutating current state.
+1. Reject file and pasted UTF-8 input above 2 MiB before parse, then parse and validate without mutating current state.
 2. Display record, fox, location, and time-range preview.
 3. Block confirmation while errors exist and preserve entered content.
 4. Apply a valid replacement atomically after confirmation.
@@ -435,7 +481,7 @@ Implementation steps:
 
 Verification commands:
 
-- `npm run test -- import-export` checks round-trip and atomic failure.
+- `npm run test -- import-export` checks round-trip, field paths rooted at the input array, pre-parse size rejection, oversized valid arrays, and atomic failure.
 - `npm run test:e2e -- import-recovery` checks invalid import, valid confirmation, export, and starter reset.
 - `npm run verify` remains clean.
 
@@ -460,13 +506,15 @@ Implementation steps:
 1. Apply the field-ledger art direction without changing information priority.
 2. Test 1440x900, 768x1024, 390x844, and 320px width.
 3. Convert desktop table and inspector into mobile cards and full-screen sheet.
-4. Check contrast, focus, landmarks, headings, labels, live regions, sorting semantics, and form errors.
+4. Check route title/lang/focus, contrast, focus, landmarks, headings, labels, live regions, desktop/mobile sorting semantics, persistent undo, sheet initial/apply/cancel focus, and form errors.
 5. Remove page overflow, layout shifts, console warnings, and non-functional motion.
+6. Record manual keyboard, 200% zoom, the WCAG text-spacing preset (`1.5`, `2em`, `0.12em`, `0.16em`), portrait/landscape, forced/increased-contrast, reduced-motion, and screen-reader evidence under `docs/verification/`.
 
 Verification commands:
 
 - `npm run test:a11y` returns no targeted axe violations.
 - `npm run test:e2e -- responsive-keyboard` completes the primary flow at desktop and mobile viewports.
+- `docs/verification/accessibility-evidence.md` records the Q-02 manual matrix with date, environment, outcomes, and limitations.
 - `npm run verify` remains clean.
 
 Estimated effort: 4 hours.
@@ -496,6 +544,7 @@ Implementation steps:
 Verification commands:
 
 - `npm run check:public-content` reports no secret patterns or private absolute paths.
+- `npm run check:worklog-links` validates the evidence-reference schema and resolves every public URL or bundled artifact.
 - `npm run test:e2e -- worklog` confirms navigation and 5-7 rendered checkpoints.
 - `npm run verify` remains clean.
 
@@ -511,23 +560,25 @@ Files and interfaces:
 
 - Vercel project connected to `CaseyRybak/Fox-dispatcher`;
 - build and output settings documented in repository artifacts;
-- optional `vercel.json` only when a tested need exists;
+- `vercel.json` with the production response headers required by the accepted CSP/privacy baseline;
 - CI and Vercel status visible on the release revision;
 - `docs/verification/release-evidence.md` containing commands, results, viewport evidence, deployed URL, and known limitations.
 
 Implementation steps:
 
-1. Run the complete local release gate from a clean checkout.
+1. Run the complete local release gate from a clean checkout using the pinned Node/npm versions and `npm ci`.
 2. Review the production bundle for unintended requests, secrets, and debug artifacts.
-3. Connect or confirm Vercel Git integration with Vite build output `dist`.
-4. Validate a preview deployment before production promotion.
-5. Smoke-test the production URL on desktop and mobile, including reload, persistence, score change, observation edit, and AI Worklog.
-6. Record fresh evidence and move this plan to `docs/exec-plans/completed/` only after every acceptance statement is satisfied.
+3. Add and test the Vercel response headers, including self-only resource directives, `connect-src 'none'`, anti-embedding, referrer, MIME-sniffing, and permissions policy.
+4. Connect or confirm Vercel Git integration with Vite build output `dist` and `main` as the production branch.
+5. Validate the release-candidate SHA on a preview deployment.
+6. After direct authorization fast-forwards `main` to the exact previewed commit, require `preview Git SHA == production Git SHA == approved release-candidate SHA`, then smoke-test desktop and mobile, including reload, persistence, score change, observation edit, and AI Worklog. Any different commit returns to preview review.
+7. Record fresh evidence and move this plan to `docs/exec-plans/completed/` only after every acceptance statement is satisfied.
 
 Verification commands and expected evidence:
 
 - `npm run verify` passes from the release revision.
 - `npm run test:e2e` passes against the production build.
+- Header assertions confirm the accepted policy and the browser request allowlist contains no external observation egress.
 - A Playwright smoke run against the Vercel URL completes without console errors.
 - The deployed application sends no observation data to external services.
 
@@ -549,6 +600,7 @@ Completion requires one evidence package that ties repository state to deployed 
 - public-safe AI Worklog evidence;
 - clean `npm run verify` and production browser run;
 - final Vercel production URL and deployment revision.
+- preview and production URLs tied to the same approved Git commit SHA plus deployed header results.
 
 The plan is complete only when these claims are supported by fresh results. Passing unit tests alone is not sufficient for a UI or deployment completion claim.
 
@@ -570,4 +622,4 @@ When all phases finish, the repository should contain:
 
 Execution order is Phase 0 through Phase 8. Later slices depend on the product and architecture contract established in Phase 0, while focused domain tests, UI review, accessibility review, and documentation review can run independently inside an authorized phase once their interfaces are stable.
 
-The next action is **Phase 1: Deliver the walking skeleton**. It is ready but not started. A direct user command is required before beginning it.
+The next authority gate is **Phase 3: Connect ranking to evidence and activity**. Phase 2 is verified in unit, component, architecture, build, and production-browser checks. No commit, push, Vercel connection, or deployment is implied by Phase 2 completion.

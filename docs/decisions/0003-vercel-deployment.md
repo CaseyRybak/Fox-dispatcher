@@ -21,7 +21,7 @@ Planned integration:
 ```text
 GitHub revision
   -> Vercel Git integration
-  -> locked dependency installation
+  -> npm ci with the repository-pinned Node/npm versions
   -> npm run build
   -> dist/
   -> preview or production URL
@@ -31,12 +31,17 @@ Repository settings establish:
 
 - framework preset: Vite, when auto-detected;
 - build command: the repository production build command;
+- install command: `npm ci` against the committed `package-lock.json`;
 - output directory: `dist`;
 - Node version: the version pinned by the repository;
 - preview deployments: review branches or pull requests;
-- production deployment: the agreed production branch.
+- production deployment: `main`.
 
 Top-level navigation uses hash-addressed destinations initially, keeping reloads compatible with a static artifact. A `vercel.json` file becomes part of the repository when a tested routing, header, cache, or build override requires it.
+
+The production baseline requires tested response headers. The intended content policy uses self-hosted scripts, styles, fonts, and images; `connect-src 'none'`, `object-src 'none'`, `base-uri 'none'`, and `frame-ancestors 'none'` prevent runtime observation egress and embedding. `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, and a minimal `Permissions-Policy` are verified with the deployed artifact. Phase 8 may adjust only the resource directives demonstrated necessary by the production bundle.
+
+The release candidate is identified by one Git commit SHA. Vercel builds a preview for that SHA; after the preview smoke passes and a direct user command authorizes publication, `main` is fast-forwarded to that exact commit and Git integration builds production. The release evidence requires `preview Git SHA == production Git SHA == approved release-candidate SHA`, plus both URLs and smoke results. A different merge or build commit is a new candidate and returns to preview review. Preview approval is not treated as production evidence by itself.
 
 ## Release evidence
 
@@ -44,8 +49,9 @@ The Vercel release gate records:
 
 - local `npm run verify` from the deployed revision;
 - production build browser flow;
-- preview URL smoke before production promotion;
+- preview URL smoke before the authorized `main` fast-forward;
 - production URL smoke on desktop and mobile;
+- response-header assertions and an external-request allowlist with no observation egress;
 - score change from 20% to 30%;
 - observation edit and reload persistence;
 - AI Worklog access;
@@ -74,3 +80,4 @@ There is no server runtime to operate. A server host would add configuration wit
 - GitHub revisions can receive preview URLs before production.
 - Production remains a static artifact served from `dist`.
 - Connecting the external Vercel project and publishing branches occur in the authorized deployment phase.
+- Preview and production evidence are tied to an explicit repository SHA.
