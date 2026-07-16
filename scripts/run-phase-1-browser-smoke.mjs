@@ -14,10 +14,18 @@ const playwrightPackageRoot = path.dirname(
 const viteCli = path.join(vitePackageRoot, "bin", "vite.js");
 const playwrightCli = path.join(playwrightPackageRoot, "playwright-cli.js");
 const smokeProgramName = process.argv[2] ?? "phase-1-browser-smoke.js";
+const unexpectedArguments = process.argv.slice(3);
 const allowedSmokePrograms = new Set([
   "phase-1-browser-smoke.js",
   "phase-3-summary-evidence.js",
+  "phase-4-worklog-evidence.js",
 ]);
+
+if (unexpectedArguments.length > 0) {
+  throw new Error(
+    `Unexpected browser smoke arguments: ${unexpectedArguments.join(" ")}. Add a dedicated script instead of reusing the Phase 3 gate.`,
+  );
+}
 
 if (!allowedSmokePrograms.has(smokeProgramName)) {
   throw new Error(`Unknown browser smoke program: ${smokeProgramName}.`);

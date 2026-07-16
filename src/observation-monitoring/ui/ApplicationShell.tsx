@@ -2,6 +2,7 @@ import { type MouseEvent, useRef } from "react";
 
 import type { ObservationSetOverview } from "@/observation-monitoring/application/create-observation-set-overview";
 import type { SummaryViewModel } from "@/observation-monitoring/application/create-summary-view-model";
+import type { PublicWorklogCheckpoint } from "@/observation-monitoring/application/public-worklog";
 import {
   DEFAULT_REPORT_FILTERS,
   hasActiveReportFilters,
@@ -26,6 +27,7 @@ interface ApplicationShellProps {
   readonly onSelectFox: (foxId: string) => void;
   readonly overview: ObservationSetOverview;
   readonly summary: SummaryViewModel;
+  readonly worklog: readonly PublicWorklogCheckpoint[];
 }
 
 const destinations: readonly {
@@ -49,6 +51,7 @@ export function ApplicationShell({
   onSelectFox,
   overview,
   summary,
+  worklog,
 }: ApplicationShellProps) {
   const mainContentRef = useRef<HTMLElement>(null);
 
@@ -124,7 +127,7 @@ export function ApplicationShell({
             scopeLabel={summary.scope.label}
           />
         )}
-        {destination === "worklog" && <WorklogPage />}
+        {destination === "worklog" && <WorklogPage checkpoints={worklog} />}
       </main>
 
       <p
@@ -133,7 +136,9 @@ export function ApplicationShell({
         className="visually-hidden"
         role="status"
       >
-        <span key={announcementRevision}>{announcement}</span>
+        {announcement ? (
+          <span key={announcementRevision}>{announcement}</span>
+        ) : null}
       </p>
 
       <footer className="site-footer">

@@ -178,6 +178,12 @@ async (page) => {
   await page.getByRole("button", { name: "Сбросить фильтры" }).click();
   await assertScope("Отчёт по 5 из 5 наблюдений");
   assert(
+    await page
+      .locator("caption")
+      .evaluate((element) => element === element.ownerDocument.activeElement),
+    "Resetting the empty Observations ledger did not focus its restored scope.",
+  );
+  assert(
     (await page.locator("tbody tr").count()) === 5,
     "The empty Observations ledger did not recover all five records after reset.",
   );

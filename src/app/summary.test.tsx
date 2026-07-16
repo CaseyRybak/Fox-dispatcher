@@ -60,7 +60,7 @@ describe("interactive suspicion summary", () => {
 
     expect(getLeaderHeading("fox_003")).toBeInTheDocument();
     expect(screen.getByText("7,9 из 10")).toBeInTheDocument();
-    expect(screen.getByRole("status")).toHaveTextContent(/^$/);
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
 
     fireEvent.pointerUp(slider);
 
@@ -270,6 +270,8 @@ describe("interactive suspicion summary", () => {
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Сбросить фильтры" }));
+
+    expect(screen.getByText("Отчёт по 5 из 5 наблюдений")).toHaveFocus();
     await user.click(screen.getByRole("link", { name: "Сводка" }));
 
     const location = screen.getByRole("button", {

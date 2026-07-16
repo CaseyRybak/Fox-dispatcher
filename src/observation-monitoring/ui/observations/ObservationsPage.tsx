@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+
 import type { ObservationSetOverview } from "@/observation-monitoring/application/create-observation-set-overview";
 
 interface ObservationsPageProps {
@@ -13,6 +15,16 @@ export function ObservationsPage({
   overview,
   scopeLabel,
 }: ObservationsPageProps) {
+  const scopeLabelRef = useRef<HTMLTableCaptionElement>(null);
+  const restoreFocusAfterResetRef = useRef(false);
+
+  useEffect(() => {
+    if (restoreFocusAfterResetRef.current && overview.observationCount > 0) {
+      restoreFocusAfterResetRef.current = false;
+      scopeLabelRef.current?.focus();
+    }
+  }, [overview.observationCount]);
+
   return (
     <div className="page">
       <header className="page-heading">
@@ -34,7 +46,10 @@ export function ObservationsPage({
           </p>
           <button
             className="primary-action"
-            onClick={onResetFilters}
+            onClick={() => {
+              restoreFocusAfterResetRef.current = true;
+              onResetFilters();
+            }}
             type="button"
           >
             Сбросить фильтры
@@ -43,7 +58,9 @@ export function ObservationsPage({
       ) : (
         <div className="table-frame">
           <table>
-            <caption>{scopeLabel}</caption>
+            <caption ref={scopeLabelRef} tabIndex={-1}>
+              {scopeLabel}
+            </caption>
             <thead>
               <tr>
                 <th scope="col">Время</th>

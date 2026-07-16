@@ -37,3 +37,6 @@ jobs:
 
       - name: Verify Phase 3 production-browser flow
         run: npm run test:e2e
+
+      - name: Verify public AI Worklog
+        run: npm run test:e2e:worklog

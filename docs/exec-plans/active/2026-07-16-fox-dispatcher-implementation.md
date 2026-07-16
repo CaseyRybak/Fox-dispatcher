@@ -1,10 +1,10 @@
 # Fox Dispatcher: implementation outcome
 
-Status: Phases 0-3 and the Phase 3 consistency hardening are complete; Phase 4 is pending
+Status: Phases 0-4 are complete; Phase 5 is the next pending slice
 
 Deployment target: Vercel
 
-Current gate: wait for a direct Phase 4 command to publish the real AI Worklog and reviewer README
+Current gate: wait for a direct Phase 5 command before adding observation management
 
 Authority boundary: phases, commits, and pushes wait for separate direct user commands
 
@@ -79,9 +79,11 @@ If `obs_005.suspicion_level` changes from 3 to 10 under the default 80/20 policy
 
 ### Current repository state
 
-Phase 0 materialized the repository map, product specification, interface specification, architecture, and three accepted decision records in `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Phase 1 added the verified package/toolchain, bounded-context source tree, validated assignment fixture, responsive application shell, import-boundary enforcement, tests, CI, and browser evidence. Phase 2 added exact scoring and ordering, an application Summary query, the leader/ranking/contribution interface, synchronized policy controls, and production-preview evidence. Phases 1 and 2 were published together on `main` in `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`; Phase 3 was later published in `9834af5b48705cbf00d8207877c6880a7e6e10f5`, which is the current `HEAD == origin/main` baseline for this follow-up.
+Phase 0 materialized the repository map, product specification, interface specification, architecture, and three accepted decision records in `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Phase 1 added the verified package/toolchain, bounded-context source tree, validated assignment fixture, responsive application shell, import-boundary enforcement, tests, CI, and browser evidence. Phase 2 added exact scoring and ordering, an application Summary query, the leader/ranking/contribution interface, synchronized policy controls, and production-preview evidence. Phases 1 and 2 were published together on `main` in `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`; Phase 3 was later published in `9834af5b48705cbf00d8207877c6880a7e6e10f5`. During this final audit the repository advanced concurrently to `1b2bb24e049a0fc9aca4704ef288400a97bec4ec` (`HEAD == origin/main`), publishing the consistency hardening and plan rebaseline without a commit or push command from this audit agent.
 
-The Phase 3 consistency-hardening follow-up adds complete ranking facts, persistent live status, cross-route zero-state recovery, stronger evidence/filter tests, safer browser-runner cleanup, CI coverage for the production-browser gate, and corrected delivery-state documentation. External Vercel project configuration remains a later outcome.
+The published Phase 3 consistency hardening adds complete ranking facts, persistent live status, cross-route zero-state recovery, stronger evidence/filter tests, safer browser-runner cleanup, CI coverage for the production-browser gate, and corrected delivery-state documentation. Final working-tree corrections preserve focus after Observations reset, reject misleading extra browser-runner arguments, and state the fresh-browser limitation precisely. External Vercel project configuration remains a later outcome.
+
+Phase 4 replaces the Worklog placeholder with 6 structured public-safe checkpoints and 12 evidence links pinned to published revisions. A strict adapter boundary, privacy scan, Git-object link validation, focused tests, production-browser flow, and responsive screenshots protect the public artifact. The new reviewer README explains the scenario, formula, stack, local start, AI tools, checks, limitations, repository link, and pending Phase 7 deployment without relying on chat history.
 
 After a direct user review against the original MOX brief, the remaining sequence was rebalanced on 2026-07-16. Mandatory Worklog/README work moved from Phase 7 to Phase 4, observation management became a proportionate should-have Phase 5, targeted quality remained Phase 6, Vercel submission moved to Phase 7, and import/export plus advanced recovery became optional Phase 8. This rebaseline changes priorities and ownership only; it does not claim that any pending phase was implemented.
 
@@ -406,7 +408,7 @@ Completion notes:
 
 ### Phase 3: Connect ranking to evidence and activity
 
-Status: completed on 2026-07-16 and published in `9834af5`; consistency hardening complete
+Status: completed on 2026-07-16 and published in `9834af5`; consistency hardening published in `1b2bb24`; final audit corrections verified in the working tree
 
 Target outcome: a reviewer can move from the leader to raw evidence and understand where observations are concentrated.
 
@@ -444,11 +446,11 @@ Completion notes:
 - Component tests cover explicit selection through policy recalculation, filter fallback without focus movement, atomic scope announcements, zero results, full reset, and next/previous/scope-label focus recovery after chip removal.
 - The Summary uses the canonical zero-result copy, one atomic polite announcement per accepted filter command, and an opaque sticky header that keeps scrolled mobile evidence legible.
 - `npm run test:e2e` runs the production build through the repository-local official Playwright CLI. It verifies keyboard fox selection, selection preservation at 30%, each filter type, a four-filter combination, chip focus, empty/reset behavior, location-driven scope, the scoped Observations ledger, 320 px overflow, and zero browser errors.
-- [Phase 3 evidence](../../verification/phase-3-evidence-and-activity.md) records the focused, full, browser, and visual results. Phase 4 was not started.
+- [Phase 3 evidence](../../verification/phase-3-evidence-and-activity.md) records the focused, full, browser, and visual results. Phase 4 had not started at the Phase 3 acceptance gate.
 
 ### Phase 4: Publish the real AI Worklog and reviewer README
 
-Status: pending; next authorized slice
+Status: completed and verified on 2026-07-16
 
 Target outcome: the two mandatory communication artifacts already describe the real AI-first process before optional product depth continues.
 
@@ -475,16 +477,26 @@ Verification commands and expected evidence:
 - `npm run check:public-content` reports no secret-like values, private absolute paths, or transcript dumps.
 - `npm run check:worklog-links` validates the checkpoint schema and every evidence reference available at the current published revision.
 - `npm run test -- worklog` proves 5-7 entries and the required fields.
-- `npm run test:e2e -- worklog` confirms navigation, rendered checkpoints, and accessible evidence links in the production build.
+- `npm run test:e2e:worklog` confirms navigation, rendered checkpoints, and accessible evidence links in the production build.
 - `npm run verify` remains clean.
 
 Estimated effort: 2-3 hours.
 
 First checkpoint: the placeholder is replaced by 5-7 schema-valid public-safe checkpoints, and README lets a reviewer run and understand the current product without chat history.
 
+Completion notes:
+
+- `docs/ai-worklog/public-checkpoints.json` contains 6 factual checkpoints and 12 public GitHub evidence links pinned to commits from Phases 0-3.
+- `adapters/public-worklog/public-worklog.ts` enforces strict fields, 5-7 entries, unique IDs, pinned URLs, and private-path/credential rejection before freezing accepted values.
+- The Worklog timeline separates AI contribution, human decision, resulting change, verification, and descriptive evidence links in semantic articles.
+- `README.md` gives the reviewer an honest current-state handoff; the Vercel URL remains explicitly pending until Phase 7.
+- `check:public-content` scans the two public artifacts, while `check:worklog-links` validates the schema and resolves every commit/path pair through local Git objects.
+- Focused tests cover valid/invalid public data and UI semantics. `test:e2e:worklog` covers route focus, 6 checkpoints, 12 pinned links, public text, 320 px overflow, screenshots, and zero browser errors.
+- [Phase 4 evidence](../../verification/phase-4-ai-worklog-and-readme.md) records the commands, artifacts, and remaining deployment boundary.
+
 ### Phase 5: Add proportionate observation management
 
-Status: pending; should-have enhancement after Phase 4
+Status: pending; next authorized should-have slice
 
 Target outcome: a reviewer can add, edit, delete, undo, reset, and reload observations while every report section recalculates from one accepted state.
 
@@ -510,7 +522,7 @@ The add command consumes an injected `ObservationIdGenerator`. Production create
 Verification commands and expected evidence:
 
 - `npm run test -- mutations persistence` checks add, edit, delete, undo, starter reset, valid reload, and safe invalid-storage fallback.
-- `npm run test:e2e -- manage-observations` demonstrates that editing `obs_005.suspicion_level` to 10 makes `fox_004` the 8.0 leader, then covers remove, undo, focus recovery, and reload.
+- `npm run test:e2e:manage-observations` demonstrates that editing `obs_005.suspicion_level` to 10 makes `fox_004` the 8.0 leader, then covers remove, undo, focus recovery, and reload.
 - `npm run verify` remains clean.
 
 Estimated effort: 3-4 hours.
@@ -540,7 +552,7 @@ Implementation steps:
 Verification commands and expected evidence:
 
 - `npm run test:a11y` returns no targeted violations for implemented destinations and dialogs.
-- `npm run test:e2e -- responsive-keyboard` completes the primary flow at desktop and mobile viewports.
+- `npm run test:e2e:responsive-keyboard` completes the primary flow at desktop and mobile viewports.
 - `docs/verification/accessibility-evidence.md` records Q-02 results and limitations.
 - `npm run verify` remains clean.
 
@@ -602,7 +614,7 @@ Implementation steps:
 Verification commands and expected evidence:
 
 - `npm run test -- import-export` checks size, schema, field paths, round-trip, and atomic failure.
-- `npm run test:e2e -- import-recovery` checks invalid import, valid confirmation, export, and recovery.
+- `npm run test:e2e:import-recovery` checks invalid import, valid confirmation, export, and recovery.
 - `npm run verify` remains clean.
 
 Estimated effort: 3 hours if separately authorized.
@@ -645,6 +657,6 @@ Optional Phase 8 may add atomic JSON import/export and advanced recovery after t
 
 ## Execution handoff
 
-Required execution order is Phase 0 through Phase 7. Phase 4 now closes the mandatory Worklog/README gap before the Should-have observation-management enhancement in Phase 5. Phase 6 verifies the implemented journey, and Phase 7 deploys and closes the MOX submission. Phase 8 is a separate optional extension, not a release dependency.
+Required execution order is Phase 0 through Phase 7. Phase 4 has closed the mandatory Worklog/README gap before the should-have observation-management enhancement in Phase 5. Phase 6 verifies the implemented journey, and Phase 7 deploys and closes the MOX submission. Phase 8 is a separate optional extension, not a release dependency.
 
-The next authority gate is **Phase 4: Publish the real AI Worklog and reviewer README**. Its first verification checkpoint is 5-7 schema-valid public-safe entries plus a README that explains the current product without chat history. Phase 3 is published in `9834af5`, and its consistency hardening is complete. No Phase 4 implementation, Vercel connection, or deployment begins without a separate direct command.
+The next authority gate is **Phase 5: Add proportionate observation management**. Its first verification checkpoint is an application-level mutation transition with fixed-ID tests before any editor UI is added. Phase 4 and the remaining Phase 3 final-audit corrections are complete and verified. No Phase 5 implementation, Vercel connection, or deployment begins without a separate direct command.

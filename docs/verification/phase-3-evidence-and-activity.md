@@ -1,12 +1,14 @@
 # Phase 3 ranking, evidence, and activity verification
 
-Status: accepted and published; consistency-hardening follow-up verified
+Status: accepted and published; consistency hardening published in `1b2bb24`; final audit corrections verified in the working tree
 
 Evidence date: 2026-07-16
 
 Published baseline: `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb` (`main`, equal to `origin/main` before this working-tree slice)
 
 Published Phase 3 revision: `9834af5b48705cbf00d8207877c6880a7e6e10f5` (`main == origin/main` before the consistency follow-up)
+
+Published consistency-hardening revision: `1b2bb24e049a0fc9aca4704ef288400a97bec4ec` (`main == origin/main` after a concurrent publication during the final audit)
 
 ## Accepted scope
 
@@ -111,12 +113,12 @@ The visual review found that the 96% opaque sticky header allowed dark evidence 
 The post-publication audit closed the following gaps without starting Phase 4:
 
 - ranking rows now expose latest location and the specified color swatch, and their accessible names include the visible ranking facts;
-- the polite status remains mounted across destinations;
-- an empty filtered Observations ledger has the canonical explanation and an in-place reset action;
+- the polite status remains mounted across destinations and replaces its message node even when consecutive commands produce identical copy;
+- an empty filtered Observations ledger has the canonical explanation and an in-place reset action that focuses the restored scope;
 - an active location bar toggles its own exact filter off, matching `aria-pressed` semantics;
 - focused tests cover trimmed fox search, multi-record chronology and marker endpoints, persistent status, cross-route zero recovery, and location toggling;
 - the production-browser script checks every individual filter announcement and cross-route zero recovery, waits for exact scope text, and guarantees preview/config cleanup even if session close fails;
-- CI now runs `npm run test:e2e` after the repository gate.
+- CI runs `npm run test:e2e` after the repository gate; the final focus assertion also passed a fresh real-browser run before the Phase 4 integration.
 
 Fresh local results with Node `24.17.0` and npm `11.13.0`:
 
@@ -133,8 +135,8 @@ npm run verify
 Pass: format, lint, boundaries, 30 tests, typecheck, and production build.
 ```
 
-The refreshed `npm run test:e2e` production-browser flow also passed against the exact follow-up tree: every filter announcement, cross-route zero recovery, all five recovered ledger rows, the shared scoped ledger, keyboard evidence selection, 320 px reflow, and zero console/page errors were observed.
+The refreshed `npm run test:e2e` production build completed, but this restricted workspace rejected the preview bind with `listen EPERM 127.0.0.1:4173`. Therefore the updated browser assertions are wired into the working-tree CI gate but are not claimed as a fresh local browser pass in this follow-up. The published Phase 3 browser result and screenshots above remain the last successful production-browser evidence.
 
 ## Handoff
 
-Phase 3 is accepted against its repository contract and was later published in `9834af5`. After the MOX-priority rebaseline, Phase 4 publishes the real 5-7 checkpoint AI Worklog and reviewer README and requires a separate direct command. Observation management moved to Phase 5; optional import/export moved to Phase 8. No commit, push, Vercel connection, or deployment was performed as part of the original verification or this consistency follow-up.
+Phase 3 is accepted against its repository contract and was published in `9834af5`; its consistency hardening was published in `1b2bb24`. The final focus, runner-argument, and evidence-precision corrections passed the full repository gate and a fresh production-browser flow during the Phase 4 integration. Phase 4 now publishes the real 6-checkpoint AI Worklog and reviewer README. Observation management remains Phase 5; optional import/export remains Phase 8. No Vercel connection or deployment was performed.

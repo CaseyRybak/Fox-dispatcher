@@ -6,7 +6,7 @@ Audit date: 2026-07-16
 
 Baseline revision: `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb` (`HEAD == origin/main` before documentation changes)
 
-Publication follow-up: Phase 3 and this audit were later published on `main` in `9834af5b48705cbf00d8207877c6880a7e6e10f5`. The baseline and command results below remain the historical evidence from before that publication.
+Publication follow-up: Phase 3 and this audit were later published on `main` in `9834af5b48705cbf00d8207877c6880a7e6e10f5`; the later consistency hardening and delivery rebaseline were published concurrently during the final audit in `1b2bb24e049a0fc9aca4704ef288400a97bec4ec`. The baseline and command results below remain the historical evidence from before those publications.
 
 ## Scope
 
@@ -78,4 +78,4 @@ The Phase 3 application test now uses plain domain fixtures instead of a concret
 
 The documentation set is sufficient to implement the remaining product without chat history: scoring, field semantics, validation, state/recovery behavior, UI copy and focus contracts, dependency boundaries, release topology, and phase-specific evidence are all assigned. The remaining uncertainty is primarily execution evidence, not product intent.
 
-Phase 3 is published in `9834af5`. Its focused logic, full repository gate, production-browser status/focus flow, narrow reflow, and later consistency hardening are recorded in [Phase 3 evidence](phase-3-evidence-and-activity.md). The rebalanced Phase 4 publishes the mandatory Worklog and README and remains behind a direct user command.
+Phase 3 is published in `9834af5`, and its consistency hardening is published in `1b2bb24`. Its focused logic, full repository gate, production-browser status/focus flow, narrow reflow, and final audit corrections are recorded in [Phase 3 evidence](phase-3-evidence-and-activity.md). The rebalanced Phase 4 publishes the mandatory Worklog and README and remains behind a direct user command.

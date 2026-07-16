@@ -1,0 +1,134 @@
+[
+  {
+    "id": "scope-and-contract",
+    "stage": "01 · Постановка задачи",
+    "date": "2026-07-16",
+    "goal": "Превратить тестовое задание про лесные наблюдения в небольшой интерактивный продукт с понятным результатом.",
+    "aiContribution": "AI разложил исходное задание на проверяемые ответы интерфейса, интерактивные сценарии, данные и критерии сдачи.",
+    "humanDecision": "Выбран сценарий «Лисий диспетчер», локальная обработка стартового JSON и Vercel как целевая площадка публикации.",
+    "change": "Требования, ограничения полей и приёмочные примеры стали продуктовой спецификацией внутри репозитория.",
+    "verification": "Контракт-аудит связал каждое обязательное требование с будущим интерфейсом и способом проверки.",
+    "evidence": [
+      {
+        "label": "Продуктовая спецификация",
+        "kind": "specification",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/cbaf165bda86ab629b30ed19f226d81af14ed35e/docs/product-specs/fox-dispatcher.md"
+      },
+      {
+        "label": "Аудит продуктового контракта",
+        "kind": "verification",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb/docs/verification/phase-0-contract-audit.md"
+      }
+    ]
+  },
+  {
+    "id": "agent-first-architecture",
+    "stage": "02 · Архитектура и контекст",
+    "date": "2026-07-16",
+    "goal": "Сделать так, чтобы решения и намерения можно было восстановить из репозитория без истории чата.",
+    "aiContribution": "AI предложил карту bounded context, слои hexagonal architecture и репозиторные артефакты для планов, решений и доказательств.",
+    "humanDecision": "Принята одна предметная область observation-monitoring и прогрессивное раскрытие контекста через карты AGENTS.md, спецификации и decision records.",
+    "change": "Репозиторий получил явные границы domain, application, adapters и UI, а также проверяемое направление зависимостей.",
+    "verification": "Архитектурный контракт закреплён в документе и позже стал исполняемой проверкой импортов в общем repository gate.",
+    "evidence": [
+      {
+        "label": "Архитектура приложения",
+        "kind": "architecture",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/cbaf165bda86ab629b30ed19f226d81af14ed35e/ARCHITECTURE.md"
+      },
+      {
+        "label": "План реализации",
+        "kind": "plan",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/cbaf165bda86ab629b30ed19f226d81af14ed35e/docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md"
+      }
+    ]
+  },
+  {
+    "id": "explainable-scoring",
+    "stage": "03 · Объяснимая логика",
+    "date": "2026-07-16",
+    "goal": "Рассчитать подозрительность только из доступных полей и показать пользователю точную причину результата.",
+    "aiContribution": "AI сравнил варианты агрегации, формализовал взвешенный индекс и подготовил граничные, tie-break и rounding-примеры.",
+    "humanDecision": "В индекс входят только средняя suspicion_level и доля записей с добычей; число наблюдений остаётся доказательным контекстом, а не скрытым штрафом.",
+    "change": "Появились чистый расчёт 80/20, управляемый вес добычи, детерминированный рейтинг и разложение вклада каждого признака.",
+    "verification": "Тесты подтвердили fox_001 с индексом 7,8 при 20% и смену лидера на fox_003 при 30% влияния добычи.",
+    "evidence": [
+      {
+        "label": "Решение об индексе",
+        "kind": "decision",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/cbaf165bda86ab629b30ed19f226d81af14ed35e/docs/decisions/0001-explainable-scoring.md"
+      },
+      {
+        "label": "Тесты расчёта",
+        "kind": "test",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb/src/observation-monitoring/domain/scoring.test.ts"
+      }
+    ]
+  },
+  {
+    "id": "interactive-summary",
+    "stage": "04 · Интерактивный интерфейс",
+    "date": "2026-07-16",
+    "goal": "Дать смотрителю за минуту увидеть лидера, основные локации и эффект изменения параметра.",
+    "aiContribution": "AI собрал информационную иерархию сводки, варианты responsive-композиции и сценарий изменения веса добычи.",
+    "humanDecision": "Главным результатом сделаны лидер и объяснение расчёта, а управление весом оставлено рядом с результатом без автоматического изменения исходных данных.",
+    "change": "Появилась адаптивная сводка с метриками, рейтингом, арифметикой вклада и синхронными slider/number контролами.",
+    "verification": "Компонентные и production-preview проверки подтвердили пересчёт 20% → 30%, фокус, live status и отсутствие переполнения на 320 px.",
+    "evidence": [
+      {
+        "label": "Проверка объяснимого рейтинга",
+        "kind": "verification",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb/docs/verification/phase-2-explainable-ranking.md"
+      },
+      {
+        "label": "Мобильная сводка",
+        "kind": "screenshot",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb/output/playwright/phase-2/mobile-summary-320px.png"
+      }
+    ]
+  },
+  {
+    "id": "evidence-and-filters",
+    "stage": "05 · Доказательства и активность",
+    "date": "2026-07-16",
+    "goal": "Связать рейтинг с исходными записями и дать исследовать одну и ту же выборку на всех экранах.",
+    "aiContribution": "AI предложил единый report scope, фильтры, выбранную лису, временную ленту доказательств и автоматизированный браузерный маршрут.",
+    "humanDecision": "Наблюдения не трактуются как маршрут или новое поведение лисы; интерфейс показывает только фактические записи, время, место, цвет, добычу и оценку.",
+    "change": "Фильтры, рейтинг, карточка доказательств, активность локаций и таблица наблюдений начали пересчитываться из одной области данных.",
+    "verification": "Focused-тесты и Playwright проверили все типы фильтров, 3 из 5 записей Северной поляны, keyboard selection и 320 px reflow без browser errors.",
+    "evidence": [
+      {
+        "label": "Проверка доказательств и активности",
+        "kind": "verification",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/9834af5b48705cbf00d8207877c6880a7e6e10f5/docs/verification/phase-3-evidence-and-activity.md"
+      },
+      {
+        "label": "Выборка Северной поляны",
+        "kind": "screenshot",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/9834af5b48705cbf00d8207877c6880a7e6e10f5/output/playwright/phase-3/north-clearing-scope.png"
+      }
+    ]
+  },
+  {
+    "id": "brief-audit-and-replan",
+    "stage": "06 · Самопроверка и приоритеты",
+    "date": "2026-07-16",
+    "goal": "Повторно сверить продукт с заданием MOX и не потратить время на необязательную сложность раньше обязательной сдачи.",
+    "aiContribution": "AI провёл gap-анализ, нашёл незаполненный Worklog, отсутствие reviewer README и несколько слабых мест доступности в уже готовом сценарии.",
+    "humanDecision": "AI Worklog и README перенесены в обязательную фазу 4; редактирование оставлено следующим улучшением, а import/export — отдельным optional-срезом.",
+    "change": "План стал ориентирован на требования MOX, а интерфейс получил устойчивый live status, восстановление пустой выборки и более полные факты рейтинга.",
+    "verification": "Repository gate, focused tests и production-browser flow подтвердили hardening; обновлённый план явно удерживает фазу 5 за отдельной командой.",
+    "evidence": [
+      {
+        "label": "Пересобранный план фаз",
+        "kind": "plan",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/1b2bb24e049a0fc9aca4704ef288400a97bec4ec/docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md"
+      },
+      {
+        "label": "Hardening фазы 3",
+        "kind": "verification",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/1b2bb24e049a0fc9aca4704ef288400a97bec4ec/docs/verification/phase-3-evidence-and-activity.md"
+      }
+    ]
+  }
+]

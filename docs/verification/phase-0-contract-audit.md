@@ -60,7 +60,7 @@ These are not missing Phase 0 deliverables:
 - application scaffold, `package.json`, lockfile, runtime code, and tests were Phase 1-owned; concurrent uncommitted versions present at audit time were not Phase 0 evidence and were later reviewed separately;
 - domain-level `src/observation-monitoring/AGENTS.md` — created with the source tree;
 - README and public AI Worklog data — Phase 4;
-- `vercel.json`, Vercel connection, screenshots, accessibility report, and production URL — Phases 6 and 8;
+- screenshots and the accessibility report — Phase 6; `vercel.json`, Vercel connection, and the production URL — Phase 7;
 - moving the active plan to `completed/` — only after the full release gate.
 
 ## Fresh verification

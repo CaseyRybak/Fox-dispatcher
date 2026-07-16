@@ -12,6 +12,7 @@ import {
   DEFAULT_REPORT_FILTERS,
   type ReportFilters,
 } from "@/observation-monitoring/application/report-scope";
+import { publicWorklog } from "@/observation-monitoring/adapters/public-worklog/public-worklog";
 import { starterObservations } from "@/observation-monitoring/adapters/starter-data/starter-observations";
 import {
   ApplicationShell,
@@ -164,6 +165,7 @@ export function App() {
       onSelectFox={selectFox}
       overview={overview}
       summary={summaryViewModel}
+      worklog={publicWorklog}
     />
   );
 }
