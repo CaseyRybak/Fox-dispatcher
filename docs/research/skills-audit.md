@@ -48,7 +48,7 @@ SkillsMP рассматривается как каталог. Источник�
 
 ### Адаптированные Superpowers
 
-Установлены `writing-plans`, `subagent-driven-development`, `verification-before-completion`, `test-driven-development`, `requesting-code-review`, `receiving-code-review` и `writing-skills`. Project-local версии сохраняют методику upstream и заменяют полный diff, вывод окружения, автоматическую установку зависимостей и директивный язык на короткие позитивные workflows с минимальным контекстом.
+Установлены `brainstorming`, `writing-plans`, `subagent-driven-development`, `verification-before-completion`, `test-driven-development`, `requesting-code-review`, `receiving-code-review` и `writing-skills`. Project-local версии сохраняют методику upstream и заменяют browser companion, полный diff, вывод окружения, автоматическую установку зависимостей и директивный язык на короткие позитивные workflows с минимальным контекстом.
 
 ### Дополнительные скиллы
 
@@ -78,7 +78,6 @@ SkillsMP рассматривается как каталог. Источник�
 
 ### Superpowers: не брать сейчас
 
-- `brainstorming`: исходный сценарий уже определён; текущая версия добавляет локальный browser companion/server и лишнюю поверхность исполнения.
 - `executing-plans`: дублирует основной subagent-driven процесс.
 - `finishing-a-development-branch`: понадобится только на этапе сдачи.
 - `using-superpowers`: мета-слой без проектной ценности.
@@ -129,7 +128,7 @@ SkillsMP рассматривается как каталог. Источник�
 Минимальный комплект для Fox Dispatcher:
 
 1. `frontend-design` — уже установлен.
-2. Адаптированные `writing-plans`, `subagent-driven-development`, `verification-before-completion`, `test-driven-development`, `requesting-code-review`, `receiving-code-review`, `writing-skills`.
+2. Адаптированные `brainstorming`, `writing-plans`, `subagent-driven-development`, `verification-before-completion`, `test-driven-development`, `requesting-code-review`, `receiving-code-review`, `writing-skills`.
 3. `accessibility`.
 4. `react-best-practices`.
 5. `best-practices` как узкий security-review reference.

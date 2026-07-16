@@ -1,0 +1,4 @@
+interface:
+  display_name: "Brainstorming"
+  short_description: "Shape ideas into repository specifications"
+  default_prompt: "Use $brainstorming to explore this idea and materialize the approved design in the repository."
