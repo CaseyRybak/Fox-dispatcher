@@ -43,3 +43,6 @@ jobs:
 
       - name: Verify public AI Worklog
         run: npm run test:e2e:worklog
+
+      - name: Verify Phase 5 observation management
+        run: npm run test:e2e:manage-observations

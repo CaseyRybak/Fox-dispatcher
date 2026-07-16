@@ -6,7 +6,7 @@
 
 Phase 3 is published on `main` in `9834af5`; its consistency hardening was published in `1b2bb24`, and the final focus and runner-guard corrections were published with Phase 4 in `699d457`. One report scope connects filters, ranking, selected-fox evidence, location activity, recent observations, and the read-only observation ledger. Production-browser evidence covers keyboard selection, policy recalculation, every filter type, combined scope, deterministic chip focus, the zero state, cross-route scope, and 320 px reflow.
 
-Phase 4 is complete and published in `699d457`. Phase 5 is complete in the working tree: application commands validate and mutate one authoritative observation set; browser adapters generate secure IDs and persist a strict version-1 envelope; the Observations UI adds editing, deletion, undo, starter reset, status, and focus recovery. Phase 6 is the next pending targeted responsive/accessibility slice, Phase 7 deploys the MOX submission, and Phase 8 import/export plus advanced recovery are optional stretch work.
+Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6d`: application commands validate and mutate one authoritative observation set; browser adapters generate secure IDs and persist a strict version-1 envelope; the Observations UI adds editing, deletion, undo, starter reset, status, and focus recovery. The current uncommitted audit follow-up hardens strict runtime validation, safe editor targeting, deterministic ledger sorting, mutation focus, and live feedback. Phase 6 is the next pending targeted responsive/accessibility slice, Phase 7 deploys the MOX submission, and Phase 8 import/export plus advanced recovery are optional stretch work.
 
 ## Entry points
 
@@ -46,6 +46,6 @@ Phase 4 is complete and published in `699d457`. Phase 5 is complete in the worki
 - [Phase 3 evidence](../../docs/verification/phase-3-evidence-and-activity.md) records focused tests, the full gate, reproducible production-browser flow, console result, and desktop/mobile visual artifacts.
 - Worklog schema/component tests, `check:public-content`, `check:worklog-links`, and `test:e2e:worklog` prove Phase 4 public safety, traceability, navigation, focus, and 320 px reflow.
 - [Phase 4 evidence](../../docs/verification/phase-4-ai-worklog-and-readme.md) records the exact acceptance results and limitations.
-- Mutation/persistence unit tests and component tests prove add/edit validation, immutable IDs, report recalculation, unique-fox updates, undo, reset, strict restore, and memory-only failure behavior.
+- `npm run test:run -- manage-observations mutations persistence` proves add/edit validation, immutable IDs, report recalculation, unique-fox updates, undo/dismissal, reset, strict restore, unusual-ID safety, and memory-only failure behavior.
 - `test:e2e:manage-observations` proves the exact `obs_005 -> 10 -> fox_004 = 8.0` journey, delete focus recovery, undo, reload, 320 px reflow, and zero browser errors.
 - [Phase 5 evidence](../../docs/verification/phase-5-observation-management.md) records Phase 5 acceptance and the remaining Phase 6 mobile-table refinement.

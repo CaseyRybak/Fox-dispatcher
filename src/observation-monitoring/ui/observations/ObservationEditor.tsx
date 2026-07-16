@@ -1,7 +1,9 @@
 import {
   type FormEvent,
   type KeyboardEvent,
+  type MouseEvent,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -70,9 +72,7 @@ export function ObservationEditor({
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const errorSummaryRef = useRef<HTMLDivElement>(null);
   const continueEditingRef = useRef<HTMLButtonElement>(null);
-  const headingId = initialObservation
-    ? `edit-${initialObservation.id}-title`
-    : "new-observation-title";
+  const headingId = useId();
   const title = initialObservation
     ? `Изменить наблюдение ${initialObservation.id}`
     : "Новое наблюдение";
@@ -131,6 +131,14 @@ export function ObservationEditor({
     }
   }
 
+  function focusInvalidField(
+    event: MouseEvent<HTMLAnchorElement>,
+    field: string,
+  ) {
+    event.preventDefault();
+    document.getElementById(`observation-${field}`)?.focus();
+  }
+
   const errorEntries = Object.entries(fieldErrors);
 
   return (
@@ -164,7 +172,12 @@ export function ObservationEditor({
             <ul>
               {errorEntries.map(([field, message]) => (
                 <li key={field}>
-                  <a href={`#observation-${field}`}>{message}</a>
+                  <a
+                    href={`#observation-${field}`}
+                    onClick={(event) => focusInvalidField(event, field)}
+                  >
+                    {message}
+                  </a>
                 </li>
               ))}
             </ul>
@@ -250,7 +263,13 @@ export function ObservationEditor({
           />
         </EditorField>
 
-        <fieldset className="editor-field editor-field--prey">
+        <fieldset
+          aria-describedby={describedBy("hasPrey", fieldErrors.hasPrey)}
+          aria-invalid={Boolean(fieldErrors.hasPrey)}
+          className="editor-field editor-field--prey"
+          id="observation-hasPrey"
+          tabIndex={-1}
+        >
           <legend>Добыча</legend>
           <p className="field-hint" id="observation-hasPrey-hint">
             Была ли лиса замечена с добычей.
@@ -279,6 +298,11 @@ export function ObservationEditor({
               Нет
             </label>
           </div>
+          {fieldErrors.hasPrey && (
+            <p className="field-error" id="observation-hasPrey-error">
+              {fieldErrors.hasPrey}
+            </p>
+          )}
         </fieldset>
 
         <EditorField
@@ -369,7 +393,10 @@ export function ObservationEditor({
           <div className="inline-confirmation__actions">
             <button
               className="secondary-action"
-              onClick={() => setConfirmDiscard(false)}
+              onClick={() => {
+                setConfirmDiscard(false);
+                firstFieldRef.current?.focus();
+              }}
               ref={continueEditingRef}
               type="button"
             >

@@ -1358,6 +1358,19 @@ th {
   text-transform: uppercase;
 }
 
+th > button {
+  min-height: 40px;
+  margin: -10px -12px;
+  padding: 10px 12px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
 tbody tr:last-child td {
   border-bottom: 0;
 }
@@ -1396,6 +1409,24 @@ tbody tr:last-child td {
   border: 1px solid var(--ledger-line);
   border-radius: 8px;
   background: var(--surface-paper);
+}
+
+.global-data-status {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+  margin-bottom: 22px;
+  padding: 10px 14px;
+  border: 1px solid var(--ledger-line);
+  border-radius: 8px;
+  color: var(--moss-muted);
+  background: var(--surface-paper);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.global-data-status p {
+  margin: 0;
 }
 
 .data-management-bar p,

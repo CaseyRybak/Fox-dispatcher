@@ -12,7 +12,7 @@ The durable product contract lives in [docs/product-specs/fox-dispatcher.md](doc
 - Phase 3 was published on `main` in `9834af5`: application report filtering, selected evidence, location activity, recent observations, deterministic chip focus, and shared Summary/Observations scope passed focused, full, production-browser, and narrow-reflow gates. Its consistency hardening and rebalanced plan were published in `1b2bb24`; the remaining final-audit corrections were published with Phase 4 in `699d457`.
 - [Phase 3 evidence](docs/verification/phase-3-evidence-and-activity.md) is the report-interaction acceptance record.
 - Phase 4 is complete and published in `699d457`: a Zod boundary parses the structured public Worklog, the composition root injects it into the UI, public-content/link checks protect the bundle, and the reviewer README describes the current product honestly.
-- Phase 5 is complete in the working tree: atomic observation commands, injected ID generation, delete/undo/reset, and strict browser persistence feed the existing report path from one authoritative state.
+- Phase 5 was published in `0021c6d`: atomic observation commands, injected ID generation, delete/undo/reset, and strict browser persistence feed the existing report path from one authoritative state. Current uncommitted audit corrections harden its validation, UI targeting, feedback, and verification without changing those boundaries.
 - The remaining core order is Phase 6 targeted quality and Phase 7 Vercel submission. Phase 8 import/export and advanced recovery are optional extensions.
 
 Sections below use **implemented** for published behavior and focused-tested working-tree follow-ups, and **planned** for later ports, commands, adapters, public content, and deployment policy.
@@ -173,7 +173,7 @@ The implemented storage envelope is:
 
 The stable key is `fox-dispatcher.dashboard`; the envelope, not the key name, carries the schema version. Phase 5 parses version `1`, validated observations and policy, and a UTC ISO 8601 `updatedAt`. Missing or invalid storage falls back explicitly without overwriting the current in-memory session; unavailable or failed saves expose an honest memory-only status. Raw-value copying, future-version recovery, and the extended failure matrix belong only to optional Phase 8.
 
-File and pasted imports are rejected above 2 MiB of UTF-8 before `JSON.parse`, then checked against the 1000-record and field limits. `ObservationImportParser` returns a preview or field paths rooted at the input array, such as `[2].suspicion_level`; it never mutates application state.
+Optional Phase 8 file and pasted imports will be rejected above 2 MiB of UTF-8 before `JSON.parse`, then checked against the 1000-record and field limits. Its planned `ObservationImportParser` returns a preview or field paths rooted at the input array, such as `[2].suspicion_level`; it never mutates application state.
 
 ### UI
 
@@ -190,7 +190,7 @@ The composition root owns the accepted observation array and scoring policy, del
 ## Data flow
 
 ```text
-starter/persisted/imported data
+starter/persisted data (plus optional Phase 8 imported data)
         │ parse and validate
         v
 application state ── commands ──> accepted next state ──> persistence

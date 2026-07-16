@@ -31,6 +31,7 @@ interface ApplicationShellProps {
     draft: ObservationDraft,
   ) => ObservationMutationResult;
   readonly onDeleteObservation: (observationId: string) => void;
+  readonly onDismissUndo: () => void;
   readonly onEditObservation: (
     observationId: string,
     draft: ObservationDraft,
@@ -65,6 +66,7 @@ export function ApplicationShell({
   lastDeletion,
   onAddObservation,
   onDeleteObservation,
+  onDismissUndo,
   onEditObservation,
   onFiltersChange,
   onPreyWeightChange,
@@ -132,6 +134,12 @@ export function ApplicationShell({
         ref={mainContentRef}
         tabIndex={-1}
       >
+        {destination !== "observations" && (
+          <section aria-label="Состояние данных" className="global-data-status">
+            <span className="data-management-bar__signal" aria-hidden="true" />
+            <p>{persistenceMessage}</p>
+          </section>
+        )}
         {destination === "summary" && (
           <SummaryPage
             filterOptions={filterOptions}
@@ -149,6 +157,7 @@ export function ApplicationShell({
             lastDeletion={lastDeletion}
             onAdd={onAddObservation}
             onDelete={onDeleteObservation}
+            onDismissUndo={onDismissUndo}
             onEdit={onEditObservation}
             onResetFilters={() => onFiltersChange(DEFAULT_REPORT_FILTERS)}
             onResetStarter={onResetStarter}

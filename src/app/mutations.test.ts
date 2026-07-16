@@ -48,7 +48,13 @@ describe("observation management", () => {
   it("rejects invalid input and id generation without changing the set", () => {
     const invalid = addObservation(
       starterObservations,
-      { ...draft, foxId: " ", suspicionLevel: 11, time: "25:10" },
+      {
+        ...draft,
+        foxId: " ",
+        hasPrey: "yes" as unknown as boolean,
+        suspicionLevel: 11,
+        time: "25:10",
+      },
       { create: () => fixedId },
     );
     const collision = addObservation(starterObservations, draft, {
@@ -64,6 +70,7 @@ describe("observation management", () => {
       ok: false,
       fieldErrors: {
         foxId: expect.any(String),
+        hasPrey: expect.any(String),
         suspicionLevel: expect.any(String),
         time: expect.any(String),
       },
@@ -90,6 +97,33 @@ describe("observation management", () => {
       ok: false,
       formError:
         "В журнале уже 1000 наблюдений. Удалите запись перед добавлением.",
+    });
+  });
+
+  it("rejects wrong runtime field types without throwing", () => {
+    const invalidDraft = {
+      ...draft,
+      color: null,
+      foxId: 42,
+      location: undefined,
+    } as unknown as ObservationDraft;
+
+    expect(() =>
+      addObservation(starterObservations, invalidDraft, {
+        create: () => fixedId,
+      }),
+    ).not.toThrow();
+    expect(
+      addObservation(starterObservations, invalidDraft, {
+        create: () => fixedId,
+      }),
+    ).toMatchObject({
+      fieldErrors: {
+        color: expect.any(String),
+        foxId: expect.any(String),
+        location: expect.any(String),
+      },
+      ok: false,
     });
   });
 

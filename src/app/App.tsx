@@ -116,6 +116,9 @@ export function App() {
     revision: 0,
   });
   const persistenceBlockedRef = useRef(bootstrap.persistenceBlocked);
+  const pendingPolicyPersistenceWarningRef = useRef<string | undefined>(
+    undefined,
+  );
   const committedWeightRef = useRef(
     bootstrap.dashboard.scoringPolicy.preyWeightPercent,
   );
@@ -164,7 +167,8 @@ export function App() {
       scoringPolicy: { preyWeightPercent: nextPreyWeightPercent },
     };
     setDashboard(nextDashboard);
-    persistDashboard(nextDashboard);
+    pendingPolicyPersistenceWarningRef.current =
+      persistDashboard(nextDashboard);
   }
 
   function commitPreyWeight(nextPreyWeightPercent: number) {
@@ -178,8 +182,10 @@ export function App() {
         totalObservationCount: dashboard.observations.length,
       },
     );
+    const persistenceWarning = pendingPolicyPersistenceWarningRef.current;
+    pendingPolicyPersistenceWarningRef.current = undefined;
     announce(
-      createPolicyAnnouncement(committedLeaderRef.current, committedViewModel),
+      `${createPolicyAnnouncement(committedLeaderRef.current, committedViewModel)}${persistenceWarning ? ` ${persistenceWarning}` : ""}`,
     );
     committedWeightRef.current = nextPreyWeightPercent;
     committedLeaderRef.current = committedViewModel.leader?.foxId;
@@ -223,7 +229,7 @@ export function App() {
     if (result.ok) {
       acceptObservationSet(
         result.observations,
-        `Наблюдение ${result.observationId} добавлено. Отчёт пересчитан.`,
+        `Наблюдение ${result.observationId} добавлено.`,
       );
     }
     return result;
@@ -238,7 +244,7 @@ export function App() {
     if (result.ok) {
       acceptObservationSet(
         result.observations,
-        `Наблюдение ${observationId} обновлено. Отчёт пересчитан.`,
+        `Наблюдение ${observationId} сохранено.`,
       );
     }
     return result;
@@ -266,7 +272,7 @@ export function App() {
     setLastDeletion(undefined);
     acceptObservationSet(
       restored,
-      `Удаление ${observationId} отменено. Отчёт пересчитан.`,
+      `Удаление ${observationId} отменено.`,
       false,
     );
   }
@@ -281,7 +287,7 @@ export function App() {
     );
     acceptObservationSet(
       resetObservations(dashboard.observations, starterObservations),
-      "Восстановлены 5 стартовых наблюдений. Отчёт пересчитан.",
+      "Восстановлены 5 стартовых наблюдений.",
     );
   }
 
@@ -305,26 +311,36 @@ export function App() {
 
     const nextDashboard = { ...dashboard, observations };
     setDashboard(nextDashboard);
-    persistDashboard(nextDashboard);
+    const persistenceWarning = persistDashboard(nextDashboard);
     setSelectedFoxId(nextViewModel.selectedFox?.foxId);
     committedLeaderRef.current = nextViewModel.leader?.foxId;
     if (clearUndo) setLastDeletion(undefined);
-    announce(message);
+    announce(
+      createObservationMutationAnnouncement(
+        message,
+        selectedFoxId,
+        nextViewModel,
+        persistenceWarning,
+      ),
+    );
   }
 
   function persistDashboard(state: PersistedDashboardState) {
-    if (persistenceBlockedRef.current) return;
+    if (persistenceBlockedRef.current) {
+      return "Изменения остаются только в памяти.";
+    }
 
     const result = dashboardStateStore.save(state);
     if (result.status === "saved") {
       setPersistenceMessage("Сохранено в этом браузере");
-      return;
+      return undefined;
     }
 
     persistenceBlockedRef.current = true;
     setPersistenceMessage(
       "Не удалось сохранить — изменения останутся до закрытия страницы",
     );
+    return "Не удалось сохранить: изменения остаются только в памяти.";
   }
 
   function selectFox(foxId: string) {
@@ -349,6 +365,7 @@ export function App() {
       lastDeletion={lastDeletion}
       onAddObservation={addDraft}
       onDeleteObservation={removeObservation}
+      onDismissUndo={() => setLastDeletion(undefined)}
       onEditObservation={editDraft}
       onFiltersChange={changeReportFilters}
       onPreyWeightChange={changePreyWeight}
@@ -362,6 +379,26 @@ export function App() {
       worklog={publicWorklog}
     />
   );
+}
+
+function createObservationMutationAnnouncement(
+  message: string,
+  previousSelectedFoxId: string | undefined,
+  viewModel: ReturnType<typeof createSummaryViewModel>,
+  persistenceWarning: string | undefined,
+) {
+  const leaderResult = viewModel.leader
+    ? `Теперь лидирует ${viewModel.leader.foxId}, ${viewModel.leader.scoreLabel}.`
+    : "В текущей выборке нет лидера.";
+  const nextSelectedFoxId = viewModel.selectedFox?.foxId;
+  const selectionResult =
+    previousSelectedFoxId !== nextSelectedFoxId && nextSelectedFoxId
+      ? ` Выбрана лиса ${nextSelectedFoxId}.`
+      : previousSelectedFoxId && !nextSelectedFoxId
+        ? ` Лиса ${previousSelectedFoxId} больше не входит в выборку.`
+        : "";
+
+  return `${message} ${leaderResult}${selectionResult}${persistenceWarning ? ` ${persistenceWarning}` : ""}`;
 }
 
 function createFilterAnnouncement(

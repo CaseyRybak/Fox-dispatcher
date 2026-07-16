@@ -67,7 +67,9 @@ export function createBrowserDashboardStateStore(
         typeof candidate === "object" &&
         candidate !== null &&
         "schemaVersion" in candidate &&
-        candidate.schemaVersion !== 1
+        typeof candidate.schemaVersion === "number" &&
+        Number.isInteger(candidate.schemaVersion) &&
+        candidate.schemaVersion > 1
       ) {
         return { status: "unsupported-version" };
       }

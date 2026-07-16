@@ -73,7 +73,18 @@ async (page) => {
 
   await page.getByRole("link", { name: "Наблюдения", exact: true }).click();
   await page.getByRole("button", { name: "Отменить удаление obs_005" }).click();
-  await page.getByRole("button", { name: "Изменить obs_005" }).waitFor();
+  const restoredAction = page.getByRole("button", { name: "Изменить obs_005" });
+  await restoredAction.waitFor();
+  assert(
+    await restoredAction.evaluate(
+      (element) => element === element.ownerDocument.activeElement,
+    ),
+    "Restored observation action did not regain focus after undo.",
+  );
+  await page
+    .getByRole("status")
+    .getByText(/Удаление obs_005 отменено\./)
+    .waitFor();
   await page.reload();
   await page.getByRole("button", { name: "Изменить obs_005" }).click();
   assert(

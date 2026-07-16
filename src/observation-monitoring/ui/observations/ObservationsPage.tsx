@@ -22,6 +22,7 @@ interface ObservationsPageProps {
   ) => ObservationMutationResult;
   readonly onResetFilters: () => void;
   readonly onResetStarter: () => void;
+  readonly onDismissUndo: () => void;
   readonly onUndoDelete: () => void;
   readonly overview: ObservationSetOverview;
   readonly persistenceMessage: string;
@@ -32,12 +33,25 @@ type EditorState =
   | { readonly mode: "add" }
   | { readonly mode: "edit"; readonly observation: ObservationListItem };
 
+type ObservationSortField =
+  "color" | "foxId" | "hasPrey" | "location" | "suspicionLevel" | "time";
+
+interface ObservationSort {
+  readonly direction: "ascending" | "descending";
+  readonly field: ObservationSortField;
+}
+
+type PendingFocus =
+  | { readonly kind: "add" }
+  | { readonly id: string; readonly kind: "observation" };
+
 export function ObservationsPage({
   hasActiveFilters,
   lastDeletion,
   onAdd,
   onDelete,
   onEdit,
+  onDismissUndo,
   onResetFilters,
   onResetStarter,
   onUndoDelete,
@@ -47,11 +61,16 @@ export function ObservationsPage({
 }: ObservationsPageProps) {
   const [editor, setEditor] = useState<EditorState>();
   const [confirmReset, setConfirmReset] = useState(false);
+  const [sort, setSort] = useState<ObservationSort>({
+    direction: "descending",
+    field: "time",
+  });
   const scopeLabelRef = useRef<HTMLTableCaptionElement>(null);
   const addButtonRef = useRef<HTMLButtonElement>(null);
+  const resetButtonRef = useRef<HTMLButtonElement>(null);
   const resetCancelRef = useRef<HTMLButtonElement>(null);
   const restoreFocusAfterResetRef = useRef(false);
-  const focusAfterRenderRef = useRef<string | undefined>(undefined);
+  const focusAfterRenderRef = useRef<PendingFocus | undefined>(undefined);
 
   const locationSuggestions = useMemo(
     () =>
@@ -64,25 +83,38 @@ export function ObservationsPage({
     () => [...new Set(overview.observations.map(({ color }) => color))].sort(),
     [overview.observations],
   );
+  const sortedObservations = useMemo(
+    () =>
+      [...overview.observations].sort((left, right) =>
+        compareRows(left, right, sort),
+      ),
+    [overview.observations, sort],
+  );
 
   useEffect(() => {
-    if (restoreFocusAfterResetRef.current && overview.observationCount > 0) {
-      restoreFocusAfterResetRef.current = false;
-      scopeLabelRef.current?.focus();
-    }
-  }, [overview.observationCount]);
+    if (!restoreFocusAfterResetRef.current) return;
+    restoreFocusAfterResetRef.current = false;
+    (scopeLabelRef.current ?? addButtonRef.current)?.focus();
+  }, [overview.observationCount, overview.observations]);
 
   useEffect(() => {
-    const targetId = focusAfterRenderRef.current;
-    if (!targetId) return;
+    const target = focusAfterRenderRef.current;
+    if (!target) return;
     focusAfterRenderRef.current = undefined;
-    if (targetId === "__add__") {
+    if (target.kind === "add") {
       addButtonRef.current?.focus();
       return;
     }
-    document
-      .querySelector<HTMLButtonElement>(`[data-edit-observation="${targetId}"]`)
-      ?.focus();
+    const editButton = [
+      ...document.querySelectorAll<HTMLButtonElement>(
+        "[data-edit-observation]",
+      ),
+    ].find(({ dataset }) => dataset.editObservation === target.id);
+    if (editButton && !editButton.disabled) {
+      editButton.focus();
+      return;
+    }
+    focusEditorOrLedger();
   }, [editor, overview.observations]);
 
   useEffect(() => {
@@ -92,7 +124,9 @@ export function ObservationsPage({
   function closeEditor() {
     const editedId =
       editor?.mode === "edit" ? editor.observation.id : undefined;
-    focusAfterRenderRef.current = editedId ?? "__add__";
+    focusAfterRenderRef.current = editedId
+      ? { id: editedId, kind: "observation" }
+      : { kind: "add" };
     setEditor(undefined);
   }
 
@@ -106,17 +140,38 @@ export function ObservationsPage({
   }
 
   function deleteRecord(observationId: string) {
-    const currentIndex = overview.observations.findIndex(
+    const currentIndex = sortedObservations.findIndex(
       ({ id }) => id === observationId,
     );
     const focusTarget =
-      overview.observations[currentIndex + 1]?.id ??
-      overview.observations[currentIndex - 1]?.id;
-    focusAfterRenderRef.current = focusTarget;
+      sortedObservations[currentIndex + 1]?.id ??
+      sortedObservations[currentIndex - 1]?.id;
+    focusAfterRenderRef.current = focusTarget
+      ? { id: focusTarget, kind: "observation" }
+      : { kind: "add" };
     if (editor?.mode === "edit" && editor.observation.id === observationId) {
       setEditor(undefined);
     }
     onDelete(observationId);
+  }
+
+  function changeSort(field: ObservationSortField) {
+    setSort((current) => ({
+      direction:
+        current.field === field && current.direction === "ascending"
+          ? "descending"
+          : "ascending",
+      field,
+    }));
+  }
+
+  function focusEditorOrLedger() {
+    const editorFirstField = document.getElementById("observation-foxId");
+    if (editorFirstField instanceof HTMLElement) {
+      editorFirstField.focus();
+      return;
+    }
+    (scopeLabelRef.current ?? addButtonRef.current)?.focus();
   }
 
   return (
@@ -132,6 +187,7 @@ export function ObservationsPage({
         </div>
         <button
           className="primary-action"
+          disabled={Boolean(editor)}
           onClick={() => setEditor({ mode: "add" })}
           ref={addButtonRef}
           type="button"
@@ -148,6 +204,7 @@ export function ObservationsPage({
         <button
           className="text-action"
           onClick={() => setConfirmReset(true)}
+          ref={resetButtonRef}
           type="button"
         >
           Вернуть стартовые данные
@@ -167,7 +224,10 @@ export function ObservationsPage({
           <div className="inline-confirmation__actions">
             <button
               className="secondary-action"
-              onClick={() => setConfirmReset(false)}
+              onClick={() => {
+                setConfirmReset(false);
+                resetButtonRef.current?.focus();
+              }}
               ref={resetCancelRef}
               type="button"
             >
@@ -178,6 +238,7 @@ export function ObservationsPage({
               onClick={() => {
                 setEditor(undefined);
                 setConfirmReset(false);
+                restoreFocusAfterResetRef.current = true;
                 onResetStarter();
               }}
               type="button"
@@ -191,13 +252,31 @@ export function ObservationsPage({
       {lastDeletion && (
         <aside className="undo-banner">
           <p>Наблюдение {lastDeletion.observation.id} удалено</p>
-          <button
-            className="secondary-action"
-            onClick={onUndoDelete}
-            type="button"
-          >
-            Отменить удаление {lastDeletion.observation.id}
-          </button>
+          <div className="inline-confirmation__actions">
+            <button
+              className="secondary-action"
+              onClick={() => {
+                focusAfterRenderRef.current = {
+                  id: lastDeletion.observation.id,
+                  kind: "observation",
+                };
+                onUndoDelete();
+              }}
+              type="button"
+            >
+              Отменить удаление {lastDeletion.observation.id}
+            </button>
+            <button
+              className="text-action"
+              onClick={() => {
+                focusEditorOrLedger();
+                onDismissUndo();
+              }}
+              type="button"
+            >
+              Закрыть сообщение
+            </button>
+          </div>
         </aside>
       )}
 
@@ -208,6 +287,7 @@ export function ObservationsPage({
             editor.mode === "edit" ? editor.observation : undefined
           }
           locationSuggestions={locationSuggestions}
+          key={editor.mode === "edit" ? editor.observation.id : "__add__"}
           onCancel={closeEditor}
           onDelete={deleteRecord}
           onSave={saveEditor}
@@ -246,18 +326,48 @@ export function ObservationsPage({
             </caption>
             <thead>
               <tr>
-                <th scope="col">Время</th>
+                <SortableHeader
+                  field="time"
+                  label="Время"
+                  onChange={changeSort}
+                  sort={sort}
+                />
                 <th scope="col">Запись</th>
-                <th scope="col">Лиса</th>
-                <th scope="col">Локация</th>
-                <th scope="col">Цвет</th>
-                <th scope="col">Добыча</th>
-                <th scope="col">Оценка</th>
+                <SortableHeader
+                  field="foxId"
+                  label="Лиса"
+                  onChange={changeSort}
+                  sort={sort}
+                />
+                <SortableHeader
+                  field="location"
+                  label="Локация"
+                  onChange={changeSort}
+                  sort={sort}
+                />
+                <SortableHeader
+                  field="color"
+                  label="Цвет"
+                  onChange={changeSort}
+                  sort={sort}
+                />
+                <SortableHeader
+                  field="hasPrey"
+                  label="Добыча"
+                  onChange={changeSort}
+                  sort={sort}
+                />
+                <SortableHeader
+                  field="suspicionLevel"
+                  label="Оценка"
+                  onChange={changeSort}
+                  sort={sort}
+                />
                 <th scope="col">Действия</th>
               </tr>
             </thead>
             <tbody>
-              {overview.observations.map((observation) => (
+              {sortedObservations.map((observation) => (
                 <tr key={observation.id}>
                   <td>
                     <time dateTime={observation.time}>{observation.time}</time>
@@ -274,6 +384,7 @@ export function ObservationsPage({
                         aria-label={`Изменить ${observation.id}`}
                         className="text-action"
                         data-edit-observation={observation.id}
+                        disabled={Boolean(editor)}
                         onClick={() => setEditor({ mode: "edit", observation })}
                         type="button"
                       >
@@ -282,6 +393,7 @@ export function ObservationsPage({
                       <button
                         aria-label={`Удалить ${observation.id}`}
                         className="text-action text-action--danger"
+                        disabled={Boolean(editor)}
                         onClick={() => deleteRecord(observation.id)}
                         type="button"
                       >
@@ -297,4 +409,46 @@ export function ObservationsPage({
       )}
     </div>
   );
+}
+
+function SortableHeader({
+  field,
+  label,
+  onChange,
+  sort,
+}: {
+  readonly field: ObservationSortField;
+  readonly label: string;
+  readonly onChange: (field: ObservationSortField) => void;
+  readonly sort: ObservationSort;
+}) {
+  const current = sort.field === field;
+  return (
+    <th aria-sort={current ? sort.direction : undefined} scope="col">
+      <button onClick={() => onChange(field)} type="button">
+        {label}
+        {current && (
+          <span aria-hidden="true">
+            {sort.direction === "ascending" ? " ↑" : " ↓"}
+          </span>
+        )}
+      </button>
+    </th>
+  );
+}
+
+function compareRows(
+  left: ObservationListItem,
+  right: ObservationListItem,
+  sort: ObservationSort,
+) {
+  const leftValue = left[sort.field];
+  const rightValue = right[sort.field];
+  const primary = leftValue < rightValue ? -1 : leftValue > rightValue ? 1 : 0;
+  const directed = sort.direction === "ascending" ? primary : -primary;
+  return directed || compareText(left.id, right.id);
+}
+
+function compareText(left: string, right: string) {
+  return left < right ? -1 : left > right ? 1 : 0;
 }

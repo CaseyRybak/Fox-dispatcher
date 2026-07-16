@@ -165,10 +165,10 @@ function validateObservationDraft(draft: ObservationDraft):
     } {
   const normalized: ObservationDraft = {
     ...draft,
-    color: draft.color.trim(),
-    foxId: draft.foxId.trim(),
-    location: draft.location.trim(),
-    time: draft.time.trim(),
+    color: normalizeString(draft.color),
+    foxId: normalizeString(draft.foxId),
+    location: normalizeString(draft.location),
+    time: normalizeString(draft.time),
   };
   const fieldErrors: Partial<Record<ObservationDraftField, string>> = {};
 
@@ -180,6 +180,10 @@ function validateObservationDraft(draft: ObservationDraft):
       fieldErrors.foxId = message;
     },
   );
+
+  if (typeof normalized.hasPrey !== "boolean") {
+    fieldErrors.hasPrey = "Выберите, была ли лиса с добычей.";
+  }
   validateRequiredText(
     normalized.location,
     80,
@@ -220,6 +224,10 @@ function validateRequiredText(
   reject: (message: string) => void,
 ) {
   if (value.length === 0 || value.length > maxLength) reject(message);
+}
+
+function normalizeString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
 }
 
 function toObservation(id: string, draft: ObservationDraft): Observation {

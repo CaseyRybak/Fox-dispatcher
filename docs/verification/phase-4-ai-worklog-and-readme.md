@@ -1,6 +1,6 @@
 # Phase 4 AI Worklog and reviewer README verification
 
-Status: accepted and published in `699d457`; consistency corrections are in the current working tree
+Status: accepted and published in `699d457`; consistency corrections were later published with Phase 5 in `0021c6d`
 
 Evidence date: 2026-07-16
 
@@ -94,11 +94,11 @@ Visual artifacts:
 
 ## Handoff
 
-The Worklog and README are published in `699d457`. Phase 7 still owns the public Vercel URL and the final deployed-revision update to README/Worklog. Phase 5 observation management is the next pending slice and requires a separate direct command.
+The Worklog and README are published in `699d457`. Phase 7 still owns the public Vercel URL and the final deployed-revision update to README/Worklog. Phase 5 observation management was subsequently published in `0021c6d`.
 
 ## Consistency follow-up
 
-A fresh audit against published revision `699d457a84d8f3fdc8ff5ae7f0b9d15c5ed0aa9c` found one high-impact reproducibility defect: GitHub Actions used the default shallow checkout while `check:worklog-links` resolves evidence from four earlier revisions. A depth-1 clone reproduced 12 unresolved references; after fetching full history, the same script resolved all 12. The current working tree sets `fetch-depth: 0` and explains why history is required.
+A fresh audit against published revision `699d457a84d8f3fdc8ff5ae7f0b9d15c5ed0aa9c` found one high-impact reproducibility defect: GitHub Actions used the default shallow checkout while `check:worklog-links` resolves evidence from four earlier revisions. A depth-1 clone reproduced 12 unresolved references; after fetching full history, the same script resolved all 12. Revision `0021c6d` sets `fetch-depth: 0` and explains why history is required.
 
 The follow-up also:
 
@@ -133,4 +133,4 @@ npm audit --offline --omit=optional
 Pass: 0 vulnerabilities.
 ```
 
-The production build passed before unrelated concurrent Phase 5 files entered the shared working tree. A final `npm run verify` rerun is currently blocked by formatting/type errors in that separate in-progress slice; the Phase 4 scoped formatting, lint, tests, links, safety checks, and published regression suite remain green. A fresh `test:e2e:worklog` rebuilt the application but could not bind the preview server because this audit sandbox rejects `listen 127.0.0.1:4173` with `EPERM`; the committed browser artifacts were re-inspected, but this follow-up does not claim a new browser execution. No commit or push was performed by this audit.
+During that historical follow-up, the production build passed before unrelated concurrent Phase 5 files entered the shared working tree, while a final `npm run verify` rerun was temporarily blocked by formatting/type errors in that separate in-progress slice. The Phase 4 scoped formatting, lint, tests, links, safety checks, and published regression suite remained green. A fresh `test:e2e:worklog` rebuilt the application but could not bind the preview server because that audit sandbox rejected `listen 127.0.0.1:4173` with `EPERM`; the committed browser artifacts were re-inspected, but the follow-up did not claim a new browser execution. Those corrections were later verified and published in `0021c6d`.
