@@ -23,7 +23,6 @@ import {
 } from "@/observation-monitoring/application/report-scope";
 
 interface SummaryPageProps {
-  readonly announcement: string;
   readonly filterOptions: ReportFilterOptions;
   readonly filters: ReportFilters;
   readonly onFiltersChange: (filters: ReportFilters) => void;
@@ -39,7 +38,6 @@ interface EvidenceSelection {
 }
 
 export function SummaryPage({
-  announcement,
   filterOptions,
   filters,
   onFiltersChange,
@@ -136,8 +134,10 @@ export function SummaryPage({
               {viewModel.metrics.map((metric) => (
                 <div className="metric-ledger__item" key={metric.label}>
                   <dt>{metric.label}</dt>
-                  <dd>{metric.value}</dd>
-                  {metric.detail && <span>{metric.detail}</span>}
+                  <dd>
+                    {metric.value}
+                    {metric.detail && <span>{metric.detail}</span>}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -218,7 +218,10 @@ export function SummaryPage({
               activeLocation={filters.location}
               locations={viewModel.locationActivity}
               onSelectLocation={(location) =>
-                onFiltersChange({ ...filters, location })
+                onFiltersChange({
+                  ...filters,
+                  location: filters.location === location ? "" : location,
+                })
               }
               scopeCount={viewModel.scope.filteredObservationCount}
             />
@@ -226,15 +229,6 @@ export function SummaryPage({
           </div>
         </>
       )}
-
-      <p
-        aria-atomic="true"
-        aria-live="polite"
-        className="visually-hidden"
-        role="status"
-      >
-        {announcement}
-      </p>
     </div>
   );
 }
@@ -464,7 +458,7 @@ function RankingRow({
   return (
     <li className={className}>
       <button
-        aria-label={`Показать доказательства ${assessment.foxId}, индекс ${assessment.scoreLabel}`}
+        aria-label={`Показать доказательства ${assessment.foxId}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча ${assessment.preyRatioLabel}; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.color}; записей ${assessment.observationCount}`}
         aria-pressed={isSelected}
         className="ranking-row__button"
         onClick={() => onSelect(assessment.foxId)}
@@ -475,8 +469,16 @@ function RankingRow({
         </span>
         <span className="ranking-row__identity">
           <strong>{assessment.foxId}</strong>
-          <span>
+          <span className="ranking-row__latest">
+            <span
+              aria-hidden="true"
+              className="color-swatch"
+              data-color={assessment.color}
+            />
             {assessment.color} · {assessment.latestTime}
+          </span>
+          <span className="ranking-row__location">
+            {assessment.latestLocation}
           </span>
         </span>
         <span className="ranking-row__basis">
@@ -716,7 +718,7 @@ function LocationActivity({
           return (
             <li key={activity.location}>
               <button
-                aria-label={`Фильтровать по локации ${activity.location}, ${activity.observationCount} из ${scopeCount}`}
+                aria-label={`Фильтровать по локации ${activity.location}, ${activity.observationCount} из ${scopeCount}, ${activity.percentageLabel}`}
                 aria-pressed={activeLocation === activity.location}
                 onClick={() => onSelectLocation(activity.location)}
                 type="button"

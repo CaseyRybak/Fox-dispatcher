@@ -8,9 +8,19 @@ async (page) => {
   };
   const scopeLabel = () => page.getByText(/Отчёт по \d+ из 5 наблюдений/);
   const assertScope = async (expected) => {
+    await page.getByText(expected, { exact: true }).waitFor();
     assert(
       (await scopeLabel().textContent()) === expected,
       `Expected scope "${expected}", received "${await scopeLabel().textContent()}".`,
+    );
+  };
+  const assertFilterAnnouncement = async (expected) => {
+    const status = page.getByRole("status");
+    const message = await status.textContent();
+
+    assert(
+      message?.startsWith(expected),
+      `Expected filter announcement starting with "${expected}", received "${message}".`,
     );
   };
   const resetFilters = async () => {
@@ -99,11 +109,13 @@ async (page) => {
   const foxSearch = page.getByRole("searchbox", { name: "Найти fox_id" });
   await foxSearch.fill("fox_001");
   await assertScope("Отчёт по 2 из 5 наблюдений");
+  await assertFilterAnnouncement("Фильтры применены: 2 из 5 наблюдений.");
   await resetFilters();
 
   const location = page.getByRole("combobox", { name: "Локация" });
   await location.selectOption("Северная поляна");
   await assertScope("Отчёт по 3 из 5 наблюдений");
+  await assertFilterAnnouncement("Фильтры применены: 3 из 5 наблюдений.");
   assert(
     (await page
       .getByRole("list", { name: "Рейтинг подозрительности" })
@@ -116,10 +128,12 @@ async (page) => {
   const color = page.getByRole("combobox", { name: "Цвет" });
   await color.selectOption("серебристая");
   await assertScope("Отчёт по 1 из 5 наблюдений");
+  await assertFilterAnnouncement("Фильтры применены: 1 из 5 наблюдений.");
   await resetFilters();
 
   await page.getByRole("radio", { name: "Есть" }).click();
   await assertScope("Отчёт по 2 из 5 наблюдений");
+  await assertFilterAnnouncement("Фильтры применены: 2 из 5 наблюдений.");
   await resetFilters();
 
   await foxSearch.fill("fox_001");
@@ -156,8 +170,21 @@ async (page) => {
     ),
     "The zero-result filter moved focus away from its control.",
   );
-  await page.getByRole("button", { name: "Сбросить всё" }).click();
+  await page.getByRole("link", { name: "Наблюдения" }).click();
+  await page.getByRole("heading", { level: 1, name: "Наблюдения" }).waitFor();
+  await page
+    .getByRole("heading", { name: "В этой выборке ничего не найдено" })
+    .waitFor();
+  await page.getByRole("button", { name: "Сбросить фильтры" }).click();
   await assertScope("Отчёт по 5 из 5 наблюдений");
+  assert(
+    (await page.locator("tbody tr").count()) === 5,
+    "The empty Observations ledger did not recover all five records after reset.",
+  );
+  await page.getByRole("link", { name: "Сводка", exact: true }).click();
+  await page
+    .getByRole("heading", { level: 1, name: "Сводка наблюдений" })
+    .waitFor();
 
   await page
     .getByRole("button", {

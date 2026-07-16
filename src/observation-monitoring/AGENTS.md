@@ -4,7 +4,9 @@
 
 ## Current slice
 
-Phase 3 is complete in the working tree. One report scope now connects filters, ranking, selected-fox evidence, location activity, recent observations, and the read-only observation ledger. Production-browser evidence covers keyboard selection, policy recalculation, every filter type, combined scope, deterministic chip focus, the zero state, cross-route scope, and 320 px reflow. Mutation, persistence, import, recovery, and final mobile sheets remain future slices.
+Phase 3 is published on `main` in `9834af5`, and its consistency-hardening follow-up is complete. One report scope connects filters, ranking, selected-fox evidence, location activity, recent observations, and the read-only observation ledger. Production-browser evidence covers keyboard selection, policy recalculation, every filter type, combined scope, deterministic chip focus, the zero state, cross-route scope, and 320 px reflow.
+
+Phase 4 now owns the mandatory public-safe AI Worklog and reviewer README and does not change domain calculations. Phase 5 owns proportionate observation mutation, undo, starter reset, and simple persistence. Phase 6 closes targeted responsive/accessibility evidence, Phase 7 deploys the MOX submission, and Phase 8 import/export plus advanced recovery are optional stretch work.
 
 ## Entry points
 

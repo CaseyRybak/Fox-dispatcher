@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
-import { readFileSync, unlinkSync, writeFileSync } from "node:fs";
+import { readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -164,11 +164,17 @@ try {
   sessionOpened = true;
   await runPlaywright(["--session", session, "run-code", smokeCode]);
 } finally {
-  if (sessionOpened) {
-    await runPlaywright(["--session", session, "close"]);
-  }
-  await stopPreview();
-  if (browserConfig) {
-    unlinkSync(browserConfig);
+  try {
+    if (sessionOpened) {
+      await runPlaywright(["--session", session, "close"]);
+    }
+  } finally {
+    try {
+      await stopPreview();
+    } finally {
+      if (browserConfig) {
+        rmSync(browserConfig, { force: true });
+      }
+    }
   }
 }

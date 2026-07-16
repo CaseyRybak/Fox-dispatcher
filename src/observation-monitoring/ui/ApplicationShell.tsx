@@ -2,9 +2,11 @@ import { type MouseEvent, useRef } from "react";
 
 import type { ObservationSetOverview } from "@/observation-monitoring/application/create-observation-set-overview";
 import type { SummaryViewModel } from "@/observation-monitoring/application/create-summary-view-model";
-import type {
-  ReportFilterOptions,
-  ReportFilters,
+import {
+  DEFAULT_REPORT_FILTERS,
+  hasActiveReportFilters,
+  type ReportFilterOptions,
+  type ReportFilters,
 } from "@/observation-monitoring/application/report-scope";
 import { WorklogPage } from "@/observation-monitoring/ui/ai-worklog/WorklogPage";
 import { ObservationsPage } from "@/observation-monitoring/ui/observations/ObservationsPage";
@@ -14,6 +16,7 @@ export type Destination = "observations" | "summary" | "worklog";
 
 interface ApplicationShellProps {
   readonly announcement: string;
+  readonly announcementRevision: number;
   readonly destination: Destination;
   readonly filterOptions: ReportFilterOptions;
   readonly filters: ReportFilters;
@@ -36,6 +39,7 @@ const destinations: readonly {
 
 export function ApplicationShell({
   announcement,
+  announcementRevision,
   destination,
   filterOptions,
   filters,
@@ -103,7 +107,6 @@ export function ApplicationShell({
       >
         {destination === "summary" && (
           <SummaryPage
-            announcement={announcement}
             filterOptions={filterOptions}
             filters={filters}
             onFiltersChange={onFiltersChange}
@@ -115,12 +118,23 @@ export function ApplicationShell({
         )}
         {destination === "observations" && (
           <ObservationsPage
+            hasActiveFilters={hasActiveReportFilters(filters)}
+            onResetFilters={() => onFiltersChange(DEFAULT_REPORT_FILTERS)}
             overview={overview}
             scopeLabel={summary.scope.label}
           />
         )}
         {destination === "worklog" && <WorklogPage />}
       </main>
+
+      <p
+        aria-atomic="true"
+        aria-live="polite"
+        className="visually-hidden"
+        role="status"
+      >
+        <span key={announcementRevision}>{announcement}</span>
+      </p>
 
       <footer className="site-footer">
         <p>Fox Dispatcher · explainable scoring</p>

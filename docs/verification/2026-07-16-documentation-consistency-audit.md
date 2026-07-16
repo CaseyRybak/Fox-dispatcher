@@ -1,10 +1,12 @@
 # Documentation consistency and implementation-readiness audit
 
-Status: documentation reconciled with the published baseline and completed Phase 3 working tree; no commit or push performed
+Status: historical audit later published with Phase 3 in `9834af5`; no commit or push was performed by the audit itself
 
 Audit date: 2026-07-16
 
 Baseline revision: `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb` (`HEAD == origin/main` before documentation changes)
+
+Publication follow-up: Phase 3 and this audit were later published on `main` in `9834af5b48705cbf00d8207877c6880a7e6e10f5`. The baseline and command results below remain the historical evidence from before that publication.
 
 ## Scope
 
@@ -34,9 +36,9 @@ Historical verification files keep their original baselines and results. Publica
 | DOC-03 | High | Architecture mixed implemented behavior with future commands, adapters, Worklog, and deployment as if all existed. | Added delivery-status semantics and marked current versus planned responsibilities. |
 | DOC-04 | High | Phase 3 and Phase 6 both appeared to own final mobile inspector/filter sheets. | Phase 3 owns stacked narrow reflow; Phase 6 owns bottom navigation and modal mobile sheets. |
 | DOC-05 | Medium | Filter matching and option-source semantics were underspecified. | Defined trimmed case-insensitive fox substring search, case-sensitive domain identity, exact location/color matching, and full-dataset options. |
-| DOC-06 | Medium | Phase 4 did not define generated IDs or a test seam. | Added injected `ObservationIdGenerator`, `obs_<uuid>`, validation, uniqueness, and failure behavior. |
+| DOC-06 | Medium | The original mutation phase did not define generated IDs or a test seam. | Added injected `ObservationIdGenerator`, `obs_<uuid>`, validation, uniqueness, and failure behavior; the rebalanced plan now assigns this to Phase 5. |
 | DOC-07 | Medium | Export lacked a deterministic artifact contract. | Added filename, MIME/encoding, formatting, order, trailing newline, and object-URL cleanup. |
-| DOC-08 | Medium | The planned CSP did not acknowledge current React style attributes used for data-driven bars. | Added a Phase 8 gate to remove them or document and test the minimum style-attribute exception. |
+| DOC-08 | Medium | The planned CSP did not acknowledge current React style attributes used for data-driven bars. | Added a deployment gate to remove them or document and test the minimum style-attribute exception; the rebalanced plan assigns it to Phase 7. |
 | DOC-09 | Medium | Planned `test:e2e` commands looked like available evidence although no such package script existed yet. | Phase 3 now provides `npm run test:e2e`; later phase commands remain planned deliverables. |
 | DOC-10 | Low | The bounded-context map stopped at Phase 2 entry points. | Added report scope, evidence, activity, shared observation scope, and focused verification links. |
 
@@ -44,8 +46,10 @@ Historical verification files keep their original baselines and results. Publica
 
 The following are incomplete by phase design rather than current documentation defects:
 
-- `README.md` and public `docs/ai-worklog/public-checkpoints.json` belong to Phase 7;
-- `vercel.json`, deployed headers, preview/production URLs, and release evidence belong to Phase 8;
+- `README.md` and public `docs/ai-worklog/public-checkpoints.json` belong to Phase 4 after the MOX-priority rebaseline;
+- `vercel.json`, deployed headers, production URL, and release evidence belong to Phase 7;
+- observation management and baseline persistence belong to should-have Phase 5;
+- import/export and advanced recovery belong to optional Phase 8;
 - complete keyboard, zoom, text-spacing, contrast-preference, axe, and screen-reader evidence belongs to Phase 6/release verification;
 - moving the active plan to `docs/exec-plans/completed/` happens only after the full release gate.
 
@@ -74,4 +78,4 @@ The Phase 3 application test now uses plain domain fixtures instead of a concret
 
 The documentation set is sufficient to implement the remaining product without chat history: scoring, field semantics, validation, state/recovery behavior, UI copy and focus contracts, dependency boundaries, release topology, and phase-specific evidence are all assigned. The remaining uncertainty is primarily execution evidence, not product intent.
 
-Phase 3 is complete in the working tree. Its focused logic, full repository gate, production-browser status/focus flow, and narrow reflow are recorded in [Phase 3 evidence](phase-3-evidence-and-activity.md). Phase 4 remains behind a direct user command.
+Phase 3 is published in `9834af5`. Its focused logic, full repository gate, production-browser status/focus flow, narrow reflow, and later consistency hardening are recorded in [Phase 3 evidence](phase-3-evidence-and-activity.md). The rebalanced Phase 4 publishes the mandatory Worklog and README and remains behind a direct user command.

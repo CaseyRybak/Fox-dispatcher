@@ -525,7 +525,8 @@ h3 {
   letter-spacing: -0.04em;
 }
 
-.metric-ledger__item > span {
+.metric-ledger dd > span {
+  display: block;
   margin-top: 5px;
   color: var(--pine-structure);
   font-size: 12px;
@@ -645,6 +646,18 @@ h3 {
 .ranking-row__evidence {
   color: var(--moss-muted);
   font-size: 12px;
+}
+
+.ranking-row__latest {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.ranking-row__location {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .ranking-row__evidence,

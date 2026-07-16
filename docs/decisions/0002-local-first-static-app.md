@@ -1,6 +1,6 @@
 # Decision 0002: Local-first static application
 
-Status: accepted
+Status: accepted with MOX-priority addendum
 
 Date: 2026-07-16
 
@@ -8,7 +8,7 @@ Architecture: [../../ARCHITECTURE.md](../../ARCHITECTURE.md)
 
 ## Context
 
-The assignment evaluates a small interactive prototype over at most five days. The product needs starter data, editing, parameter changes, report recalculation, AI Worklog, and a public demo. It does not request accounts, collaboration, cross-device synchronization, server-side analytics, or an AI inference feature.
+The assignment evaluates a small interactive prototype over at most five days. The required product needs starter data, a changeable parameter or data input, report recalculation, AI Worklog, reviewer documentation, and a public demo. Observation editing and persistence strengthen the prototype; import/export and advanced recovery are not required. It does not request accounts, collaboration, cross-device synchronization, server-side analytics, or an AI inference feature.
 
 A backend would add deployment, security, and failure surfaces without improving the core reviewer journey. A browser-only runtime keeps every relevant state transition inspectable by agents and reproducible in tests.
 
@@ -18,10 +18,10 @@ The first product version is a static React application:
 
 - bundled starter observations provide the first-run state;
 - one authoritative observation array and scoring policy live in application state;
-- a versioned local storage envelope persists accepted changes;
-- JSON import parses and validates before preview and explicit replacement;
-- JSON export contains the full observation array;
-- corrupt or unavailable storage becomes a recoverable application state;
+- a small versioned local storage envelope persists accepted changes when the should-have observation-management slice is included;
+- optional JSON import parses and validates before preview and explicit replacement;
+- optional JSON export contains the full observation array;
+- invalid or unavailable baseline storage has an honest fallback, while raw-value and future-version recovery remain optional;
 - AI Worklog content enters the production bundle from a structured public repository artifact;
 - user observations are processed and stored in the browser.
 
@@ -36,17 +36,17 @@ Planned storage shape:
 }
 ```
 
-The stable key is `fox-dispatcher.dashboard`; the envelope carries the version. Loading returns one of `missing`, `valid`, `corrupt`, `unsupported-version`, or `unavailable`. The envelope is strict: observations and scoring policy reuse their boundary schemas, `schemaVersion` is exactly `1`, `updatedAt` is a UTC ISO 8601 instant produced by `new Date().toISOString()`, and unknown fields are rejected. Version 1 has no implicit migration path.
+The stable key is `fox-dispatcher.dashboard`; the envelope carries the version. Baseline loading returns `missing`, `valid`, `invalid`, or `unavailable`. Observations and scoring policy reuse their boundary schemas, `schemaVersion` is exactly `1`, and `updatedAt` is a UTC ISO 8601 instant. Optional advanced recovery may later distinguish corrupt and unsupported future versions without changing the baseline state boundary silently.
 
 Filters represent a current analysis scope and start cleared on a new browser session. Data reset and scoring-policy reset remain separate actions.
 
-## Boundary behavior
+## Optional import and advanced recovery behavior
 
 Import accepts an observation array only after all records satisfy the product schema. Invalid import preserves the current dataset. Unknown fields are treated as contract errors so data is not discarded silently.
 
 File and pasted input share a 2 MiB UTF-8 limit checked before `JSON.parse`; the validated array remains limited to 1000 records. Oversized input produces a boundary error without mutating application state.
 
-Corrupt and unsupported stored values are not treated as first run. Autosave remains blocked until the user explicitly chooses recovery, and the raw value stays available for copying. An unavailable store or save failure leaves the accepted state in memory and exposes a memory-only status.
+If optional advanced recovery is authorized, corrupt and unsupported stored values are not treated as first run. Autosave remains blocked until the user explicitly chooses recovery, and the raw value stays available for copying. At baseline, invalid or unavailable storage leaves the accepted state in memory, exposes a memory-only status, and offers explicit starter recovery.
 
 The application renders imported strings as text. Runtime content does not require HTML interpretation. Public build review covers accidental external requests, secrets, private paths, and debug artifacts.
 
@@ -68,7 +68,7 @@ The task measures AI-first development process, not the presence of an AI API in
 
 - The production artifact is static and has a small operational footprint.
 - Reviewer edits survive reload in the same browser.
-- Browser storage limitations and recovery states are part of the visible UX.
-- Unknown future storage versions cannot be silently overwritten by starter data.
+- Baseline browser storage limitations are visible without requiring a large recovery workflow.
+- Optional future-version recovery can be added after the MOX submission without blocking it.
 - Cross-device synchronization and accounts remain outside this version.
 - Agents can reproduce the full product locally and in browser automation without external services.

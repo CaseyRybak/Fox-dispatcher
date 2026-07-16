@@ -1,10 +1,12 @@
 # Phase 3 ranking, evidence, and activity verification
 
-Status: complete in the working tree; uncommitted and unpushed
+Status: accepted and published; consistency-hardening follow-up verified
 
 Evidence date: 2026-07-16
 
 Published baseline: `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb` (`main`, equal to `origin/main` before this working-tree slice)
+
+Published Phase 3 revision: `9834af5b48705cbf00d8207877c6880a7e6e10f5` (`main == origin/main` before the consistency follow-up)
 
 ## Accepted scope
 
@@ -86,7 +88,7 @@ The runner discovers an existing Chrome-compatible executable from `PATH` or acc
 
 ## Manual browser and visual evidence
 
-The official Playwright CLI was also used to inspect the accessibility tree and visual result at 1440 px and 320 px. Manual interaction confirmed keyboard selection, filter fallback, exact weight entry, zero recovery, location-driven filtering, and cross-route scope before the reproducible production script encoded the same critical path.
+The official Playwright CLI was also used to inspect the accessibility snapshot and visual result at 1440 px and 320 px. The accessibility snapshot was inspected interactively but was not retained as a standalone text artifact; the visual artifacts below are the durable manual evidence. Manual interaction confirmed keyboard selection, filter fallback, exact weight entry, zero recovery, location-driven filtering, and cross-route scope before the reproducible production script encoded the same critical path.
 
 - [Desktop Summary, 1440 px](../../output/playwright/phase-3/desktop-summary-1440px.png)
 - [Selected `fox_001` evidence strip](../../output/playwright/phase-3/evidence-strip-fox-001.png)
@@ -104,6 +106,35 @@ The visual review found that the 96% opaque sticky header allowed dark evidence 
 }
 ```
 
+## Consistency follow-up
+
+The post-publication audit closed the following gaps without starting Phase 4:
+
+- ranking rows now expose latest location and the specified color swatch, and their accessible names include the visible ranking facts;
+- the polite status remains mounted across destinations;
+- an empty filtered Observations ledger has the canonical explanation and an in-place reset action;
+- an active location bar toggles its own exact filter off, matching `aria-pressed` semantics;
+- focused tests cover trimmed fox search, multi-record chronology and marker endpoints, persistent status, cross-route zero recovery, and location toggling;
+- the production-browser script checks every individual filter announcement and cross-route zero recovery, waits for exact scope text, and guarantees preview/config cleanup even if session close fails;
+- CI now runs `npm run test:e2e` after the repository gate.
+
+Fresh local results with Node `24.17.0` and npm `11.13.0`:
+
+```text
+npm run test -- report-scope summary navigation --run
+Test Files  3 passed (3)
+Tests       15 passed (15)
+
+npm run test:run
+Test Files  6 passed (6)
+Tests       30 passed (30)
+
+npm run verify
+Pass: format, lint, boundaries, 30 tests, typecheck, and production build.
+```
+
+The refreshed `npm run test:e2e` production-browser flow also passed against the exact follow-up tree: every filter announcement, cross-route zero recovery, all five recovered ledger rows, the shared scoped ledger, keyboard evidence selection, 320 px reflow, and zero console/page errors were observed.
+
 ## Handoff
 
-Phase 3 is accepted against its repository contract. Phase 4 is the next pending slice and requires a separate direct command. No commit, push, Vercel connection, or deployment was performed as part of this verification.
+Phase 3 is accepted against its repository contract and was later published in `9834af5`. After the MOX-priority rebaseline, Phase 4 publishes the real 5-7 checkpoint AI Worklog and reviewer README and requires a separate direct command. Observation management moved to Phase 5; optional import/export moved to Phase 8. No commit, push, Vercel connection, or deployment was performed as part of the original verification or this consistency follow-up.

@@ -20,21 +20,21 @@ The original MOX assignment text is not stored in this repository. Therefore the
 
 | Normalized requirement | Acceptance IDs | Canonical contract | Delivery and evidence owner | Audit result |
 |---|---|---|---|---|
-| Public interactive product without setup | P-01 | Product goal and primary scenario; ADR 0003 | Phase 8 preview/production SHA smoke | Covered |
+| Public interactive product without setup | P-01 | Product goal and primary scenario; ADR 0003 | Phase 7 Vercel smoke | Covered |
 | Exact five starter observations | D-01 | Product `Исходные данные` | Phase 1 validated fixture and component test | Covered |
-| Add, edit, remove, undo, and recalculate | D-02 | Product `Управление наблюдениями`; interface editor | Phase 4 mutation tests and full CRUD browser flow | Covered after evidence correction |
-| Local persistence and recovery | D-03, D-06 | Product `Локальное сохранение`; ADR 0002 | Phase 4 strict-envelope/reload/recovery tests | Covered after recovery clarification |
-| Atomic JSON import and full export | D-04, D-06 | Product `JSON import и export`; ADR 0002 | Phase 5 size, schema, atomicity, preview, and round-trip evidence | Covered after pre-parse limit clarification |
-| Four unique foxes and responsive count updates | F-01 | Product summary metrics | Phase 1 fixture plus Phase 4 mutation evidence | Covered |
+| Add, edit, remove, undo, and recalculate | D-02 | Product `Управление наблюдениями`; interface editor | Should-have Phase 5 mutation tests and CRUD browser flow | Covered as enhancement |
+| Local persistence and recovery | D-03, D-06 | Product `Локальное сохранение`; ADR 0002 | Phase 5 baseline reload; optional Phase 8 advanced recovery | Covered by priority |
+| Atomic JSON import and full export | D-04, D-06 | Product `JSON import и export`; ADR 0002 | Optional Phase 8 size, schema, atomicity, preview, and round-trip evidence | Stretch, non-blocking |
+| Four unique foxes and responsive count updates | F-01 | Product summary metrics | Phase 1 fixture plus optional Phase 5 mutation evidence | Covered |
 | Main location is Северная поляна, 3/5, 60% | F-02 | Product summary and location activity | Phase 3 report-scope test and browser evidence | Covered |
 | Only suspicion and prey affect score | F-03, A-01 | Product scoring model; ADR 0001; architecture domain | Phase 1 boundaries plus Phase 2 domain tests | Covered |
 | `fox_001` leads at 20% with 7.8 and explainable contributions | F-04 | Product starter calculation; ADR 0001 | Phase 2 scoring/component tests and screenshot | Covered |
 | `fox_003` leads at 30% with 7.9; `7.45` displays as `7.5` | F-05, D-05 | Product exact-fraction contract; ADR 0001 | Phase 2 rational comparison and decimal half-up tests | Covered after arithmetic correction |
 | Filters define one report scope | I-01 | Product filter scope; interface scope toolbar | Phase 3 scope tests and zero-result browser flow | Covered |
 | Ranking, inspector, evidence, and raw records form one path | I-02, I-03 | Product selected-fox rules; interface inspector/focus contract | Phase 3 selection, fallback, keyboard, and status evidence | Covered after state clarification |
-| AI Worklog has 5-7 public-safe, traceable checkpoints | W-01, W-02 | Product Worklog; architecture public boundary | Phase 7 schema, secret/path scan, link resolution, and browser test | Covered after evidence-link clarification |
+| AI Worklog has 5-7 public-safe, traceable checkpoints | W-01, W-02 | Product Worklog; architecture public boundary | Phase 4 schema, secret/path scan, link resolution, and browser test | Covered after evidence-link clarification |
 | Domain is independent of React/storage and adapters are injected | A-01 | Architecture import matrix and ports | Phase 1 positive and negative `check:boundaries` fixtures | Covered after composition-root clarification |
-| Browser cannot send observation data externally | A-02 | Product NFR; ADR 0003; architecture deployment boundary | Phase 8 CSP/header assertion and request allowlist | Covered after security-baseline clarification |
+| Browser cannot send observation data externally | A-02 | Product NFR; ADR 0003; architecture deployment boundary | Phase 7 header assertion and request allowlist | Covered after security-baseline clarification |
 | Fresh automated, manual accessibility, build, and deployment evidence | Q-01, Q-02 | Interface verification matrix; verification architecture | Phases 1-8, final release evidence | Covered after manual-evidence clarification |
 
 ## Findings resolved by the audit
@@ -59,7 +59,7 @@ These are not missing Phase 0 deliverables:
 
 - application scaffold, `package.json`, lockfile, runtime code, and tests were Phase 1-owned; concurrent uncommitted versions present at audit time were not Phase 0 evidence and were later reviewed separately;
 - domain-level `src/observation-monitoring/AGENTS.md` — created with the source tree;
-- README and public AI Worklog data — Phase 7;
+- README and public AI Worklog data — Phase 4;
 - `vercel.json`, Vercel connection, screenshots, accessibility report, and production URL — Phases 6 and 8;
 - moving the active plan to `completed/` — only after the full release gate.
 

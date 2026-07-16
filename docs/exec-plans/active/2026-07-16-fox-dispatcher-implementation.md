@@ -1,10 +1,10 @@
 # Fox Dispatcher: implementation outcome
 
-Status: Phase 3 complete and verified in the working tree; Phase 1 and Phase 2 published
+Status: Phases 0-3 and the Phase 3 consistency hardening are complete; Phase 4 is pending
 
 Deployment target: Vercel
 
-Current gate: wait for a direct Phase 4 command; current Phase 3 changes remain uncommitted and unpushed
+Current gate: wait for a direct Phase 4 command to publish the real AI Worklog and reviewer README
 
 Authority boundary: phases, commits, and pushes wait for separate direct user commands
 
@@ -24,36 +24,37 @@ The primary reviewer journey should take less than one minute:
 1. Open the application and see 5 observations, 4 unique foxes, the leading location, and the ranking leader.
 2. Select `fox_001` and inspect the exact arithmetic behind its score.
 3. Change prey influence from 20% to 30% and see `fox_003` become the leader.
-4. Edit or add an observation and see every affected report section update.
-5. Open the in-product AI Worklog and inspect real development checkpoints with evidence.
+4. Open the in-product AI Worklog and inspect 5-7 real development checkpoints with evidence.
+5. When the observation-management enhancement is present, edit or add an observation and see every affected report section update.
 
 ## Acceptance evidence
 
 ### Product contract
 
-| ID | Acceptance statement | Required evidence |
-|---|---|---|
-| P-01 | The public product is interactive and usable without setup | A Vercel production URL completes the primary reviewer journey |
-| D-01 | The first run contains exactly the 5 assignment observations | UI count, fixture test, and browser screenshot agree |
-| D-02 | Observations can be added, edited, and removed | Browser flow demonstrates immediate report recalculation |
-| D-03 | User state persists locally | Reload restores observations and scoring policy |
-| D-04 | JSON import is atomic | Invalid import identifies the field and leaves current state unchanged |
-| D-05 | Calculation and report ordering are deterministic | Exact rational tests cover `7.45 -> 7.5`, mathematical ties, equal times, tied locations, Unicode IDs, and input permutations |
-| D-06 | Untrusted import and storage fail safely | Oversized raw input is rejected before parsing; corrupt or future-version storage stays recoverable and is not overwritten automatically |
-| F-01 | The interface answers how many foxes were observed | Starter result is 4; CRUD updates the count |
-| F-02 | The interface identifies the main activity location | Starter result is `Северная поляна`, 3 of 5 observations, 60% |
-| F-03 | The interface names the exact scoring inputs | Only `suspicion_level` and `has_prey` contribute to the score |
-| F-04 | The interface identifies and explains the ranking leader | Starter leader is `fox_001`, score 7.8, with visible contributions |
-| F-05 | Changing a parameter changes the report | At 30% prey influence, `fox_003` leads with 7.9 |
-| I-01 | Filters have a visible calculation scope | The report states `N из M наблюдений` and recalculates from that selection |
-| I-02 | Result, ranking, locations, evidence, and raw observations form one path | Selecting a ranking row updates its evidence inspector without losing context |
-| I-03 | Selection and focus survive dynamic updates predictably | Selected fox fallback, chip removal, dialogs, route changes, and persistent undo have browser focus/status assertions |
-| W-01 | AI Worklog is available inside the product | Main navigation opens 5-7 real, public-safe checkpoints |
-| W-02 | Worklog claims are traceable | Checkpoints link to a plan, decision, commit, test, or screenshot |
-| A-01 | Domain logic is independent of React and storage | Import-boundary checks and unit tests enforce dependency direction |
-| A-02 | The production browser boundary prevents observation egress | Tested CSP uses `connect-src 'none'`; deployed headers and browser requests match the allowlist |
-| Q-01 | Completion claims have fresh evidence | Typecheck, lint, tests, build, accessibility, browser, and deployed smoke evidence are recorded |
-| Q-02 | WCAG-facing manual claims are recorded | Keyboard, 320 px reflow, 200% zoom, text spacing, contrast preferences, and one screen-reader pass have a dated evidence artifact |
+| ID | Priority | Acceptance statement | Required evidence |
+|---|---|---|---|
+| P-01 | Must | The public product is interactive and usable without setup | A Vercel production URL completes the primary reviewer journey |
+| D-01 | Must | The first run contains exactly the 5 assignment observations | UI count, fixture test, and browser screenshot agree |
+| D-02 | Should | Observations can be added, edited, and removed | Browser flow demonstrates immediate report recalculation |
+| D-03 | Should | Accepted observations and scoring policy persist locally | Reload restores the latest valid state; reset restores the starter state |
+| D-04 | Stretch | JSON import is atomic | Invalid import identifies the field and leaves current state unchanged |
+| D-05 | Must | Calculation and report ordering are deterministic | Exact starter examples, rounding, ties, and input permutations pass focused tests |
+| D-06 | Stretch | Untrusted import and advanced storage failures stay recoverable | Size, schema, corrupt-value, future-version, and save-failure tests preserve accepted data |
+| F-01 | Must | The interface answers how many foxes were observed | Starter result is 4; mutation updates the count when Phase 5 is present |
+| F-02 | Must | The interface identifies the main activity location | Starter result is `Северная поляна`, 3 of 5 observations, 60% |
+| F-03 | Must | The interface names the exact scoring inputs | Only `suspicion_level` and `has_prey` contribute to the score |
+| F-04 | Must | The interface identifies and explains the ranking leader | Starter leader is `fox_001`, score 7.8, with visible contributions |
+| F-05 | Must | Changing a parameter changes the report | At 30% prey influence, `fox_003` leads with 7.9 |
+| I-01 | Must | Filters have a visible calculation scope | The report states `N из M наблюдений` and recalculates from that selection |
+| I-02 | Must | Result, ranking, locations, evidence, and raw observations form one path | Selecting a ranking row updates its evidence inspector without losing context |
+| I-03 | Should | Selection and focus survive dynamic updates predictably | Selected fox fallback, chip removal, dialogs, route changes, and undo have browser focus/status assertions |
+| W-01 | Must | AI Worklog is available inside the product | Main navigation opens 5-7 real, public-safe checkpoints |
+| W-02 | Must | Worklog claims are traceable | Checkpoints link to a plan, decision, commit, test, or screenshot |
+| R-01 | Must | Reviewer documentation explains the submission | README records scenario, stack, demo, AI tools, checks, local start, repository, and deployed URL |
+| A-01 | Must | Domain logic is independent of React and storage | Import-boundary checks and unit tests enforce dependency direction |
+| A-02 | Must | The production browser does not send observation data externally | Deployed headers and browser requests match the documented no-egress boundary |
+| Q-01 | Must | Completion claims have fresh evidence | Typecheck, lint, tests, build, browser, and deployed smoke evidence are recorded |
+| Q-02 | Should | Accessibility-facing manual claims are recorded | Keyboard, 320 px reflow, zoom, text spacing, contrast preferences, and screen-reader evidence have dated results |
 
 ### Deterministic starter examples
 
@@ -78,9 +79,11 @@ If `obs_005.suspicion_level` changes from 3 to 10 under the default 80/20 policy
 
 ### Current repository state
 
-Phase 0 materialized the repository map, product specification, interface specification, architecture, and three accepted decision records in `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Phase 1 added the verified package/toolchain, bounded-context source tree, validated assignment fixture, responsive application shell, import-boundary enforcement, tests, CI, and browser evidence. Phase 2 added exact scoring and ordering, an application Summary query, the leader/ranking/contribution interface, synchronized policy controls, and production-preview evidence. Phases 1 and 2, including their verification documents, were published together on `main` in `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`; `HEAD` and `origin/main` point to that revision at this plan update.
+Phase 0 materialized the repository map, product specification, interface specification, architecture, and three accepted decision records in `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Phase 1 added the verified package/toolchain, bounded-context source tree, validated assignment fixture, responsive application shell, import-boundary enforcement, tests, CI, and browser evidence. Phase 2 added exact scoring and ordering, an application Summary query, the leader/ranking/contribution interface, synchronized policy controls, and production-preview evidence. Phases 1 and 2 were published together on `main` in `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`; Phase 3 was later published in `9834af5b48705cbf00d8207877c6880a7e6e10f5`, which is the current `HEAD == origin/main` baseline for this follow-up.
 
-The working tree now contains the completed Phase 3 report filtering, selected-fox/evidence view models, location activity, recent observations, shared Summary/Observations scope, deterministic filter-chip focus, focused tests, a repository-native production e2e gate, and desktop/mobile browser artifacts. It also contains a repository-native Phase 1 browser-smoke command and Node-type alignment corrections. These verified changes remain uncommitted and unpushed. External Vercel project configuration remains a later outcome.
+The Phase 3 consistency-hardening follow-up adds complete ranking facts, persistent live status, cross-route zero-state recovery, stronger evidence/filter tests, safer browser-runner cleanup, CI coverage for the production-browser gate, and corrected delivery-state documentation. External Vercel project configuration remains a later outcome.
+
+After a direct user review against the original MOX brief, the remaining sequence was rebalanced on 2026-07-16. Mandatory Worklog/README work moved from Phase 7 to Phase 4, observation management became a proportionate should-have Phase 5, targeted quality remained Phase 6, Vercel submission moved to Phase 7, and import/export plus advanced recovery became optional Phase 8. This rebaseline changes priorities and ownership only; it does not claim that any pending phase was implemented.
 
 Relevant existing context:
 
@@ -215,22 +218,27 @@ A geographic map is excluded because the data has location names but no coordina
 - semantic desktop table and mobile observation cards;
 - add, edit, delete, and undo flows;
 - search and shared filters;
-- JSON import, full-data export, and starter-data recovery.
+- starter-data recovery;
+- optional JSON import and full-data export only when the stretch slice is authorized.
 
 `AI Worklog` contains 5-7 real checkpoints. Each checkpoint records the problem, AI contribution, human decision, resulting change, and verification evidence. A testing problem is included only after one is actually found.
 
-### 6. Data management is local-first and atomic
+### 6. Data management stays proportionate to the assignment
 
-Starter data is bundled with the application. A versioned local storage envelope holds observations, prey weight, and update time. JSON import follows parse -> validate -> preview -> confirm replacement. An invalid record leaves current state untouched. Export includes the full observation array, independent of filters.
+Starter data is bundled with the application. The core submission already satisfies the assignment's change-and-recalculate requirement through the scoring-policy control. Observation CRUD and simple local persistence are a valuable reviewer enhancement, not a blocker for the mandatory Worklog, README, or deployment outcomes.
 
-Boundary validation covers a 2 MiB UTF-8 pre-parse limit, unique non-empty IDs, trimmed strings, strict booleans, integer suspicion from 0 through 10, real `HH:mm` time, bounded collection size, and a documented policy for unknown fields. The strict v1 storage envelope distinguishes missing, valid, corrupt, unsupported-version, and unavailable states. Corrupt or future-version raw values are not overwritten before an explicit recovery choice; save failure keeps accepted state in memory.
+Phase 5 adds observation validation, add/edit/delete, one-step undo, starter reset, and a small versioned local-storage envelope. It distinguishes missing, valid, invalid, and unavailable storage well enough to preserve the in-memory session and offer starter recovery. Atomic JSON import/export, a 2 MiB pre-parse limit, future-version raw-value recovery, and the full failure matrix move to optional Phase 8.
 
-### 7. Stack and deployment
+### 7. MOX submission essentials precede optional product depth
+
+The real AI Worklog and reviewer README are Phase 4 because they are explicit assignment requirements and enough factual evidence already exists from Phases 0-3. Observation management follows in Phase 5 as a strong enhancement. Targeted responsive/accessibility work is Phase 6, and the public Vercel submission is Phase 7. Phase 8 contains optional import/export and advanced recovery work and does not block the MOX release.
+
+### 8. Stack and deployment
 
 | Concern | Decision |
 |---|---|
 | Application | React, TypeScript, Vite |
-| State | Focused React state through Phase 3; Phase 4 consolidates mutation, undo, recovery, and persistence through a reducer or equivalent application state machine; no external state library initially |
+| State | Focused React state through Phase 4; Phase 5 consolidates mutation, undo, reset, and persistence through a reducer or equivalent application state machine; no external state library initially |
 | Validation | Zod at JSON and persistence boundaries |
 | Styling | One inspectable global stylesheet and global design tokens; split by feature only when it reduces ownership ambiguity |
 | Visualisation | Semantic HTML, CSS, and small inspectable SVG; no chart library |
@@ -241,17 +249,17 @@ Boundary validation covers a 2 MiB UTF-8 pre-parse limit, unique non-empty IDs, 
 | CI | GitHub Actions |
 | Deployment | **Vercel**, connected to the GitHub repository |
 
-Vercel should use `npm ci` with repository-pinned Node/npm versions, run the repository build command, publish `dist`, provide a preview for the release-candidate SHA, and publish production from `main` only after explicit authorization. Vite is statically deployable; Phase 8 adds and tests the response-header configuration required by the CSP and privacy boundary. The initial navigation can use hashes, avoiding an unnecessary SPA fallback.
+Vercel should use `npm ci` with repository-pinned Node/npm versions, run the repository build command, and publish `dist` from `main` only after explicit authorization. Phase 7 adds the minimum response headers and request assertions needed for the documented privacy boundary. The initial navigation can use hashes, avoiding an unnecessary SPA fallback.
 
 Production has no backend, runtime AI API, analytics, or remote font dependency. User observations remain in the browser.
 
-### 8. Accessibility and responsive contract
+### 9. Accessibility and responsive contract
 
-The main journey works at 320 CSS pixels, 200% zoom, and by keyboard. The Russian document title, current hash destination, `h1`, focus, and back/forward behavior remain synchronized. Desktop ranking becomes mobile cards; the desktop detail inspector becomes a full-screen mobile sheet; filters become a mobile sheet with draft/apply/cancel behavior; the page does not acquire horizontal overflow.
+The main journey works at 320 CSS pixels, 200% zoom, and by keyboard. The Russian document title, current hash destination, `h1`, focus, and back/forward behavior remain synchronized. Desktop tables become readable mobile cards where needed, and the page does not acquire horizontal overflow. Full-screen inspector and filter sheets are implemented only if Phase 6 evidence shows the existing stacked layout is not usable.
 
 Controls have visible labels and focus, dialogs manage and restore focus, sorted headers expose their state, validation errors connect to fields through a focused summary, every completed score change receives one concise polite announcement, undo has no automatic timeout, charts retain exact text alternatives, and color never carries meaning alone. Motion respects reduced-motion preferences.
 
-### 9. Git and agent execution model
+### 10. Git and agent execution model
 
 The implementation is divided into short independently verifiable slices. A slice can use an isolated worktree and focused agent context when execution is authorized. Review packages contain the changed scope and evidence rather than unrelated repository content. `main` remains releasable, and Vercel preview deployment becomes part of review after Git integration is configured.
 
@@ -259,7 +267,7 @@ Preparing the original plan did not itself authorize Git mutation. Phase 0 was s
 
 ## Execution slices
 
-Phases 0, 1, and 2 are complete and published. Phase 3 is complete and verified in the working tree on 2026-07-16. Phases 4 through 8 remain pending and start only after a direct user command.
+Phases 0 through 3 and the Phase 3 consistency hardening are complete as of 2026-07-16. Phases 4 through 7 are the remaining MOX delivery path. Phase 8 is an optional extension and starts only after a separate direct user command once the submission essentials are safe.
 
 ### Phase 0: Materialize the approved contract
 
@@ -398,7 +406,7 @@ Completion notes:
 
 ### Phase 3: Connect ranking to evidence and activity
 
-Status: completed and verified in the working tree on 2026-07-16; uncommitted and unpushed
+Status: completed on 2026-07-16 and published in `9834af5`; consistency hardening complete
 
 Target outcome: a reviewer can move from the leader to raw evidence and understand where observations are concentrated.
 
@@ -431,214 +439,212 @@ Estimated effort: 3-4 hours.
 
 Completion notes:
 
-- `application/report-scope.ts` and its five focused tests cover deterministic options, case-insensitive fox search, exact location/color/prey filters, the 3-of-5 North Clearing scope, and selected-fox fallback.
+- `application/report-scope.ts` and its six focused tests cover deterministic options, trimmed case-insensitive fox search, exact location/color/prey filters, the 3-of-5 North Clearing scope, selected-fox fallback, and multi-record evidence chronology.
 - The Summary view model and UI render selected-fox evidence, time/suspicion markers, source records, report scope, filter chips, location activity, and recent observations. The read-only Observations destination consumes the same filtered array.
 - Component tests cover explicit selection through policy recalculation, filter fallback without focus movement, atomic scope announcements, zero results, full reset, and next/previous/scope-label focus recovery after chip removal.
 - The Summary uses the canonical zero-result copy, one atomic polite announcement per accepted filter command, and an opaque sticky header that keeps scrolled mobile evidence legible.
 - `npm run test:e2e` runs the production build through the repository-local official Playwright CLI. It verifies keyboard fox selection, selection preservation at 30%, each filter type, a four-filter combination, chip focus, empty/reset behavior, location-driven scope, the scoped Observations ledger, 320 px overflow, and zero browser errors.
 - [Phase 3 evidence](../../verification/phase-3-evidence-and-activity.md) records the focused, full, browser, and visual results. Phase 4 was not started.
 
-### Phase 4: Add observation management and persistence
+### Phase 4: Publish the real AI Worklog and reviewer README
 
-Status: pending
+Status: pending; next authorized slice
 
-Target outcome: add, edit, delete, undo, and reload update the whole report predictably.
+Target outcome: the two mandatory communication artifacts already describe the real AI-first process before optional product depth continues.
 
 Files and interfaces:
 
-- application commands for observation mutations;
-- accessible observation editor;
-- desktop table and mobile cards;
-- versioned persistence port and local storage adapter;
-- delete undo and starter-data reset behavior.
+- `docs/ai-worklog/public-checkpoints.json` as the structured UI source;
+- a small schema/parser at the application or adapter boundary;
+- `ui/ai-worklog/WorklogPage.tsx` as a real 5-7 checkpoint timeline;
+- `README.md` with scenario, stack, formula, demo flow, AI tools, verification, local start, repository, deployment status, and limitations;
+- `check:public-content` and `check:worklog-links` scripts;
+- focused Worklog component/schema tests and production-browser evidence.
 
 Implementation steps:
 
-1. Add observation validation shared by manual input and import boundaries.
-2. Implement add with generated immutable ID.
-3. Implement edit with atomic save and unsaved-change handling.
-4. Implement delete with persistent-until-dismissed-or-next-mutation undo and correct unique-fox recalculation.
-5. Persist observations and scoring policy in the strict v1 envelope.
-6. Add distinct recovery paths for corrupt, unsupported-version, unavailable, and save-failure storage without overwriting recoverable raw data.
+1. Select 5-7 factual checkpoints from the original task framing, repository planning, scoring decision, interface work, human decisions, defects actually found, and verification from Phases 0-3.
+2. Give each checkpoint a stage/date, goal, AI contribution, human decision, resulting change, verification summary, and structured evidence references.
+3. Remove secrets, tokens, personal data, private absolute paths, raw transcript text, and unsupported claims before the source enters the bundle.
+4. Render the structured source with meaningful evidence-link names and clear separation between AI contribution and human responsibility.
+5. Write the reviewer README now; mark the deployment URL as pending until Phase 7 rather than delaying the rest of the document.
+6. Update the final Worklog checkpoint and deployed URL again in Phase 7 without expanding the list beyond 5-7 entries.
 
-The add command consumes an injected `ObservationIdGenerator`. Production creates `obs_<uuid>` through `crypto.randomUUID()`; tests inject fixed values. Generated IDs pass the normal length/schema and active-set uniqueness checks before the atomic transition. Generation or collision failure preserves state and returns a form-level error.
+Verification commands and expected evidence:
 
-Verification commands:
-
-- `npm run test -- mutations persistence` checks add, edit, delete, undo, reload, and recovery.
-- `npm run test:e2e -- manage-observations` demonstrates add, edit (`obs_005 = 10` makes `fox_004` leader), remove, persistent undo, focus recovery, and reload.
+- `npm run check:public-content` reports no secret-like values, private absolute paths, or transcript dumps.
+- `npm run check:worklog-links` validates the checkpoint schema and every evidence reference available at the current published revision.
+- `npm run test -- worklog` proves 5-7 entries and the required fields.
+- `npm run test:e2e -- worklog` confirms navigation, rendered checkpoints, and accessible evidence links in the production build.
 - `npm run verify` remains clean.
 
-Estimated effort: 4 hours.
+Estimated effort: 2-3 hours.
 
-### Phase 5: Add safe import, export, and recovery
+First checkpoint: the placeholder is replaced by 5-7 schema-valid public-safe checkpoints, and README lets a reviewer run and understand the current product without chat history.
 
-Status: pending
+### Phase 5: Add proportionate observation management
 
-Target outcome: a reviewer can replace the dataset safely and understand every validation outcome before application.
+Status: pending; should-have enhancement after Phase 4
+
+Target outcome: a reviewer can add, edit, delete, undo, reset, and reload observations while every report section recalculates from one accepted state.
 
 Files and interfaces:
 
-- Zod import boundary and field-path errors;
-- paste/file import dialog;
-- preview model and confirmation step;
-- full-dataset export;
-- starter-data recovery and empty-state actions.
+- application commands/state transition for observation mutations;
+- accessible observation editor and responsive table/cards;
+- injected `ObservationIdGenerator`;
+- one-step delete undo and starter-data reset;
+- small versioned local-storage port and adapter.
 
 Implementation steps:
 
-1. Reject file and pasted UTF-8 input above 2 MiB before parse, then parse and validate without mutating current state.
-2. Display record, fox, location, and time-range preview.
-3. Block confirmation while errors exist and preserve entered content.
-4. Apply a valid replacement atomically after confirmation.
-5. Export the full unfiltered observation array.
-6. Cover empty dataset, duplicate IDs, unknown fields, oversized input, and invalid time.
+1. Validate the six editable assignment fields; keep observation `id` generated and immutable.
+2. Implement add and edit as atomic accepted-state transitions.
+3. Implement delete with one persistent undo action and correct unique-fox recalculation; deleting a fox's final observation removes that fox from the report naturally.
+4. Persist observations and scoring policy in a small v1 envelope and restore only a valid envelope.
+5. For missing or invalid storage, preserve the current in-memory session and offer an explicit starter reset. Treat unavailable/save-failure status honestly without building the Phase 8 raw-value recovery UI.
+6. Keep filters derived and unsaved; do not introduce a separate Fox aggregate editor or new domain fields.
 
-The export adapter produces `fox-dispatcher-observations.json` as UTF-8 `application/json;charset=utf-8`, two-space formatted with a trailing newline, in authoritative array order. It revokes the temporary object URL after starting the download.
+The add command consumes an injected `ObservationIdGenerator`. Production creates `obs_<uuid>` through `crypto.randomUUID()`; tests inject fixed values. Generation or collision failure preserves state and returns a form-level error.
 
-Verification commands:
+Verification commands and expected evidence:
 
-- `npm run test -- import-export` checks round-trip, field paths rooted at the input array, pre-parse size rejection, oversized valid arrays, and atomic failure.
-- `npm run test:e2e -- import-recovery` checks invalid import, valid confirmation, export, and starter reset.
+- `npm run test -- mutations persistence` checks add, edit, delete, undo, starter reset, valid reload, and safe invalid-storage fallback.
+- `npm run test:e2e -- manage-observations` demonstrates that editing `obs_005.suspicion_level` to 10 makes `fox_004` the 8.0 leader, then covers remove, undo, focus recovery, and reload.
 - `npm run verify` remains clean.
 
-Estimated effort: 3 hours.
+Estimated effort: 3-4 hours.
 
-### Phase 6: Finish the visual system, responsive experience, and accessibility
+### Phase 6: Complete targeted responsive and accessibility quality
 
 Status: pending
 
-Target outcome: the application is distinctive, coherent, and usable across the target viewports and input methods.
+Target outcome: the actual reviewer journey, including Worklog and observation management when present, remains clear and operable across target viewports and input methods.
 
 Files and interfaces:
 
-- final design tokens, locally served fonts, icons, and UI primitives;
-- polished Summary hierarchy and responsive breakpoints;
-- dialog/sheet focus management;
-- reduced-motion, high-zoom, keyboard, and text-alternative behavior;
+- final design tokens and focused responsive corrections;
+- mobile observation cards/editor treatment where the table is not usable;
+- dialog focus/error behavior for implemented flows;
+- reduced-motion, keyboard, zoom, and text-alternative evidence;
 - browser screenshots and accessibility evidence.
 
 Implementation steps:
 
-1. Apply the field-ledger art direction without changing information priority.
-2. Test 1440x900, 768x1024, 390x844, and 320px width.
-3. Convert desktop table and inspector into mobile cards and full-screen sheet.
-4. Check route title/lang/focus, contrast, focus, landmarks, headings, labels, live regions, desktop/mobile sorting semantics, persistent undo, sheet initial/apply/cancel focus, and form errors.
-5. Remove page overflow, layout shifts, console warnings, and non-functional motion.
-6. Record manual keyboard, 200% zoom, the WCAG text-spacing preset (`1.5`, `2em`, `0.12em`, `0.16em`), portrait/landscape, forced/increased-contrast, reduced-motion, and screen-reader evidence under `docs/verification/`.
+1. Review 1440x900, 768x1024, 390x844, and 320px against the current field-ledger direction.
+2. Fix concrete hierarchy, overflow, focus, contrast, or form problems found by evidence.
+3. Convert the observation table/editor to mobile cards or a dialog where required. Keep the current stacked Summary unless testing proves a full-screen inspector or filter sheet is necessary.
+4. Check route title/lang/focus, landmarks, headings, labels, live regions, mutation focus, undo, and error summaries.
+5. Record keyboard, 200% zoom, text spacing, portrait/landscape, reduced-motion, contrast-preference, and one screen-reader pass without claiming unperformed checks.
 
-Verification commands:
+Verification commands and expected evidence:
 
-- `npm run test:a11y` returns no targeted axe violations.
+- `npm run test:a11y` returns no targeted violations for implemented destinations and dialogs.
 - `npm run test:e2e -- responsive-keyboard` completes the primary flow at desktop and mobile viewports.
-- `docs/verification/accessibility-evidence.md` records the Q-02 manual matrix with date, environment, outcomes, and limitations.
+- `docs/verification/accessibility-evidence.md` records Q-02 results and limitations.
 - `npm run verify` remains clean.
 
-Estimated effort: 4 hours.
+Estimated effort: 3-4 hours.
 
-### Phase 7: Publish the real AI Worklog and reviewer documentation
+### Phase 7: Deploy to Vercel and complete the MOX submission gate
 
-Status: pending
+Status: pending; final required slice
 
-Target outcome: product and repository communicate the AI-first process without exposing sensitive information.
-
-Files and interfaces:
-
-- `docs/ai-worklog/public-checkpoints.json` as the UI source;
-- in-product AI Worklog timeline;
-- `README.md` with purpose, demo flow, formula, architecture, local commands, deployment, and limitations;
-- public-content secret and private-path check;
-- links from checkpoints to durable evidence.
-
-Implementation steps:
-
-1. Select 5-7 factual checkpoints from accumulated plan, decisions, reviews, tests, and screenshots.
-2. Record AI contribution and human decision separately.
-3. Link each claim to evidence and redact sensitive context.
-4. Render the structured source inside the application.
-5. Document the 20% -> 30% demo and local verification commands in README.
-
-Verification commands:
-
-- `npm run check:public-content` reports no secret patterns or private absolute paths.
-- `npm run check:worklog-links` validates the evidence-reference schema and resolves every public URL or bundled artifact.
-- `npm run test:e2e -- worklog` confirms navigation and 5-7 rendered checkpoints.
-- `npm run verify` remains clean.
-
-Estimated effort: 2 hours.
-
-### Phase 8: Integrate Vercel and complete the release gate
-
-Status: pending
-
-Target outcome: the agreed repository revision is publicly reviewable on Vercel with reproducible evidence.
+Target outcome: the approved repository revision is publicly reviewable and all must-have MOX submission artifacts point to the same working product.
 
 Files and interfaces:
 
 - Vercel project connected to `CaseyRybak/Fox-dispatcher`;
-- build and output settings documented in repository artifacts;
-- `vercel.json` with the production response headers required by the accepted CSP/privacy baseline;
-- CI and Vercel status visible on the release revision;
-- `docs/verification/release-evidence.md` containing commands, results, viewport evidence, deployed URL, and known limitations.
+- minimal `vercel.json` only where required for the tested static/privacy behavior;
+- final README deployment/repository links;
+- final 5-7 checkpoint Worklog evidence;
+- `docs/verification/release-evidence.md` with URL, revision, commands, browser results, and known limitations.
 
 Implementation steps:
 
-1. Run the complete local release gate from a clean checkout using the pinned Node/npm versions and `npm ci`.
-2. Review the production bundle for unintended requests, secrets, and debug artifacts.
-3. Add and test the Vercel response headers, including self-only resource directives, `connect-src 'none'`, anti-embedding, referrer, MIME-sniffing, and permissions policy.
-4. Connect or confirm Vercel Git integration with Vite build output `dist` and `main` as the production branch.
-5. Validate the release-candidate SHA on a preview deployment.
-6. After direct authorization fast-forwards `main` to the exact previewed commit, require `preview Git SHA == production Git SHA == approved release-candidate SHA`, then smoke-test desktop and mobile, including reload, persistence, score change, observation edit, and AI Worklog. Any different commit returns to preview review.
-7. Record fresh evidence and move this plan to `docs/exec-plans/completed/` only after every acceptance statement is satisfied.
-
-Before fixing the CSP, inventory the production bundle and the current React `style` attributes used for data-driven CSS custom properties. Either remove those inline attributes or permit only the minimum required style-attribute policy and record the tested exception; the deployed header claim must match actual rendering.
+1. Run the complete local gate with the pinned Node/npm versions and inspect the production bundle for secrets, debug artifacts, unintended external resources, and observation egress.
+2. Add and test the minimum deployment headers supported by the real bundle; document any narrow inline-style exception rather than blocking the submission on an idealized CSP.
+3. Connect Vercel with build command `npm run build`, output `dist`, and `main` as the production branch after explicit authorization for external changes.
+4. Smoke-test the deployed Summary, Observations, AI Worklog, parameter recalculation, and any Phase 5 mutation/persistence flow on desktop and mobile.
+5. Put the public URL and GitHub URL in README, finalize Worklog evidence links, and record the deployed revision.
+6. Move this core plan to `docs/exec-plans/completed/` only after every Must acceptance statement has fresh evidence. Any unmet Should item is documented as a limitation; Stretch items do not block submission.
 
 Verification commands and expected evidence:
 
-- `npm run verify` passes from the release revision.
-- `npm run test:e2e` passes against the production build.
-- Header assertions confirm the accepted policy and the browser request allowlist contains no external observation egress.
-- A Playwright smoke run against the Vercel URL completes without console errors.
-- The deployed application sends no observation data to external services.
+- `npm run verify` passes from the submitted revision.
+- Phase-specific production browser tests pass against the built artifact.
+- Deployed header/request assertions show no external observation egress.
+- A Playwright smoke run against the Vercel URL completes the reviewer journey without console errors at desktop and 320 px.
+- README and Worklog resolve their public URLs and contain no private paths or secrets.
 
 Estimated effort: 2-3 hours.
 
+### Phase 8 (optional): Add import, export, and advanced recovery
+
+Status: optional stretch; not part of the MOX completion gate
+
+Target outcome: after the submission is safe, a separately authorized extension can replace and export the full observation dataset without weakening validated state.
+
+Files and interfaces:
+
+- Zod import boundary and field-path errors;
+- paste/file import dialog and preview;
+- full-dataset export;
+- advanced corrupt/future-version storage recovery only if its product value is still justified.
+
+Implementation steps:
+
+1. Reject file and pasted UTF-8 input above 2 MiB before parse, then validate without mutating accepted state.
+2. Preview record, fox, location, and time-range summaries before explicit replacement.
+3. Export the full unfiltered observation array with a deterministic UTF-8 artifact.
+4. Add raw-value and future-version recovery only as a separate reviewed behavior, not as hidden complexity in Phase 5.
+
+Verification commands and expected evidence:
+
+- `npm run test -- import-export` checks size, schema, field paths, round-trip, and atomic failure.
+- `npm run test:e2e -- import-recovery` checks invalid import, valid confirmation, export, and recovery.
+- `npm run verify` remains clean.
+
+Estimated effort: 3 hours if separately authorized.
+
 ## Integration evidence
 
-Completion requires one evidence package that ties repository state to deployed behavior:
+Core completion requires one evidence package that ties repository state to deployed behavior:
 
 - exact starter metrics and ranking screenshot;
 - score contribution screenshot for `fox_001`;
 - before/after evidence for prey influence 20% -> 30%;
-- before/after evidence for editing `obs_005` to 10;
+- before/after evidence for editing `obs_005` to 10 when the Should-have Phase 5 is included;
 - location filter evidence for 3 of 5 observations and 2 foxes;
-- invalid import evidence showing no state mutation;
-- reload evidence for local persistence;
+- reload evidence for local persistence when Phase 5 is included;
 - desktop, tablet, and mobile screenshots;
 - keyboard and accessibility report;
 - public-safe AI Worklog evidence;
 - clean `npm run verify` and production browser run;
-- final Vercel production URL and deployment revision.
-- preview and production URLs tied to the same approved Git commit SHA plus deployed header results.
+- final README, Vercel production URL, GitHub URL, and deployment revision;
+- deployed header and browser-request results.
 
-The plan is complete only when these claims are supported by fresh results. Passing unit tests alone is not sufficient for a UI or deployment completion claim.
+Optional Phase 8 evidence adds invalid-import atomicity, full-data export, size limits, and advanced recovery. Those results do not block the MOX completion gate. The core plan is complete only when every Must claim is supported by fresh results; passing unit tests alone is not sufficient for a UI or deployment completion claim.
 
 ## Resulting repository artifacts
 
-When all phases finish, the repository should contain:
+When the core Phases 0-7 finish, the repository should contain:
 
 - a public Vercel-deployed React application;
 - pure tested observation and scoring domain logic;
 - accessible responsive Summary, Observations, and AI Worklog interfaces;
-- atomic JSON import, export, local persistence, and recovery;
+- real 5-7 checkpoint AI Worklog and reviewer README;
+- proportionate observation management and local persistence when Phase 5 is included;
 - short repository and domain context maps;
 - durable product, design, architecture, and decision documents;
 - the completed execution plan and release evidence;
 - real public-safe AI Worklog checkpoints;
 - repository skills only for procedures proven reusable during execution.
 
+Optional Phase 8 may add atomic JSON import/export and advanced recovery after the submitted product is already complete.
+
 ## Execution handoff
 
-Execution order is Phase 0 through Phase 8. Later slices depend on the product and architecture contract established in Phase 0, while focused domain tests, UI review, accessibility review, and documentation review can run independently inside an authorized phase once their interfaces are stable.
+Required execution order is Phase 0 through Phase 7. Phase 4 now closes the mandatory Worklog/README gap before the Should-have observation-management enhancement in Phase 5. Phase 6 verifies the implemented journey, and Phase 7 deploys and closes the MOX submission. Phase 8 is a separate optional extension, not a release dependency.
 
-The next authority gate is **Phase 4: Add observation management and persistence**. Phase 2 is published in `c53d1f1`; Phase 3 is verified in the working tree and remains uncommitted and unpushed. No Phase 4 implementation, commit, push, Vercel connection, or deployment begins without a separate direct command.
+The next authority gate is **Phase 4: Publish the real AI Worklog and reviewer README**. Its first verification checkpoint is 5-7 schema-valid public-safe entries plus a README that explains the current product without chat history. Phase 3 is published in `9834af5`, and its consistency hardening is complete. No Phase 4 implementation, Vercel connection, or deployment begins without a separate direct command.

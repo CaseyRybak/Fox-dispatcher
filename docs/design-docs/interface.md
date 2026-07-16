@@ -118,7 +118,7 @@ Data caption     12-13 / 1.4
 Три адресуемых раздела:
 
 1. `Сводка` — результат, рейтинг, методика и доказательства.
-2. `Наблюдения` — данные, фильтры, CRUD, import/export/recovery.
+2. `Наблюдения` — данные, фильтры, should-have CRUD/persistence и optional import/export/recovery.
 3. `AI Worklog` — фактические AI-first checkpoints.
 
 Top-level navigation использует обычные ссылки с hash-состоянием, поэтому back/forward и статический reload сохраняют ожидаемое поведение на Vercel. Документ имеет `<html lang="ru">`. Когда ссылка, back или forward действительно меняют destination, обновляются `document.title`, единственный `h1` и `aria-current="page"`, а фокус получает `h1` с `tabindex="-1"`. Если Back только закрывает sheet, destination не меняется и фокус возвращается его инициатору. Технические англоязычные фрагменты получают `lang="en"`, когда это требуется для произношения, а коды и ID остаются нейтральными.
@@ -129,7 +129,7 @@ Header содержит:
 - основную навигацию;
 - статус `Данные в этом браузере`;
 - главное действие `Добавить наблюдение`;
-- меню данных: import, export, восстановление стартовых данных.
+- меню данных: восстановление стартовых данных и, только в optional Phase 8, import/export.
 
 ## Сводка: desktop
 
@@ -278,7 +278,7 @@ fox_004                         3 / 10
 
 ### Observation editor
 
-Desktop: right-side modal sheet.
+Desktop: доступный dialog или right-side modal sheet, выбранный по результату проверки реального потока.
 
 Mobile: full-screen dialog.
 
@@ -292,7 +292,7 @@ Mobile: full-screen dialog.
 6. `Время` — native time input;
 7. технический `id` — read-only при редактировании; для новой записи до первого принятого сохранения показано `Будет создан автоматически`.
 
-Manual editor использует те же ограничения и тексты ошибок, что import boundary: trimmed required strings, максимальные длины 64/80, strict prey choice, целое `suspicion_level` 0-10 и реальное `HH:mm`. Ограничения показаны постоянными hints и программно связаны с полями.
+Manual editor использует ту же observation schema, что bundled starter boundary: trimmed required strings, максимальные длины 64/80, strict prey choice, целое `suspicion_level` 0-10 и реальное `HH:mm`. Optional import позднее переиспользует этот контракт. Ограничения показаны постоянными hints и программно связаны с полями.
 
 Footer: `Отменить` и `Сохранить наблюдение`. Удаление находится в отдельной secondary зоне и называет объект: `Удалить obs_005`.
 
@@ -302,7 +302,7 @@ Footer: `Отменить` и `Сохранить наблюдение`. Уда�
 
 Удаление показывает status-плашку `Наблюдение obs_005 удалено` с кнопкой `Отменить удаление obs_005`. Она не исчезает автоматически и остаётся до следующей принятой операции, изменяющей набор, или явного закрытия. Фокус после удаления переходит к логически соседней записи; status объявляется один раз и не перехватывает фокус.
 
-### Import dialog
+### Import dialog — optional Phase 8
 
 Шаги оформлены как реальные состояния процесса:
 
@@ -321,7 +321,7 @@ Footer: `Отменить` и `Сохранить наблюдение`. Уда�
 
 Кнопка замены появляется доступной после успешной проверки. Закрытие и повторное открытие в рамках текущей попытки сохраняет введённый текст, пока пользователь явно его не очищает.
 
-### Export action
+### Export action — optional Phase 8
 
 Действие `Экспортировать все наблюдения` всегда называет полный набор и не зависит от текущих chips. Оно скачивает `fox-dispatcher-observations.json`; успешный запуск получает polite status `Экспорт подготовлен: N наблюдений`, а ошибка создания файла сохраняет данные и предлагает повторить действие.
 
@@ -366,17 +366,16 @@ Checkpoint с найденной ошибкой появляется после 
 
 - верхний header содержит wordmark, статус и добавление;
 - три destination links переходят в нижнюю навигацию;
-- раздел `Наблюдения` сохраняет кнопку `Действия с данными` для import, export и восстановления, даже когда desktop header menu скрыто;
+- раздел `Наблюдения` сохраняет доступ к starter recovery и реализованным действиям с данными; optional import/export появляются только вместе с Phase 8;
 - outcome docket становится одной колонкой: лидер, причина, затем сводные числа;
 - ranking становится набором cards;
-- inspector открывается full-screen sheet;
-- filter panel открывается bottom sheet с отдельными `Показать N наблюдений` и `Сбросить`;
-- editor и import используют full-screen dialogs;
+- inspector и фильтры сохраняют текущий stacked layout, пока Phase 6 evidence не покажет необходимость full-screen или bottom sheet;
+- editor использует mobile dialog/card treatment, подтверждённый проверкой; optional import использует full-screen dialog только в Phase 8;
 - на странице отсутствует горизонтальный overflow.
 
 Bottom navigation не перекрывает focus: основное содержимое получает соответствующий нижний padding, а focused controls прокручиваются в видимую область.
 
-Inspector, filters, editor и import sheets имеют доступное имя, явную кнопку закрытия, Escape и возврат фокуса инициатору. Browser Back закрывает открытый sheet до смены destination. Initial focus задан явно:
+Каждый фактически реализованный inspector, filter, editor или optional import sheet/dialog имеет доступное имя, явную кнопку закрытия, Escape и возврат фокуса инициатору. Browser Back закрывает открытый sheet до смены destination. Initial focus задан явно:
 
 - inspector — на heading выбранной лисы с `tabindex="-1"`;
 - filters — на heading `Фильтры` с `tabindex="-1"`;
@@ -384,7 +383,7 @@ Inspector, filters, editor и import sheets имеют доступное имя
 - import — на file input `Выбрать JSON`;
 - unsaved-changes и destructive confirmation — на безопасном действии `Продолжить редактирование` или `Отмена`.
 
-Filter sheet хранит draft отдельно: `Сбросить` очищает только draft и обновляет число в `Показать N наблюдений`; эта кнопка применяет draft, а закрытие или `Отмена` оставляет действующую область прежней.
+Если Phase 6 evidence обосновывает filter sheet, он хранит draft отдельно: `Сбросить` очищает только draft и обновляет число в `Показать N наблюдений`; эта кнопка применяет draft, а закрытие или `Отмена` оставляет действующую область прежней.
 
 ## Interaction feedback
 
@@ -508,7 +507,7 @@ Implementation screenshots are reviewed at:
 
 1. walking skeleton — hierarchy and real starter copy;
 2. interactive ranking — signature evidence strip and contribution clarity;
-3. CRUD/import — forms, states, and focus;
+3. CRUD/persistence — forms, states, focus, and reload; optional import review occurs only in Phase 8;
 4. responsive polish — 1440×900, 768×1024, 390×844, and 320 px;
 5. Vercel preview — production fonts, layout, console, network, and public Worklog.
 

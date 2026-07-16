@@ -102,4 +102,22 @@ describe("hash navigation", () => {
     ).toBeInTheDocument();
     expect(document.title).toBe("Наблюдения — Лисий диспетчер");
   });
+
+  it("keeps one live-status node mounted across destinations", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /^Показать доказательства fox_002, индекс 4,0/,
+      }),
+    );
+    const status = screen.getByRole("status");
+
+    expect(status).toHaveTextContent("Показаны доказательства fox_002.");
+
+    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+
+    expect(screen.getByRole("status")).toBe(status);
+  });
 });

@@ -8,18 +8,19 @@ The durable product contract lives in [docs/product-specs/fox-dispatcher.md](doc
 
 ## Delivery status
 
-- The published `c53d1f1` baseline contains the complete Phase 1 shell and Phase 2 scoring/report slice.
-- Phase 3 is complete but uncommitted in the working tree: application report filtering, selected evidence, location activity, recent observations, deterministic chip focus, and shared Summary/Observations scope pass focused, full, production-browser, and narrow-reflow gates.
+- The published `c53d1f1` revision contains the complete Phase 1 shell and Phase 2 scoring/report slice.
+- Phase 3 was published on `main` in `9834af5`: application report filtering, selected evidence, location activity, recent observations, deterministic chip focus, and shared Summary/Observations scope passed focused, full, production-browser, and narrow-reflow gates. Its consistency-hardening follow-up is also complete.
 - [Phase 3 evidence](docs/verification/phase-3-evidence-and-activity.md) is the architectural acceptance record. Phases 4-8 remain target architecture rather than current runtime behavior.
+- The remaining core order is Phase 4 Worklog/README, Phase 5 proportionate mutation/persistence, Phase 6 targeted quality, and Phase 7 Vercel submission. Phase 8 import/export and advanced recovery are optional extensions.
 
-Sections below use **implemented** for the published or focused-tested working-tree behavior and **planned** for later ports, commands, adapters, public content, and deployment policy.
+Sections below use **implemented** for published behavior and focused-tested working-tree follow-ups, and **planned** for later ports, commands, adapters, public content, and deployment policy.
 
 ## System context
 
 ```text
 Assignment starter JSON ─┐
 Manual observation edit ─┼─> Fox Dispatcher in the browser ─> Explainable report
-User JSON import ────────┘                │
+Optional JSON import ───┘                │
                                           ├─> Versioned local storage
                                           ├─> JSON export
                                           └─> Public-safe AI Worklog
@@ -118,35 +119,31 @@ Score and mean comparisons use safe-integer cross multiplication under the 1000-
 
 ### Application
 
-The application layer coordinates user intent. Summary queries, scoring-policy updates, report filters, selected-fox fallback, and view-model translation are implemented through Phase 3; the following mutation and persistence commands remain planned:
+The application layer coordinates user intent. Summary queries, scoring-policy updates, report filters, selected-fox fallback, and view-model translation are implemented through Phase 3; Phase 5 plans the following proportionate mutation and persistence commands:
 
 - initialize from starter or persisted state;
 - update scoring policy;
 - set and clear global report filters;
 - select a fox or observation;
-- add, edit, delete, undo, import, export, and reset;
+- add, edit, delete, undo, and reset;
 - request persistence after accepted state transitions;
 - convert domain reports into small UI view models.
 
 The initially selected fox is the current leader. Explicit selection survives recalculation while the fox remains in scope; otherwise the application selects the new leader or no fox for an empty report. Automatic fallback updates status without moving focus.
 
-Planned outbound ports:
+Planned core outbound ports:
 
 ```text
 DashboardStateStore
-  load(): Missing | ValidState | CorruptState | UnsupportedVersion | Unavailable
+  load(): Missing | ValidState | InvalidState | Unavailable
   save(state): SaveResult
   clear(): ClearResult
-
-ObservationImportParser
-  preview(rawText): ImportPreview | ImportFailure
-
-ObservationExporter
-  createFile(observations): ExportArtifact
 
 ObservationIdGenerator
   create(): ObservationId
 ```
+
+Optional Phase 8 adds `ObservationImportParser` and `ObservationExporter` ports plus advanced storage-recovery results if that extension is separately authorized.
 
 JSON parsing and starter-data validation are boundary adapters that produce domain-ready observations or structured validation failures.
 
@@ -157,9 +154,8 @@ The production ID adapter will create `obs_<uuid>` values through the secure bro
 Adapters translate browser and file representations:
 
 - bundled assignment data into validated observations;
-- unknown JSON into a preview containing valid summary data or field-path errors;
-- application state into a versioned local storage envelope;
-- observations into a downloadable JSON array.
+- application state into a small versioned local storage envelope;
+- optionally in Phase 8, unknown JSON into a preview and observations into a downloadable JSON array.
 
 The storage envelope is planned as:
 
@@ -172,7 +168,7 @@ The storage envelope is planned as:
 }
 ```
 
-The stable key is `fox-dispatcher.dashboard`; the envelope, not the key name, carries the schema version. It is parsed strictly: version `1`, validated observations and policy, UTC ISO 8601 `updatedAt`, and no unknown fields. `corrupt`, `unsupported-version`, and `unavailable` are distinct recovery results. Corrupt or future-version raw values are not overwritten and autosave stays blocked until an explicit recovery choice; a save failure keeps the accepted state in memory and exposes memory-only status.
+The stable key is `fox-dispatcher.dashboard`; the envelope, not the key name, carries the schema version. Phase 5 parses version `1`, validated observations and policy, and a UTC ISO 8601 `updatedAt`. Missing or invalid storage falls back explicitly without overwriting the current in-memory session; unavailable or failed saves expose an honest memory-only status. Raw-value copying, future-version recovery, and the extended failure matrix belong only to optional Phase 8.
 
 File and pasted imports are rejected above 2 MiB of UTF-8 before `JSON.parse`, then checked against the 1000-record and field limits. `ObservationImportParser` returns a preview or field paths rooted at the input array, such as `[2].suspicion_level`; it never mutates application state.
 
@@ -181,12 +177,12 @@ File and pasted imports are rejected above 2 MiB of UTF-8 before `JSON.parse`, t
 React renders application view models and emits commands. The UI has three destinations:
 
 - Summary — calculation scope, leader, ranking, evidence, scoring control, location activity, recent observations;
-- Observations — filters, table/cards, editor, delete/undo, import/export, recovery;
+- Observations — filters, table/cards, editor, delete/undo, starter recovery, and optional Phase 8 import/export;
 - AI Worklog — 5-7 structured public checkpoints with evidence references.
 
 The [interface specification](docs/design-docs/interface.md) owns composition, copy, responsive behavior, and accessibility.
 
-Through Phase 3 the composition root uses focused React state for destination, policy, filters, selection, and announcement. Phase 4 may consolidate mutation, undo, recovery, and persistence transitions behind a reducer or equivalent application state machine; the architectural requirement is one accepted-state transition path, not a particular React hook.
+Through Phase 4 the composition root can keep focused React state for destination, policy, filters, selection, announcement, and static Worklog content. Phase 5 may consolidate mutation, undo, reset, and persistence transitions behind a reducer or equivalent application state machine; the architectural requirement is one accepted-state transition path, not a particular React hook.
 
 ## Data flow
 
@@ -235,7 +231,7 @@ The AI Worklog UI consumes a structured public source under `docs/ai-worklog/`. 
 - resulting change;
 - verification evidence.
 
-The public-content check planned in Phase 7 covers secret-like values, private absolute paths, credentials, and accidental transcript dumps before the worklog enters the production bundle.
+The public-content check planned in Phase 4 covers secret-like values, private absolute paths, credentials, and accidental transcript dumps before the Worklog enters the production bundle.
 
 Each evidence reference has `label`, `kind`, and a public HTTPS `href` pinned to a GitHub repository revision or a public Vercel artifact. Build-time checks reject local filesystem paths, unsafe URL schemes, unresolved repository links, and unpinned mutable evidence where a revision is available.
 
@@ -257,9 +253,9 @@ Vercel's Vite defaults are the starting configuration. A repository `vercel.json
 
 Vercel installs the committed lockfile with `npm ci` under repository-pinned Node and npm versions. The production branch is `main`. One release-candidate commit SHA receives the preview smoke first; after authorization, `main` is fast-forwarded to that exact commit. Production smoke begins only when Vercel reports the same Git SHA for production. A merge, rebuild from a different commit, or changed tree creates a new candidate and requires a new preview smoke.
 
-Production headers enforce the browser boundary: self-hosted static resource directives, `connect-src 'none'`, `object-src 'none'`, `base-uri 'none'`, `frame-ancestors 'none'`, `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, and a minimal `Permissions-Policy`. Phase 8 tests the exact policy against the built bundle and deployed responses.
+Production headers enforce the browser boundary: self-hosted static resource directives, `connect-src 'none'`, `object-src 'none'`, `base-uri 'none'`, `frame-ancestors 'none'`, `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosn`, and a minimal `Permissions-Policy`. Phase 7 tests the minimum policy supported by the actual built bundle and deployed responses.
 
-The current Summary implementation uses React `style` attributes for data-driven CSS custom properties on contribution, evidence, and location bars. Before fixing the Phase 8 CSP, implementation must either move those values to a CSP-compatible representation or explicitly allow the minimum required style attributes and record that tested exception. The release gate must not claim a self-only style policy that the built UI violates.
+The current Summary implementation uses React `style` attributes for data-driven CSS custom properties on contribution, evidence, and location bars. Before finalizing the Phase 7 CSP, implementation either moves those values to a compatible representation or explicitly allows and records the narrow style-attribute exception required by the actual bundle. The release gate must not claim a self-only style policy that the built UI violates.
 
 The deployment decision is recorded in [docs/decisions/0003-vercel-deployment.md](docs/decisions/0003-vercel-deployment.md).
 

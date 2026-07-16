@@ -4,7 +4,7 @@ Status: accepted
 
 Date: 2026-07-16
 
-Deployment phase: [Phase 8](../exec-plans/active/2026-07-16-fox-dispatcher-implementation.md#phase-8-integrate-vercel-and-complete-the-release-gate)
+Deployment phase: [Phase 7](../exec-plans/active/2026-07-16-fox-dispatcher-implementation.md#phase-7-deploy-to-vercel-and-complete-the-mox-submission-gate)
 
 ## Context
 
@@ -39,9 +39,9 @@ Repository settings establish:
 
 Top-level navigation uses hash-addressed destinations initially, keeping reloads compatible with a static artifact. A `vercel.json` file becomes part of the repository when a tested routing, header, cache, or build override requires it.
 
-The production baseline requires tested response headers. The intended content policy uses self-hosted scripts, styles, fonts, and images; `connect-src 'none'`, `object-src 'none'`, `base-uri 'none'`, and `frame-ancestors 'none'` prevent runtime observation egress and embedding. `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, and a minimal `Permissions-Policy` are verified with the deployed artifact. Phase 8 may adjust only the resource directives demonstrated necessary by the production bundle.
+The production baseline requires tested response headers. The intended content policy uses self-hosted scripts, styles, fonts, and images; `connect-src 'none'`, `object-src 'none'`, `base-uri 'none'`, and `frame-ancestors 'none'` prevent runtime observation egress and embedding. `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, and a minimal `Permissions-Policy` are verified with the deployed artifact. Phase 7 may adjust only the resource directives demonstrated necessary by the production bundle.
 
-Implementation note: the current Summary bars position data through React `style` attributes containing CSS custom properties. Before finalizing `style-src`, Phase 8 must either replace those attributes with a CSP-compatible representation or record and test the narrow style-attribute exception required by the actual bundle. The release evidence reports the deployed header verbatim and does not describe it as self-only if inline style attributes remain allowed.
+Implementation note: the current Summary bars position data through React `style` attributes containing CSS custom properties. Before finalizing `style-src`, Phase 7 must either replace those attributes with a CSP-compatible representation or record and test the narrow style-attribute exception required by the actual bundle. The release evidence reports the deployed header verbatim and does not describe it as self-only if inline style attributes remain allowed.
 
 The release candidate is identified by one Git commit SHA. Vercel builds a preview for that SHA; after the preview smoke passes and a direct user command authorizes publication, `main` is fast-forwarded to that exact commit and Git integration builds production. The release evidence requires `preview Git SHA == production Git SHA == approved release-candidate SHA`, plus both URLs and smoke results. A different merge or build commit is a new candidate and returns to preview review. Preview approval is not treated as production evidence by itself.
 

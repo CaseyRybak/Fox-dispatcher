@@ -32,6 +32,13 @@ describe("interactive suspicion summary", () => {
       expect.stringContaining("fox_002"),
       expect.stringContaining("fox_004"),
     ]);
+    expect(rows[0]).toHaveTextContent(
+      "fox_001рыжая · 10:40Северная полянаоценка 8,5добыча 1/2",
+    );
+    expect(rows[0]?.querySelector(".color-swatch")).toHaveAttribute(
+      "data-color",
+      "рыжая",
+    );
     expect(screen.getByRole("slider", { name: "Влияние добычи" })).toHaveValue(
       "20",
     );
@@ -53,7 +60,7 @@ describe("interactive suspicion summary", () => {
 
     expect(getLeaderHeading("fox_003")).toBeInTheDocument();
     expect(screen.getByText("7,9 из 10")).toBeInTheDocument();
-    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+    expect(screen.getByRole("status")).toHaveTextContent(/^$/);
 
     fireEvent.pointerUp(slider);
 
@@ -89,7 +96,7 @@ describe("interactive suspicion summary", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "Показать доказательства fox_002, индекс 4,0",
+        name: /^Показать доказательства fox_002, индекс 4,0/,
       }),
     );
 
@@ -101,7 +108,7 @@ describe("interactive suspicion summary", () => {
     expect(within(inspector).getByText("Туманная тропа")).toBeInTheDocument();
     expect(
       screen.getByRole("button", {
-        name: "Показать доказательства fox_002, индекс 4,0",
+        name: /^Показать доказательства fox_002, индекс 4,0/,
       }),
     ).toHaveAttribute("aria-pressed", "true");
 
@@ -123,7 +130,7 @@ describe("interactive suspicion summary", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: "Показать доказательства fox_003, индекс 7,6",
+        name: /^Показать доказательства fox_003, индекс 7,6/,
       }),
     );
 
@@ -231,6 +238,54 @@ describe("interactive suspicion summary", () => {
     );
 
     expect(screen.getByText("Отчёт по 5 из 5 наблюдений")).toHaveFocus();
+  });
+
+  it("recovers an empty scoped ledger and toggles a location bar", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.type(
+      screen.getByRole("searchbox", { name: "Найти fox_id" }),
+      "missing",
+    );
+    const firstAnnouncement = screen.getByRole("status").firstElementChild;
+
+    await user.type(
+      screen.getByRole("searchbox", { name: "Найти fox_id" }),
+      "x",
+    );
+
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Фильтры применены: 0 из 5 наблюдений.",
+    );
+    expect(screen.getByRole("status").firstElementChild).not.toBe(
+      firstAnnouncement,
+    );
+    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+
+    expect(
+      screen.getByRole("heading", {
+        name: "В этой выборке ничего не найдено",
+      }),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Сбросить фильтры" }));
+    await user.click(screen.getByRole("link", { name: "Сводка" }));
+
+    const location = screen.getByRole("button", {
+      name: /^Фильтровать по локации Северная поляна, 3 из 5/,
+    });
+    await user.click(location);
+
+    expect(screen.getByText("Отчёт по 3 из 5 наблюдений")).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole("button", {
+        name: /^Фильтровать по локации Северная поляна, 3 из 3/,
+      }),
+    );
+
+    expect(screen.getByText("Отчёт по 5 из 5 наблюдений")).toBeInTheDocument();
   });
 });
 

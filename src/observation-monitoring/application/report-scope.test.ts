@@ -75,7 +75,7 @@ describe("report scope", () => {
   it("combines fox, color, and prey filters without mutating input order", () => {
     const observations = applyReportFilters(reportObservations, {
       color: "рыжая",
-      foxQuery: "FOX_001",
+      foxQuery: "  FOX_001  ",
       location: "",
       prey: "without-prey",
     });
@@ -140,5 +140,25 @@ describe("report scope", () => {
 
     expect(viewModel.leader?.foxId).toBe("fox_001");
     expect(viewModel.selectedFox?.foxId).toBe("fox_001");
+  });
+
+  it("orders multi-record evidence by chronology and source records by recency", () => {
+    const viewModel = createSummaryViewModel(reportObservations, 20, {
+      selectedFoxId: "fox_001",
+    });
+
+    expect(viewModel.selectedFox?.observations.map(({ id }) => id)).toEqual([
+      "obs_003",
+      "obs_001",
+    ]);
+    expect(viewModel.selectedFox?.evidence.map(({ id }) => id)).toEqual([
+      "obs_001",
+      "obs_003",
+    ]);
+    expect(viewModel.selectedFox?.evidence).toEqual([
+      expect.objectContaining({ timelinePositionPercent: 10 }),
+      expect.objectContaining({ timelinePositionPercent: 90 }),
+    ]);
+    expect(viewModel.selectedFox?.timeRangeLabel).toBe("08:20–10:40");
   });
 });

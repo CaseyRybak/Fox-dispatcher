@@ -48,7 +48,10 @@ export function App() {
   const [selectedFoxId, setSelectedFoxId] = useState(
     initialSummary.leader?.foxId,
   );
-  const [announcement, setAnnouncement] = useState("");
+  const [announcement, setAnnouncement] = useState({
+    message: "",
+    revision: 0,
+  });
   const committedWeightRef = useRef(DEFAULT_PREY_WEIGHT_PERCENT);
   const committedLeaderRef = useRef(initialSummary.leader?.foxId);
   const scopedObservations = useMemo(
@@ -97,7 +100,7 @@ export function App() {
       },
     );
 
-    setAnnouncement(
+    announce(
       createPolicyAnnouncement(committedLeaderRef.current, committedViewModel),
     );
     committedWeightRef.current = nextPreyWeightPercent;
@@ -119,7 +122,7 @@ export function App() {
     );
     const nextSelectedFoxId = nextViewModel.selectedFox?.foxId;
 
-    setAnnouncement(
+    announce(
       createFilterAnnouncement(
         nextObservations.length,
         starterObservations.length,
@@ -138,12 +141,20 @@ export function App() {
 
   function selectFox(foxId: string) {
     setSelectedFoxId(foxId);
-    setAnnouncement(`Показаны доказательства ${foxId}.`);
+    announce(`Показаны доказательства ${foxId}.`);
+  }
+
+  function announce(message: string) {
+    setAnnouncement(({ revision }) => ({
+      message,
+      revision: revision + 1,
+    }));
   }
 
   return (
     <ApplicationShell
-      announcement={announcement}
+      announcement={announcement.message}
+      announcementRevision={announcement.revision}
       destination={destination}
       filterOptions={reportFilterOptions}
       filters={reportFilters}

@@ -8,8 +8,10 @@ Fox Dispatcher is an interactive local-first dashboard for a forest observer. Th
 - Phase 1 is complete: the walking skeleton and its consistency corrections establish the pinned toolchain, validated starter boundary, navigation, architecture checks, and shared verification gate.
 - Phase 2 is complete and published with Phase 1 on `main` in `c53d1f1`: exact scoring, deterministic ranking, contribution explanations, the live prey-weight policy, and responsive Summary baseline are verified.
 - [Phase 2 evidence](docs/verification/phase-2-explainable-ranking.md) records focused tests, the full gate, production-preview interactions, accessibility snapshots, console results, and 320 px reflow.
-- Phase 3 is complete in the working tree: report-wide filters, selected-fox evidence, location activity, recent observations, deterministic chip focus, and the shared Observations scope pass focused, full, production-browser, and 320 px gates.
-- [Phase 3 evidence](docs/verification/phase-3-evidence-and-activity.md) records the automated and visual acceptance results. Phase 3 remains uncommitted and unpushed; Phase 4 waits for a direct command.
+- Phase 3 is complete and published on `main` in `9834af5`: report-wide filters, selected-fox evidence, location activity, recent observations, deterministic chip focus, and the shared Observations scope passed focused, full, production-browser, and 320 px gates.
+- [Phase 3 evidence](docs/verification/phase-3-evidence-and-activity.md) records the automated and visual acceptance results, including the accepted consistency hardening.
+- The rebalanced MOX delivery path puts mandatory communication first: Phase 4 publishes the real 5-7 checkpoint AI Worklog and reviewer README; Phase 5 adds proportionate observation management; Phase 6 closes targeted UX/accessibility evidence; Phase 7 deploys to Vercel. Phase 8 import/export and advanced recovery are optional stretch work.
+- Phase 4 is the next authorized slice and waits for a direct user command.
 - Deployment target: Vercel through the GitHub repository integration.
 
 ## Start here

@@ -34,3 +34,6 @@ jobs:
 
       - name: Verify repository
         run: npm run verify
+
+      - name: Verify Phase 3 production-browser flow
+        run: npm run test:e2e
