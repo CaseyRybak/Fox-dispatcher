@@ -1,0 +1,4 @@
+interface:
+  display_name: "Verify Completion"
+  short_description: "Collect fresh completion evidence"
+  default_prompt: "Use $verification-before-completion to verify the current task with fresh, reproducible evidence."

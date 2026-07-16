@@ -1,0 +1,4 @@
+interface:
+  display_name: "Writing Plans"
+  short_description: "Create executable repository plans"
+  default_prompt: "Use $writing-plans to turn the approved Fox Dispatcher specification into a versioned execution plan."

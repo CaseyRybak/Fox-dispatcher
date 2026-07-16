@@ -1,0 +1,4 @@
+interface:
+  display_name: "Web Best Practices"
+  short_description: "Review web security and artifact quality"
+  default_prompt: "Use $best-practices to review editable data, privacy, dependencies, and production artifacts."

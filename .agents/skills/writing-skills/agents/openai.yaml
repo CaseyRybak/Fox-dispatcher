@@ -1,0 +1,4 @@
+interface:
+  display_name: "Write Repository Skills"
+  short_description: "Capture reusable repository workflows"
+  default_prompt: "Use $writing-skills to capture a proven Fox Dispatcher workflow as a concise repository skill."

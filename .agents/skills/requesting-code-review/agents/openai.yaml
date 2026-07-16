@@ -1,0 +1,4 @@
+interface:
+  display_name: "Request Code Review"
+  short_description: "Prepare a focused review package"
+  default_prompt: "Use $requesting-code-review to prepare a minimal, secret-safe review brief for the current change."

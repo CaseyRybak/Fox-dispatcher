@@ -1,0 +1,4 @@
+interface:
+  display_name: "React Best Practices"
+  short_description: "Apply focused React performance guidance"
+  default_prompt: "Use $react-best-practices to inspect the relevant React behavior and load only the matching rule references."

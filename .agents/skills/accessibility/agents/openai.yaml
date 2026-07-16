@@ -1,0 +1,4 @@
+interface:
+  display_name: "Accessibility"
+  short_description: "Review accessible interaction flows"
+  default_prompt: "Use $accessibility to review the current Fox Dispatcher interaction for keyboard, focus, semantics, and WCAG evidence."

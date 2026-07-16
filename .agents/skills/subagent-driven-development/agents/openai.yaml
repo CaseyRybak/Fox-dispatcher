@@ -1,0 +1,4 @@
+interface:
+  display_name: "Subagent Development"
+  short_description: "Coordinate bounded agent implementation"
+  default_prompt: "Use $subagent-driven-development to execute an approved plan through bounded implementer and reviewer tasks."
