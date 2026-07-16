@@ -1,10 +1,12 @@
 # Phase 4 AI Worklog and reviewer README verification
 
-Status: complete and verified; publication authorized after acceptance
+Status: accepted and published in `699d457`; consistency corrections are in the current working tree
 
 Evidence date: 2026-07-16
 
 Published baseline: `1b2bb24e049a0fc9aca4704ef288400a97bec4ec` (`main == origin/main` before Phase 4)
+
+Published Phase 4 revision: `699d457a84d8f3fdc8ff5ae7f0b9d15c5ed0aa9c`
 
 ## Accepted scope
 
@@ -92,4 +94,43 @@ Visual artifacts:
 
 ## Handoff
 
-The Worklog and README are complete locally. Phase 7 still owns the public Vercel URL and the final deployed-revision update to README/Worklog. Phase 5 observation management is the next pending slice and requires a separate direct command.
+The Worklog and README are published in `699d457`. Phase 7 still owns the public Vercel URL and the final deployed-revision update to README/Worklog. Phase 5 observation management is the next pending slice and requires a separate direct command.
+
+## Consistency follow-up
+
+A fresh audit against published revision `699d457a84d8f3fdc8ff5ae7f0b9d15c5ed0aa9c` found one high-impact reproducibility defect: GitHub Actions used the default shallow checkout while `check:worklog-links` resolves evidence from four earlier revisions. A depth-1 clone reproduced 12 unresolved references; after fetching full history, the same script resolved all 12. The current working tree sets `fetch-depth: 0` and explains why history is required.
+
+The follow-up also:
+
+- synchronizes the repository maps, architecture, active plan, Phase 3 evidence, and this record with the published Phase 4 revision;
+- adds the reviewer demo flow and this Phase 4 evidence link to README;
+- expands public-content rejection from 6 to 9 classes, covering Windows/file absolute paths, current AI-key shapes, AWS access keys, and common raw transcript roles;
+- makes the component and production-browser checks require all 12 accepted evidence links;
+- checks `rel="noreferrer"` in the production flow and discloses new-tab behavior in each evidence link's accessible name;
+- records the Phase 7 decision gate for an exact Vercel evidence URL contract rather than accepting wildcard deployment hosts early.
+
+Fresh results with Node `24.17.0` and npm `11.13.0`:
+
+```text
+npm run test -- worklog --run
+Test Files  2 passed (2)
+Tests       5 passed (5)
+
+npm run check:public-content
+Pass: 2 public artifacts, 9 prohibited-pattern classes.
+
+npm run check:worklog-links
+Pass: 6 checkpoints, 12 revision-pinned repository artifacts.
+
+Published regression suite
+Test Files  8 passed (8)
+Tests       35 passed (35)
+
+Scoped Prettier, ESLint, git diff --check, boundary checks
+Pass
+
+npm audit --offline --omit=optional
+Pass: 0 vulnerabilities.
+```
+
+The production build passed before unrelated concurrent Phase 5 files entered the shared working tree. A final `npm run verify` rerun is currently blocked by formatting/type errors in that separate in-progress slice; the Phase 4 scoped formatting, lint, tests, links, safety checks, and published regression suite remain green. A fresh `test:e2e:worklog` rebuilt the application but could not bind the preview server because this audit sandbox rejects `listen 127.0.0.1:4173` with `EPERM`; the committed browser artifacts were re-inspected, but this follow-up does not claim a new browser execution. No commit or push was performed by this audit.

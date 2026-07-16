@@ -1,10 +1,10 @@
 # Fox Dispatcher: implementation outcome
 
-Status: Phases 0-4 are complete; Phase 5 is the next pending slice
+Status: Phases 0-5 are complete; Phase 6 is the next pending slice
 
 Deployment target: Vercel
 
-Current gate: wait for a direct Phase 5 command before adding observation management
+Current gate: wait for a direct Phase 6 command before targeted UX/accessibility work
 
 Authority boundary: phases, commits, and pushes wait for separate direct user commands
 
@@ -79,11 +79,13 @@ If `obs_005.suspicion_level` changes from 3 to 10 under the default 80/20 policy
 
 ### Current repository state
 
-Phase 0 materialized the repository map, product specification, interface specification, architecture, and three accepted decision records in `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Phase 1 added the verified package/toolchain, bounded-context source tree, validated assignment fixture, responsive application shell, import-boundary enforcement, tests, CI, and browser evidence. Phase 2 added exact scoring and ordering, an application Summary query, the leader/ranking/contribution interface, synchronized policy controls, and production-preview evidence. Phases 1 and 2 were published together on `main` in `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`; Phase 3 was later published in `9834af5b48705cbf00d8207877c6880a7e6e10f5`. During this final audit the repository advanced concurrently to `1b2bb24e049a0fc9aca4704ef288400a97bec4ec` (`HEAD == origin/main`), publishing the consistency hardening and plan rebaseline without a commit or push command from this audit agent.
+Phase 0 materialized the repository map, product specification, interface specification, architecture, and three accepted decision records in `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Phase 1 added the verified package/toolchain, bounded-context source tree, validated assignment fixture, responsive application shell, import-boundary enforcement, tests, CI, and browser evidence. Phase 2 added exact scoring and ordering, an application Summary query, the leader/ranking/contribution interface, synchronized policy controls, and production-preview evidence. Phases 1 and 2 were published together on `main` in `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`; Phase 3 was later published in `9834af5b48705cbf00d8207877c6880a7e6e10f5`, and its consistency hardening and plan rebaseline followed in `1b2bb24e049a0fc9aca4704ef288400a97bec4ec`. The remaining Phase 3 audit corrections and Phase 4 were published together in `699d457a84d8f3fdc8ff5ae7f0b9d15c5ed0aa9c`, which is the published baseline for this follow-up audit.
 
-The published Phase 3 consistency hardening adds complete ranking facts, persistent live status, cross-route zero-state recovery, stronger evidence/filter tests, safer browser-runner cleanup, CI coverage for the production-browser gate, and corrected delivery-state documentation. Final working-tree corrections preserve focus after Observations reset, reject misleading extra browser-runner arguments, and state the fresh-browser limitation precisely. External Vercel project configuration remains a later outcome.
+The published Phase 3 consistency hardening adds complete ranking facts, persistent live status, cross-route zero-state recovery, stronger evidence/filter tests, safer browser-runner cleanup, CI coverage for the production-browser gate, and corrected delivery-state documentation. The corrections published in `699d457` preserve focus after Observations reset, reject misleading extra browser-runner arguments, and state the fresh-browser limitation precisely. External Vercel project configuration remains a later outcome.
 
-Phase 4 replaces the Worklog placeholder with 6 structured public-safe checkpoints and 12 evidence links pinned to published revisions. A strict adapter boundary, privacy scan, Git-object link validation, focused tests, production-browser flow, and responsive screenshots protect the public artifact. The new reviewer README explains the scenario, formula, stack, local start, AI tools, checks, limitations, repository link, and pending Phase 7 deployment without relying on chat history.
+Phase 4, published in `699d457`, replaces the Worklog placeholder with 6 structured public-safe checkpoints and 12 evidence links pinned to published revisions. A strict adapter boundary, privacy scan, Git-object link validation, focused tests, production-browser flow, and responsive screenshots protect the public artifact. The new reviewer README explains the scenario, formula, demo flow, stack, local start, AI tools, checks, limitations, repository link, and pending Phase 7 deployment without relying on chat history.
+
+Phase 5 is complete in the uncommitted working tree. It adds atomic six-field observation commands, secure injected IDs, an accessible inline editor, delete/undo, starter reset, one authoritative report state, and strict local version-1 persistence with explicit memory-only status. Focused tests, the full repository gate, and the production-browser journey cover the exact `obs_005 -> 10 -> fox_004 = 8.0` result, unique-fox recalculation, focus recovery, undo, reload, and 320 px document reflow.
 
 After a direct user review against the original MOX brief, the remaining sequence was rebalanced on 2026-07-16. Mandatory Worklog/README work moved from Phase 7 to Phase 4, observation management became a proportionate should-have Phase 5, targeted quality remained Phase 6, Vercel submission moved to Phase 7, and import/export plus advanced recovery became optional Phase 8. This rebaseline changes priorities and ownership only; it does not claim that any pending phase was implemented.
 
@@ -408,7 +410,7 @@ Completion notes:
 
 ### Phase 3: Connect ranking to evidence and activity
 
-Status: completed on 2026-07-16 and published in `9834af5`; consistency hardening published in `1b2bb24`; final audit corrections verified in the working tree
+Status: completed on 2026-07-16 and published in `9834af5`; consistency hardening published in `1b2bb24`; final audit corrections published in `699d457`
 
 Target outcome: a reviewer can move from the leader to raw evidence and understand where observations are concentrated.
 
@@ -450,7 +452,7 @@ Completion notes:
 
 ### Phase 4: Publish the real AI Worklog and reviewer README
 
-Status: completed and verified on 2026-07-16
+Status: completed, verified, and published in `699d457` on 2026-07-16
 
 Target outcome: the two mandatory communication artifacts already describe the real AI-first process before optional product depth continues.
 
@@ -492,11 +494,12 @@ Completion notes:
 - `README.md` gives the reviewer an honest current-state handoff; the Vercel URL remains explicitly pending until Phase 7.
 - `check:public-content` scans the two public artifacts, while `check:worklog-links` validates the schema and resolves every commit/path pair through local Git objects.
 - Focused tests cover valid/invalid public data and UI semantics. `test:e2e:worklog` covers route focus, 6 checkpoints, 12 pinned links, public text, 320 px overflow, screenshots, and zero browser errors.
+- Through Phase 4 Worklog evidence is restricted to revision-pinned GitHub blobs. Phase 7 must add and verify an exact Vercel artifact URL contract before using deployment evidence directly in the structured source; otherwise it can keep the Worklog pinned to the published `release-evidence.md` revision and put the public deployment URL in README.
 - [Phase 4 evidence](../../verification/phase-4-ai-worklog-and-readme.md) records the commands, artifacts, and remaining deployment boundary.
 
 ### Phase 5: Add proportionate observation management
 
-Status: pending; next authorized should-have slice
+Status: complete in the working tree; uncommitted and unpushed
 
 Target outcome: a reviewer can add, edit, delete, undo, reset, and reload observations while every report section recalculates from one accepted state.
 
@@ -526,6 +529,16 @@ Verification commands and expected evidence:
 - `npm run verify` remains clean.
 
 Estimated effort: 3-4 hours.
+
+Completion notes:
+
+- `observation-management.ts` validates the six assignment fields and applies add/edit/delete/undo/reset without mutating the previous set.
+- Production IDs use injected `crypto.randomUUID()` values in `obs_<uuid>` form; generation and collision errors keep the form and dataset intact.
+- The Observations route provides labelled fields, permanent hints, focused error summaries, row-specific actions, persistent one-step undo, starter reset confirmation, and visible browser/memory-only status.
+- `fox-dispatcher.dashboard` stores only a strict version-1 envelope containing observations, scoring policy, and a UTC timestamp. Missing, valid, corrupt, unsupported, unavailable, and failed-save paths do not crash or silently replace accepted data.
+- All reports, filter options, evidence, activity, counts, and rankings derive from the accepted observation array. Filters remain unsaved; starter-data reset leaves the scoring policy unchanged.
+- Focused mutation/persistence/component tests pass, `npm run verify` passes, and `npm run test:e2e:manage-observations` returns `fox_004`, `8.0`, restored suspicion `10`, 320 px reflow, and zero browser errors.
+- [Phase 5 evidence](../../verification/phase-5-observation-management.md) records the reproducible commands and visual artifacts. Phase 6 retains the planned mobile-card/table refinement and broader accessibility evidence.
 
 ### Phase 6: Complete targeted responsive and accessibility quality
 
@@ -659,4 +672,4 @@ Optional Phase 8 may add atomic JSON import/export and advanced recovery after t
 
 Required execution order is Phase 0 through Phase 7. Phase 4 has closed the mandatory Worklog/README gap before the should-have observation-management enhancement in Phase 5. Phase 6 verifies the implemented journey, and Phase 7 deploys and closes the MOX submission. Phase 8 is a separate optional extension, not a release dependency.
 
-The next authority gate is **Phase 5: Add proportionate observation management**. Its first verification checkpoint is an application-level mutation transition with fixed-ID tests before any editor UI is added. Phase 4 and the remaining Phase 3 final-audit corrections are complete and verified. No Phase 5 implementation, Vercel connection, or deployment begins without a separate direct command.
+The next authority gate is **Phase 6: Complete targeted responsive and accessibility quality**. Phase 5 is complete and verified in the working tree but remains uncommitted and unpushed. No Phase 6 implementation, Vercel connection, deployment, commit, or push begins without a separate direct command.

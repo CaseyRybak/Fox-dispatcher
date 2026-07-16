@@ -1,6 +1,6 @@
 # Phase 3 ranking, evidence, and activity verification
 
-Status: accepted and published; consistency hardening published in `1b2bb24`; final audit corrections verified in the working tree
+Status: accepted and published; consistency hardening published in `1b2bb24`; final audit corrections published with Phase 4 in `699d457`
 
 Evidence date: 2026-07-16
 
@@ -9,6 +9,8 @@ Published baseline: `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb` (`main`, equal to
 Published Phase 3 revision: `9834af5b48705cbf00d8207877c6880a7e6e10f5` (`main == origin/main` before the consistency follow-up)
 
 Published consistency-hardening revision: `1b2bb24e049a0fc9aca4704ef288400a97bec4ec` (`main == origin/main` after a concurrent publication during the final audit)
+
+Published final-corrections revision: `699d457a84d8f3fdc8ff5ae7f0b9d15c5ed0aa9c` (published together with the Phase 4 integration)
 
 ## Accepted scope
 

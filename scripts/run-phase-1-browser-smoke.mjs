@@ -19,6 +19,7 @@ const allowedSmokePrograms = new Set([
   "phase-1-browser-smoke.js",
   "phase-3-summary-evidence.js",
   "phase-4-worklog-evidence.js",
+  "phase-5-observation-management.js",
 ]);
 
 if (unexpectedArguments.length > 0) {

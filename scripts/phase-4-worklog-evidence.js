@@ -47,7 +47,10 @@ async (page) => {
   );
 
   const links = timeline.getByRole("link");
-  assert((await links.count()) >= 6, "Worklog does not expose evidence links.");
+  assert(
+    (await links.count()) === 12,
+    "Worklog does not expose the 12 accepted evidence links.",
+  );
   for (const link of await links.all()) {
     const href = await link.getAttribute("href");
     assert(
@@ -60,11 +63,21 @@ async (page) => {
       (await link.getAttribute("target")) === "_blank",
       "Evidence link does not open in a separate tab.",
     );
+    assert(
+      (await link.getAttribute("rel")) === "noreferrer",
+      "Evidence link does not protect the opener/referrer boundary.",
+    );
+    assert(
+      /откроется в новой вкладке/i.test(
+        (await link.getAttribute("aria-label")) ?? "",
+      ) || /откроется в новой вкладке/i.test((await link.textContent()) ?? ""),
+      "Evidence link does not disclose that it opens a new tab.",
+    );
   }
 
   const publicText = await timeline.textContent();
   assert(
-    !/(?:\/home\/|\\\\wsl\$|github_pat_|BEGIN PRIVATE KEY)/i.test(
+    !/(?:\/(?:home|Users)\/|[A-Za-z]:\\(?:Users|Documents and Settings)\\|file:\/\/\/|\\\\wsl\$|github_pat_|gh[pousr]_|sk-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY|(?:<|\b)(?:user|assistant|system)(?:>|\s*:))/i.test(
       publicText ?? "",
     ),
     "Private content reached the Worklog UI.",

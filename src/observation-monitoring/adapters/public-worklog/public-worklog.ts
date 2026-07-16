@@ -10,11 +10,15 @@ const pinnedEvidenceUrl =
   /^https:\/\/github\.com\/CaseyRybak\/Fox-dispatcher\/blob\/[0-9a-f]{40}\/.+/;
 const unsafePublicContent = [
   /(?:^|["'\s])\/(?:home|Users)\//i,
+  /(?:^|["'\s])[A-Za-z]:\\(?:Users|Documents and Settings)\\/i,
+  /file:\/\/\/(?:[A-Za-z]:\/|(?:home|Users)\/)/i,
   /\\\\wsl\$/i,
   /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
   /github_pat_[A-Za-z0-9_]+/,
   /gh[pousr]_[A-Za-z0-9]+/,
-  /sk-[A-Za-z0-9]{20,}/,
+  /sk-[A-Za-z0-9_-]{20,}/,
+  /AKIA[0-9A-Z]{16}/,
+  /(?:<|\b)(?:user|assistant|system)(?:>|\s*:)/i,
 ];
 
 const contentField = z.string().trim().min(1).max(560);
@@ -65,16 +69,26 @@ const publicWorklogSchema = z
 
       ids.add(checkpoint.id);
 
-      const serializedCheckpoint = JSON.stringify(checkpoint);
-      if (
-        unsafePublicContent.some((pattern) =>
-          pattern.test(serializedCheckpoint),
-        )
-      ) {
+      const publicText = [
+        checkpoint.id,
+        checkpoint.stage,
+        checkpoint.date,
+        checkpoint.goal,
+        checkpoint.aiContribution,
+        checkpoint.humanDecision,
+        checkpoint.change,
+        checkpoint.verification,
+        ...checkpoint.evidence.flatMap(({ href, kind, label }) => [
+          href,
+          kind,
+          label,
+        ]),
+      ].join("\n");
+      if (unsafePublicContent.some((pattern) => pattern.test(publicText))) {
         context.addIssue({
           code: "custom",
           message:
-            "Checkpoint contains private-path or credential-shaped content.",
+            "Checkpoint contains private, credential-shaped, or transcript content.",
           path: [index],
         });
       }

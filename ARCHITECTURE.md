@@ -9,10 +9,11 @@ The durable product contract lives in [docs/product-specs/fox-dispatcher.md](doc
 ## Delivery status
 
 - The published `c53d1f1` revision contains the complete Phase 1 shell and Phase 2 scoring/report slice.
-- Phase 3 was published on `main` in `9834af5`: application report filtering, selected evidence, location activity, recent observations, deterministic chip focus, and shared Summary/Observations scope passed focused, full, production-browser, and narrow-reflow gates. Its consistency hardening and rebalanced plan were published concurrently during the final audit in `1b2bb24`; the remaining final-audit corrections are in the working tree.
+- Phase 3 was published on `main` in `9834af5`: application report filtering, selected evidence, location activity, recent observations, deterministic chip focus, and shared Summary/Observations scope passed focused, full, production-browser, and narrow-reflow gates. Its consistency hardening and rebalanced plan were published in `1b2bb24`; the remaining final-audit corrections were published with Phase 4 in `699d457`.
 - [Phase 3 evidence](docs/verification/phase-3-evidence-and-activity.md) is the report-interaction acceptance record.
-- Phase 4 is complete: a Zod boundary parses the structured public Worklog, the composition root injects it into the UI, public-content/link checks protect the bundle, and the reviewer README describes the current product honestly.
-- The remaining core order is Phase 5 proportionate mutation/persistence, Phase 6 targeted quality, and Phase 7 Vercel submission. Phase 8 import/export and advanced recovery are optional extensions.
+- Phase 4 is complete and published in `699d457`: a Zod boundary parses the structured public Worklog, the composition root injects it into the UI, public-content/link checks protect the bundle, and the reviewer README describes the current product honestly.
+- Phase 5 is complete in the working tree: atomic observation commands, injected ID generation, delete/undo/reset, and strict browser persistence feed the existing report path from one authoritative state.
+- The remaining core order is Phase 6 targeted quality and Phase 7 Vercel submission. Phase 8 import/export and advanced recovery are optional extensions.
 
 Sections below use **implemented** for published behavior and focused-tested working-tree follow-ups, and **planned** for later ports, commands, adapters, public content, and deployment policy.
 
@@ -120,7 +121,7 @@ Score and mean comparisons use safe-integer cross multiplication under the 1000-
 
 ### Application
 
-The application layer coordinates user intent. Summary queries, scoring-policy updates, report filters, selected-fox fallback, and view-model translation are implemented through Phase 3; Phase 5 plans the following proportionate mutation and persistence commands:
+The application layer coordinates user intent. Summary queries, scoring-policy updates, report filters, selected-fox fallback, view-model translation, and the following proportionate mutation/persistence commands are implemented:
 
 - initialize from starter or persisted state;
 - update scoring policy;
@@ -132,7 +133,7 @@ The application layer coordinates user intent. Summary queries, scoring-policy u
 
 The initially selected fox is the current leader. Explicit selection survives recalculation while the fox remains in scope; otherwise the application selects the new leader or no fox for an empty report. Automatic fallback updates status without moving focus.
 
-Planned core outbound ports:
+Implemented core outbound ports:
 
 ```text
 DashboardStateStore
@@ -148,7 +149,7 @@ Optional Phase 8 adds `ObservationImportParser` and `ObservationExporter` ports 
 
 JSON parsing and starter-data validation are boundary adapters that produce domain-ready observations or structured validation failures.
 
-The production ID adapter will create `obs_<uuid>` values through the secure browser `crypto.randomUUID()` API. The application validates the generated value against the normal 64-character ID boundary and the active dataset before accepting an add command; tests inject deterministic IDs. Generation or collision failure leaves state unchanged and returns a form-level error.
+The production ID adapter creates `obs_<uuid>` values through the secure browser `crypto.randomUUID()` API. The application validates the generated value against the normal 64-character ID boundary and the active dataset before accepting an add command; tests inject deterministic IDs. Generation or collision failure leaves state unchanged and returns a form-level error.
 
 ### Adapters
 
@@ -159,7 +160,7 @@ Adapters translate browser and file representations:
 - application state into a small versioned local storage envelope;
 - optionally in Phase 8, unknown JSON into a preview and observations into a downloadable JSON array.
 
-The storage envelope is planned as:
+The implemented storage envelope is:
 
 ```text
 {
@@ -184,7 +185,7 @@ React renders application view models and emits commands. The UI has three desti
 
 The [interface specification](docs/design-docs/interface.md) owns composition, copy, responsive behavior, and accessibility.
 
-Through Phase 4 the composition root can keep focused React state for destination, policy, filters, selection, announcement, and static Worklog content. Phase 5 may consolidate mutation, undo, reset, and persistence transitions behind a reducer or equivalent application state machine; the architectural requirement is one accepted-state transition path, not a particular React hook.
+The composition root owns the accepted observation array and scoring policy, delegates validation and immutable transitions to application commands, and sends each accepted state through the injected persistence adapter. Filters, selection, undo, announcements, and static Worklog content remain focused React state; every report is derived from the same accepted observation array.
 
 ## Data flow
 
@@ -235,7 +236,7 @@ The AI Worklog UI consumes a structured public source under `docs/ai-worklog/`. 
 
 The Phase 4 public-content check covers secret-like values, private absolute paths, credentials, and accidental transcript dumps before the Worklog enters the production bundle. The schema boundary requires 5-7 strict records and freezes accepted values; a repository-native link check resolves every revision/path pair through Git objects.
 
-Each evidence reference has `label`, `kind`, and a public HTTPS `href` pinned to a GitHub repository revision or a public Vercel artifact. Build-time checks reject local filesystem paths, unsafe URL schemes, unresolved repository links, and unpinned mutable evidence where a revision is available.
+Each evidence reference has `label`, `kind`, and a public HTTPS `href` pinned to a GitHub repository revision or a public Vercel artifact. Through Phase 4 the accepted source uses only revision-pinned GitHub blobs, which the build-time check resolves through local Git objects. If Phase 7 adds a Vercel artifact to the Worklog, that slice must first add an exact host/URL contract and its own resolvability check; a mutable or wildcard Vercel URL is not accepted implicitly. Build-time checks reject local filesystem paths, unsafe URL schemes, unresolved repository links, and unpinned mutable evidence where a revision is available.
 
 ## Deployment topology
 

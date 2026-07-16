@@ -6,14 +6,26 @@ const forbiddenPatterns = [
     label: "private Unix home path",
     pattern: /(?:^|["'\s])\/(?:home|Users)\//i,
   },
+  {
+    label: "private Windows home path",
+    pattern: /(?:^|["'\s])[A-Za-z]:\\(?:Users|Documents and Settings)\\/i,
+  },
+  {
+    label: "private file URL",
+    pattern: /file:\/\/\/(?:[A-Za-z]:\/|(?:home|Users)\/)/i,
+  },
   { label: "private WSL path", pattern: /\\\\wsl\$/i },
   {
     label: "private key block",
     pattern: /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/,
   },
   { label: "GitHub token", pattern: /(?:github_pat_|gh[pousr]_)[A-Za-z0-9_]+/ },
-  { label: "API key", pattern: /sk-[A-Za-z0-9]{20,}/ },
-  { label: "raw transcript role", pattern: /<(?:user|assistant|system)>/i },
+  { label: "AI API key", pattern: /sk-[A-Za-z0-9_-]{20,}/ },
+  { label: "AWS access key", pattern: /AKIA[0-9A-Z]{16}/ },
+  {
+    label: "raw transcript role",
+    pattern: /(?:<|\b)(?:user|assistant|system)(?:>|\s*:)/i,
+  },
 ];
 const failures = [];
 

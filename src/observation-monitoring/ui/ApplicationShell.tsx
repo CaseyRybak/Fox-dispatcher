@@ -3,6 +3,11 @@ import { type MouseEvent, useRef } from "react";
 import type { ObservationSetOverview } from "@/observation-monitoring/application/create-observation-set-overview";
 import type { SummaryViewModel } from "@/observation-monitoring/application/create-summary-view-model";
 import type { PublicWorklogCheckpoint } from "@/observation-monitoring/application/public-worklog";
+import type {
+  ObservationDeletionUndo,
+  ObservationDraft,
+  ObservationMutationResult,
+} from "@/observation-monitoring/application/observation-management";
 import {
   DEFAULT_REPORT_FILTERS,
   hasActiveReportFilters,
@@ -22,10 +27,22 @@ interface ApplicationShellProps {
   readonly filterOptions: ReportFilterOptions;
   readonly filters: ReportFilters;
   readonly onFiltersChange: (filters: ReportFilters) => void;
+  readonly onAddObservation: (
+    draft: ObservationDraft,
+  ) => ObservationMutationResult;
+  readonly onDeleteObservation: (observationId: string) => void;
+  readonly onEditObservation: (
+    observationId: string,
+    draft: ObservationDraft,
+  ) => ObservationMutationResult;
   readonly onPreyWeightChange: (preyWeightPercent: number) => void;
   readonly onPreyWeightCommit: (preyWeightPercent: number) => void;
   readonly onSelectFox: (foxId: string) => void;
+  readonly onResetStarter: () => void;
+  readonly onUndoDelete: () => void;
   readonly overview: ObservationSetOverview;
+  readonly lastDeletion?: ObservationDeletionUndo;
+  readonly persistenceMessage: string;
   readonly summary: SummaryViewModel;
   readonly worklog: readonly PublicWorklogCheckpoint[];
 }
@@ -45,11 +62,18 @@ export function ApplicationShell({
   destination,
   filterOptions,
   filters,
+  lastDeletion,
+  onAddObservation,
+  onDeleteObservation,
+  onEditObservation,
   onFiltersChange,
   onPreyWeightChange,
   onPreyWeightCommit,
   onSelectFox,
+  onResetStarter,
+  onUndoDelete,
   overview,
+  persistenceMessage,
   summary,
   worklog,
 }: ApplicationShellProps) {
@@ -122,8 +146,15 @@ export function ApplicationShell({
         {destination === "observations" && (
           <ObservationsPage
             hasActiveFilters={hasActiveReportFilters(filters)}
+            lastDeletion={lastDeletion}
+            onAdd={onAddObservation}
+            onDelete={onDeleteObservation}
+            onEdit={onEditObservation}
             onResetFilters={() => onFiltersChange(DEFAULT_REPORT_FILTERS)}
+            onResetStarter={onResetStarter}
+            onUndoDelete={onUndoDelete}
             overview={overview}
+            persistenceMessage={persistenceMessage}
             scopeLabel={summary.scope.label}
           />
         )}

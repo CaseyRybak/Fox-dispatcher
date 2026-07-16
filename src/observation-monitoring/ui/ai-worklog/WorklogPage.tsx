@@ -90,6 +90,10 @@ export function WorklogPage({ checkpoints }: WorklogPageProps) {
                         <a href={item.href} rel="noreferrer" target="_blank">
                           <span>{evidenceKindLabels[item.kind]}</span>
                           {item.label}
+                          <span className="visually-hidden">
+                            {" "}
+                            (откроется в новой вкладке)
+                          </span>
                         </a>
                       </li>
                     ))}

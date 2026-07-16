@@ -57,7 +57,13 @@ describe("public AI Worklog boundary", () => {
   it("rejects private paths and credential-shaped content", () => {
     for (const unsafeText of [
       "/home/example/private-notes.txt",
+      String.raw`C:\Users\example\private-notes.txt`,
+      "file:///home/example/private-notes.txt",
       "github_pat_AAAAAAAAAAAAAAAAAAAA",
+      "sk-proj-AAAAAAAAAAAAAAAAAAAAAAAA",
+      "AKIAABCDEFGHIJKLMNOP",
+      "User: private prompt transcript",
+      "<assistant> private response transcript",
     ]) {
       expect(() =>
         parsePublicWorklog(

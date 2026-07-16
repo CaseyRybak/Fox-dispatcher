@@ -42,7 +42,7 @@ describe("public AI Worklog", () => {
     });
     const links = within(evidence).getAllByRole("link");
 
-    expect(links.length).toBeGreaterThanOrEqual(6);
+    expect(links).toHaveLength(12);
 
     for (const link of links) {
       expect(link).toHaveAttribute(
@@ -53,6 +53,7 @@ describe("public AI Worklog", () => {
       );
       expect(link).toHaveAttribute("target", "_blank");
       expect(link).toHaveAttribute("rel", "noreferrer");
+      expect(link).toHaveAccessibleName(/откроется в новой вкладке/i);
       expect(link).not.toHaveTextContent(/^https?:\/\//);
     }
   });

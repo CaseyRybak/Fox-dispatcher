@@ -24,6 +24,7 @@
     "test:browser": "npm run build && node scripts/run-phase-1-browser-smoke.mjs",
     "test:e2e": "npm run build && node scripts/run-phase-1-browser-smoke.mjs phase-3-summary-evidence.js",
     "test:e2e:worklog": "npm run build && node scripts/run-phase-1-browser-smoke.mjs phase-4-worklog-evidence.js",
+    "test:e2e:manage-observations": "npm run build && node scripts/run-phase-1-browser-smoke.mjs phase-5-observation-management.js",
     "test:run": "vitest run",
     "verify": "run-s format:check lint check:boundaries check:public-content check:worklog-links test:run build"
   },
