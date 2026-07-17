@@ -1463,6 +1463,10 @@ tbody tr:last-child td {
 
 .observation-editor {
   position: relative;
+  width: min(calc(100% - 48px), 1040px);
+  max-width: none;
+  max-height: min(900px, calc(100dvh - 48px));
+  margin: auto;
   scroll-margin-top: 150px;
   padding: 28px;
   border: 1px solid var(--pine-structure);
@@ -1470,6 +1474,16 @@ tbody tr:last-child td {
   border-radius: 10px;
   background: var(--surface-paper);
   box-shadow: var(--surface-shadow);
+}
+
+.observation-editor::backdrop,
+.reset-confirmation::backdrop {
+  background: rgb(23 39 31 / 54%);
+  backdrop-filter: blur(2px);
+}
+
+.observation-editor__content {
+  display: contents;
 }
 
 .observation-editor__heading {
@@ -1630,6 +1644,12 @@ tbody tr:last-child td {
   background: #fff9f3;
 }
 
+dialog.reset-confirmation {
+  width: min(calc(100% - 32px), 720px);
+  max-width: none;
+  margin: auto;
+}
+
 .observation-editor > .inline-confirmation {
   position: absolute;
   z-index: 2;
@@ -1655,6 +1675,134 @@ tbody tr:last-child td {
 .row-actions .text-action {
   min-height: 40px;
   padding-block: 5px;
+}
+
+.mobile-observation-ledger {
+  display: grid;
+  gap: 14px;
+}
+
+.mobile-observation-ledger__toolbar {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--ledger-line);
+  border-radius: 8px;
+  background: var(--surface-paper);
+}
+
+.mobile-observation-ledger__toolbar > p {
+  margin: 0;
+  color: var(--moss-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mobile-observation-ledger__toolbar label {
+  display: grid;
+  gap: 6px;
+  color: var(--forest-ink);
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.mobile-observation-ledger__toolbar select {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 36px 9px 12px;
+  border: 1px solid var(--ledger-line);
+  border-radius: 6px;
+  color: var(--forest-ink);
+  background: #fff;
+}
+
+.observation-card-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.observation-card {
+  display: grid;
+  gap: 16px;
+  padding: 18px 16px 16px;
+  border: 1px solid var(--ledger-line);
+  border-left: 4px solid var(--fox-signal);
+  border-radius: 8px;
+  background: var(--surface-paper);
+}
+
+.observation-card__heading,
+.observation-card__heading > div {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.observation-card__heading time {
+  color: var(--fox-signal);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+.observation-card__heading strong {
+  overflow-wrap: anywhere;
+}
+
+.observation-card__score {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border: 1px solid #d4a384;
+  border-radius: 999px;
+  color: #7b301d;
+  background: #fff5ed;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.observation-card > .data-id {
+  margin: -8px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.observation-card__facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  margin: 0;
+  padding: 14px 0;
+  border-block: 1px solid var(--ledger-line);
+}
+
+.observation-card__facts div {
+  min-width: 0;
+}
+
+.observation-card__facts dt {
+  color: var(--moss-muted);
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.observation-card__facts dd {
+  margin: 5px 0 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.observation-card .row-actions {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+}
+
+.observation-card .row-actions > button {
+  min-height: 44px;
 }
 
 .text-action--danger {
@@ -1968,7 +2116,27 @@ tbody tr:last-child td {
   }
 }
 
+@media (max-width: 767px) {
+  .observation-editor {
+    width: min(calc(100% - 24px), 640px);
+    max-height: calc(100dvh - 24px);
+    padding: 22px 18px;
+  }
+}
+
 @media (max-width: 640px) {
+  html {
+    scroll-padding-bottom: calc(82px + env(safe-area-inset-bottom));
+  }
+
+  a,
+  button,
+  input,
+  select,
+  [tabindex] {
+    scroll-margin-block: 88px;
+  }
+
   .site-header__inner,
   .main-content,
   .site-footer {
@@ -1977,6 +2145,8 @@ tbody tr:last-child td {
 
   .site-header__inner {
     gap: 14px;
+    grid-template-columns: 1fr;
+    min-height: 66px;
   }
 
   .brand__caption,
@@ -1988,8 +2158,31 @@ tbody tr:last-child td {
     min-width: 0;
   }
 
+  .primary-nav {
+    position: fixed;
+    z-index: 40;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    grid-column: auto;
+    grid-row: auto;
+    gap: 4px;
+    padding: 6px max(8px, env(safe-area-inset-right))
+      calc(6px + env(safe-area-inset-bottom))
+      max(8px, env(safe-area-inset-left));
+    border-width: 1px 0 0;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -10px 28px rgb(23 39 31 / 10%);
+  }
+
+  .primary-nav__link {
+    display: grid;
+    min-height: 48px;
+    place-items: center;
+  }
+
   .main-content {
-    padding: 28px 0 52px;
+    padding: 28px 0 112px;
   }
 
   .scope-toolbar__summary {
@@ -2195,6 +2388,7 @@ tbody tr:last-child td {
 
   .site-footer {
     display: grid;
+    padding-bottom: 104px;
   }
 
   .observation-page-heading,
@@ -2215,7 +2409,7 @@ tbody tr:last-child td {
   }
 
   .observation-editor {
-    padding: 22px 18px;
+    border-radius: 8px;
   }
 
   .observation-editor__heading .data-id {
@@ -2237,6 +2431,11 @@ tbody tr:last-child td {
     display: grid;
     gap: 2px;
   }
+
+  .observation-card .row-actions {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+  }
 }
 
 @media (max-width: 400px) {
@@ -2247,6 +2446,14 @@ tbody tr:last-child td {
   .primary-nav__link {
     padding-inline: 8px;
     font-size: 13px;
+  }
+
+  .observation-card__facts {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .observation-card__facts > div:first-child {
+    grid-column: 1 / -1;
   }
 }
 

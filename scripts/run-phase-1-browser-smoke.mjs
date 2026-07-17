@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
-import { readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -20,6 +20,8 @@ const allowedSmokePrograms = new Set([
   "phase-3-summary-evidence.js",
   "phase-4-worklog-evidence.js",
   "phase-5-observation-management.js",
+  "phase-6-accessibility.js",
+  "phase-6-responsive-keyboard.js",
 ]);
 
 if (unexpectedArguments.length > 0) {
@@ -33,6 +35,9 @@ if (!allowedSmokePrograms.has(smokeProgramName)) {
 }
 
 const smokeProgram = path.join(repositoryRoot, "scripts", smokeProgramName);
+mkdirSync(path.join(repositoryRoot, "output", "playwright", "phase-6"), {
+  recursive: true,
+});
 const smokeCode = readFileSync(smokeProgram, "utf8").trim().replace(/;$/, "");
 const port = 4173;
 const baseUrl = `http://127.0.0.1:${port}`;

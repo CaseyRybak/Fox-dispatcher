@@ -19,7 +19,7 @@ describe("observation management", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Изменить obs_005" }));
-    const editor = screen.getByRole("region", {
+    const editor = screen.getByRole("dialog", {
       name: "Изменить наблюдение obs_005",
     });
     const suspicion = within(editor).getByRole("spinbutton", {
@@ -32,7 +32,7 @@ describe("observation management", () => {
     );
 
     expect(
-      screen.queryByRole("region", { name: /Изменить наблюдение/ }),
+      screen.queryByRole("dialog", { name: /Изменить наблюдение/ }),
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "Изменить obs_005" }),
@@ -60,7 +60,7 @@ describe("observation management", () => {
     );
     await user.click(screen.getByRole("link", { name: "Наблюдения" }));
     await user.click(screen.getByRole("button", { name: "Изменить obs_005" }));
-    const editor = screen.getByRole("region", {
+    const editor = screen.getByRole("dialog", {
       name: "Изменить наблюдение obs_005",
     });
     const location = within(editor).getByRole("combobox", { name: "Локация" });
@@ -153,7 +153,7 @@ describe("observation management", () => {
     await user.click(
       screen.getByRole("button", { name: "Добавить наблюдение" }),
     );
-    const editor = screen.getByRole("region", { name: "Новое наблюдение" });
+    const editor = screen.getByRole("dialog", { name: "Новое наблюдение" });
     expect(within(editor).getByRole("textbox", { name: "Лиса" })).toHaveFocus();
 
     await user.click(
@@ -207,7 +207,7 @@ describe("observation management", () => {
     await user.click(
       screen.getByRole("button", { name: "Добавить наблюдение" }),
     );
-    const editor = screen.getByRole("region", { name: "Новое наблюдение" });
+    const editor = screen.getByRole("dialog", { name: "Новое наблюдение" });
     await user.click(
       within(editor).getByRole("button", { name: "Сохранить наблюдение" }),
     );
@@ -220,7 +220,7 @@ describe("observation management", () => {
     expect(window.location.hash).toBe("#observations");
     expect(within(editor).getByRole("textbox", { name: "Лиса" })).toHaveFocus();
     expect(
-      screen.getByRole("region", { name: "Новое наблюдение" }),
+      screen.getByRole("dialog", { name: "Новое наблюдение" }),
     ).toBeInTheDocument();
   });
 
@@ -229,7 +229,7 @@ describe("observation management", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Изменить obs_005" }));
-    const editor = screen.getByRole("region", {
+    const editor = screen.getByRole("dialog", {
       name: "Изменить наблюдение obs_005",
     });
     const suspicion = within(editor).getByRole("spinbutton", {
@@ -288,7 +288,7 @@ describe("observation management", () => {
     });
     await user.click(edit);
     expect(
-      screen.getByRole("region", {
+      screen.getByRole("dialog", {
         name: `Изменить наблюдение ${observationId}`,
       }),
     ).toBeInTheDocument();

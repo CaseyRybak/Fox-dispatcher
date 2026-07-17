@@ -65,10 +65,13 @@ export function ObservationsPage({
     direction: "descending",
     field: "time",
   });
-  const scopeLabelRef = useRef<HTMLTableCaptionElement>(null);
+  const isMobileLedger = useMediaQuery("(max-width: 767px)");
+  const scopeLabelRef = useRef<HTMLElement>(null);
   const addButtonRef = useRef<HTMLButtonElement>(null);
   const resetButtonRef = useRef<HTMLButtonElement>(null);
   const resetCancelRef = useRef<HTMLButtonElement>(null);
+  const resetDialogRef = useRef<HTMLDialogElement>(null);
+  const restoreResetFocusRef = useRef(false);
   const restoreFocusAfterResetRef = useRef(false);
   const focusAfterRenderRef = useRef<PendingFocus | undefined>(undefined);
 
@@ -118,7 +121,16 @@ export function ObservationsPage({
   }, [editor, overview.observations]);
 
   useEffect(() => {
-    if (confirmReset) resetCancelRef.current?.focus();
+    if (confirmReset) {
+      const dialog = resetDialogRef.current;
+      if (dialog && !dialog.open) dialog.showModal();
+      resetCancelRef.current?.focus();
+      return;
+    }
+    if (restoreResetFocusRef.current) {
+      restoreResetFocusRef.current = false;
+      resetButtonRef.current?.focus();
+    }
   }, [confirmReset]);
 
   function closeEditor() {
@@ -212,9 +224,16 @@ export function ObservationsPage({
       </section>
 
       {confirmReset && (
-        <section
+        <dialog
+          aria-modal="true"
           aria-labelledby="reset-starter-title"
           className="inline-confirmation reset-confirmation"
+          onCancel={(event) => {
+            event.preventDefault();
+            restoreResetFocusRef.current = true;
+            setConfirmReset(false);
+          }}
+          ref={resetDialogRef}
           role="alertdialog"
         >
           <div>
@@ -225,8 +244,8 @@ export function ObservationsPage({
             <button
               className="secondary-action"
               onClick={() => {
+                restoreResetFocusRef.current = true;
                 setConfirmReset(false);
-                resetButtonRef.current?.focus();
               }}
               ref={resetCancelRef}
               type="button"
@@ -246,7 +265,7 @@ export function ObservationsPage({
               Вернуть 5 стартовых наблюдений
             </button>
           </div>
-        </section>
+        </dialog>
       )}
 
       {lastDeletion && (
@@ -318,10 +337,28 @@ export function ObservationsPage({
           <h2 id="ledger-empty-title">Наблюдений пока нет</h2>
           <p>Добавьте новую запись или верните пять стартовых наблюдений.</p>
         </section>
+      ) : isMobileLedger ? (
+        <MobileObservationLedger
+          editorOpen={Boolean(editor)}
+          observations={sortedObservations}
+          onDelete={deleteRecord}
+          onEdit={(observation) => setEditor({ mode: "edit", observation })}
+          onSortChange={setSort}
+          scopeLabel={scopeLabel}
+          setScopeLabelElement={(element) => {
+            scopeLabelRef.current = element;
+          }}
+          sort={sort}
+        />
       ) : (
         <div className="table-frame">
           <table>
-            <caption ref={scopeLabelRef} tabIndex={-1}>
+            <caption
+              ref={(element) => {
+                scopeLabelRef.current = element;
+              }}
+              tabIndex={-1}
+            >
               {scopeLabel}
             </caption>
             <thead>
@@ -435,6 +472,162 @@ function SortableHeader({
       </button>
     </th>
   );
+}
+
+const mobileSortOptions: readonly {
+  readonly label: string;
+  readonly sort: ObservationSort;
+  readonly value: string;
+}[] = [
+  {
+    label: "Сначала новые",
+    sort: { direction: "descending", field: "time" },
+    value: "time-descending",
+  },
+  {
+    label: "Сначала ранние",
+    sort: { direction: "ascending", field: "time" },
+    value: "time-ascending",
+  },
+  {
+    label: "Сначала высокая оценка",
+    sort: { direction: "descending", field: "suspicionLevel" },
+    value: "suspicionLevel-descending",
+  },
+  {
+    label: "Лиса: от А до Я",
+    sort: { direction: "ascending", field: "foxId" },
+    value: "foxId-ascending",
+  },
+  {
+    label: "Локация: от А до Я",
+    sort: { direction: "ascending", field: "location" },
+    value: "location-ascending",
+  },
+];
+
+function MobileObservationLedger({
+  editorOpen,
+  observations,
+  onDelete,
+  onEdit,
+  onSortChange,
+  scopeLabel,
+  setScopeLabelElement,
+  sort,
+}: {
+  readonly editorOpen: boolean;
+  readonly observations: readonly ObservationListItem[];
+  readonly onDelete: (observationId: string) => void;
+  readonly onEdit: (observation: ObservationListItem) => void;
+  readonly onSortChange: (sort: ObservationSort) => void;
+  readonly scopeLabel: string;
+  readonly setScopeLabelElement: (element: HTMLElement | null) => void;
+  readonly sort: ObservationSort;
+}) {
+  const value = `${sort.field}-${sort.direction}`;
+
+  return (
+    <section
+      className="mobile-observation-ledger"
+      aria-labelledby="mobile-ledger-scope"
+    >
+      <div className="mobile-observation-ledger__toolbar">
+        <p id="mobile-ledger-scope" ref={setScopeLabelElement} tabIndex={-1}>
+          {scopeLabel}
+        </p>
+        <label>
+          <span>Сортировка наблюдений</span>
+          <select
+            onChange={(event) => {
+              const selected = mobileSortOptions.find(
+                ({ value: optionValue }) => optionValue === event.target.value,
+              );
+              if (selected) onSortChange(selected.sort);
+            }}
+            value={value}
+          >
+            {mobileSortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <ol
+        aria-label="Наблюдения текущей выборки"
+        className="observation-card-list"
+      >
+        {observations.map((observation) => (
+          <li className="observation-card" key={observation.id}>
+            <div className="observation-card__heading">
+              <div>
+                <time dateTime={observation.time}>{observation.time}</time>
+                <strong>{observation.foxId}</strong>
+              </div>
+              <span className="observation-card__score">
+                {observation.suspicionLevel} / 10
+              </span>
+            </div>
+            <p className="data-id">{observation.id}</p>
+            <dl className="observation-card__facts">
+              <div>
+                <dt>Локация</dt>
+                <dd>{observation.location}</dd>
+              </div>
+              <div>
+                <dt>Цвет</dt>
+                <dd>{observation.color}</dd>
+              </div>
+              <div>
+                <dt>Добыча</dt>
+                <dd>{observation.hasPrey ? "Есть" : "Нет"}</dd>
+              </div>
+            </dl>
+            <div className="row-actions">
+              <button
+                aria-label={`Изменить ${observation.id}`}
+                className="secondary-action"
+                data-edit-observation={observation.id}
+                disabled={editorOpen}
+                onClick={() => onEdit(observation)}
+                type="button"
+              >
+                Изменить
+              </button>
+              <button
+                aria-label={`Удалить ${observation.id}`}
+                className="text-action text-action--danger"
+                disabled={editorOpen}
+                onClick={() => onDelete(observation.id)}
+                type="button"
+              >
+                Удалить
+              </button>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(
+    () => window.matchMedia(query).matches,
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia(query);
+    const update = () => setMatches(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, [query]);
+
+  return matches;
 }
 
 function compareRows(

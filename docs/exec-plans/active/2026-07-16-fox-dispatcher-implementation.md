@@ -1,10 +1,10 @@
 # Fox Dispatcher: implementation outcome
 
-Status: Phases 0-5 are complete; Phase 6 is the next pending slice
+Status: Phases 0-6 are complete; Phase 7 is the next pending slice
 
 Deployment target: Vercel
 
-Current gate: wait for a direct Phase 6 command before targeted UX/accessibility work
+Current gate: wait for a direct Phase 7 command before Vercel deployment and submission closure
 
 Authority boundary: phases, commits, and pushes wait for separate direct user commands
 
@@ -85,7 +85,9 @@ The published Phase 3 consistency hardening adds complete ranking facts, persist
 
 Phase 4, published in `699d457`, replaces the Worklog placeholder with 6 structured public-safe checkpoints and 12 evidence links pinned to published revisions. A strict adapter boundary, privacy scan, Git-object link validation, focused tests, production-browser flow, and responsive screenshots protect the public artifact. The new reviewer README explains the scenario, formula, demo flow, stack, local start, AI tools, checks, limitations, repository link, and pending Phase 7 deployment without relying on chat history.
 
-Phase 5 was published on `main` in `0021c6d8bc55b55734ac503676f0e36a30d392ee`. It adds atomic six-field observation commands, secure injected IDs, an accessible inline editor, delete/undo, starter reset, one authoritative report state, and strict local version-1 persistence with explicit memory-only status. Focused tests, the full repository gate, and the production-browser journey cover the exact `obs_005 -> 10 -> fox_004 = 8.0` result, unique-fox recalculation, focus recovery, undo, reload, and 320 px document reflow. The current consistency audit adds uncommitted validation, editor-targeting, sorting, focus, feedback, and documentation corrections.
+Phase 5 was published on `main` in `0021c6d8bc55b55734ac503676f0e36a30d392ee`, and its consistency hardening was published in `df434c9`. It adds atomic six-field observation commands, secure injected IDs, delete/undo, starter reset, one authoritative report state, strict local version-1 persistence, runtime validation, safe editor targeting, deterministic sorting, focus recovery, and live feedback.
+
+Phase 6 is complete in the current uncommitted working tree. It converts the narrow observation ledger to explicit field cards and mobile sorting, moves editor/reset surfaces to native modal dialogs, adds bottom navigation and focus-obscuring protection, and establishes axe plus responsive-keyboard browser gates. [Accessibility evidence](../../verification/accessibility-evidence.md) records five viewport/orientation checks, zero targeted axe violations across six states, keyboard/dialog focus, 200% scale/reflow, text spacing, reduced motion, forced colors, and the explicit native-screen-reader limitation.
 
 After a direct user review against the original MOX brief, the remaining sequence was rebalanced on 2026-07-16. Mandatory Worklog/README work moved from Phase 7 to Phase 4, observation management became a proportionate should-have Phase 5, targeted quality remained Phase 6, Vercel submission moved to Phase 7, and import/export plus advanced recovery became optional Phase 8. This rebaseline changes priorities and ownership only; it does not claim that any pending phase was implemented.
 
@@ -499,7 +501,7 @@ Completion notes:
 
 ### Phase 5: Add proportionate observation management
 
-Status: completed and published in `0021c6d` on 2026-07-16; consistency-audit corrections are in the uncommitted working tree
+Status: completed and published in `0021c6d` on 2026-07-16; consistency hardening published in `df434c9`
 
 Target outcome: a reviewer can add, edit, delete, undo, reset, and reload observations while every report section recalculates from one accepted state.
 
@@ -542,7 +544,7 @@ Completion notes:
 
 ### Phase 6: Complete targeted responsive and accessibility quality
 
-Status: pending
+Status: completed on 2026-07-17; changes remain uncommitted and unpushed
 
 Target outcome: the actual reviewer journey, including Worklog and observation management when present, remains clear and operable across target viewports and input methods.
 
@@ -568,6 +570,14 @@ Verification commands and expected evidence:
 - `npm run test:e2e:responsive-keyboard` completes the primary flow at desktop and mobile viewports.
 - `docs/verification/accessibility-evidence.md` records Q-02 results and limitations.
 - `npm run verify` remains clean.
+
+Completion evidence:
+
+- the desktop table remains semantic while widths through 767 px use a labelled field-card list with a dedicated sort control;
+- native modal editor and reset dialogs expose accessible names, safe initial focus, Escape behavior, confirmation focus containment, and trigger-focus restoration;
+- `npm run test:a11y` reports zero targeted axe violations across six implemented page/dialog states;
+- `npm run test:e2e:responsive-keyboard` covers 1440x900, 768x1024, 390x844, 320x800, and 844x390 plus keyboard, focus-obscuring, reflow, text spacing, reduced motion, forced colors, and the Chromium accessibility tree;
+- [Phase 6 evidence](../../verification/accessibility-evidence.md) distinguishes browser accessibility-tree inspection from an unavailable native NVDA/VoiceOver/Orca pass.
 
 Estimated effort: 3-4 hours.
 
@@ -672,4 +682,4 @@ Optional Phase 8 may add atomic JSON import/export and advanced recovery after t
 
 Required execution order is Phase 0 through Phase 7. Phase 4 has closed the mandatory Worklog/README gap before the should-have observation-management enhancement in Phase 5. Phase 6 verifies the implemented journey, and Phase 7 deploys and closes the MOX submission. Phase 8 is a separate optional extension, not a release dependency.
 
-The next authority gate is **Phase 6: Complete targeted responsive and accessibility quality**. Phase 5 is published in `0021c6d`; the current Phase 5 consistency-audit corrections remain uncommitted and unpushed. No Phase 6 implementation, Vercel connection, deployment, commit, or push begins without a separate direct command.
+The next authority gate is **Phase 7: Deploy to Vercel and complete the MOX submission gate**. Phase 6 is complete in the current uncommitted working tree. No Vercel connection, deployment, commit, or push begins without a separate direct command.

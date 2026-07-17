@@ -28,7 +28,7 @@ async (page) => {
   await page.reload();
 
   await page.getByRole("button", { name: "Изменить obs_005" }).click();
-  const editor = page.getByRole("region", {
+  const editor = page.getByRole("dialog", {
     name: "Изменить наблюдение obs_005",
   });
   await editor
@@ -103,7 +103,7 @@ async (page) => {
   await page.reload();
   await assertNoPageOverflow();
   await page.getByRole("button", { name: "Изменить obs_005" }).click();
-  const mobileEditor = page.getByRole("region", {
+  const mobileEditor = page.getByRole("dialog", {
     name: "Изменить наблюдение obs_005",
   });
   await mobileEditor.scrollIntoViewIfNeeded();
