@@ -2,7 +2,7 @@
 
 Date: 2026-07-17
 
-Status: Phase 6 complete in the current uncommitted working tree
+Status: Phase 6 complete and published in `579b146`
 
 ## Outcome
 
@@ -82,4 +82,4 @@ NVDA and VoiceOver are unavailable in the Linux execution environment, and Orca 
 ## Residual release boundary
 
 - Phase 7 still owns the Vercel production URL, deployed privacy/request assertions, and final public smoke.
-- The Phase 6 working tree is intentionally not committed or pushed without a separate direct command.
+- The Phase 6 implementation and this evidence were published in `579b146`; the repository-map publication update follows in a dedicated documentation commit.

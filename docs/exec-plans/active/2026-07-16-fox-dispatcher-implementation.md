@@ -87,7 +87,7 @@ Phase 4, published in `699d457`, replaces the Worklog placeholder with 6 structu
 
 Phase 5 was published on `main` in `0021c6d8bc55b55734ac503676f0e36a30d392ee`, and its consistency hardening was published in `df434c9`. It adds atomic six-field observation commands, secure injected IDs, delete/undo, starter reset, one authoritative report state, strict local version-1 persistence, runtime validation, safe editor targeting, deterministic sorting, focus recovery, and live feedback.
 
-Phase 6 is complete in the current uncommitted working tree. It converts the narrow observation ledger to explicit field cards and mobile sorting, moves editor/reset surfaces to native modal dialogs, adds bottom navigation and focus-obscuring protection, and establishes axe plus responsive-keyboard browser gates. [Accessibility evidence](../../verification/accessibility-evidence.md) records five viewport/orientation checks, zero targeted axe violations across six states, keyboard/dialog focus, 200% scale/reflow, text spacing, reduced motion, forced colors, and the explicit native-screen-reader limitation.
+Phase 6 is complete and published in `579b146`. It converts the narrow observation ledger to explicit field cards and mobile sorting, moves editor/reset surfaces to native modal dialogs, adds bottom navigation and focus-obscuring protection, and establishes axe plus responsive-keyboard browser gates. [Accessibility evidence](../../verification/accessibility-evidence.md) records five viewport/orientation checks, zero targeted axe violations across six states, keyboard/dialog focus, 200% scale/reflow, text spacing, reduced motion, forced colors, and the explicit native-screen-reader limitation.
 
 After a direct user review against the original MOX brief, the remaining sequence was rebalanced on 2026-07-16. Mandatory Worklog/README work moved from Phase 7 to Phase 4, observation management became a proportionate should-have Phase 5, targeted quality remained Phase 6, Vercel submission moved to Phase 7, and import/export plus advanced recovery became optional Phase 8. This rebaseline changes priorities and ownership only; it does not claim that any pending phase was implemented.
 
@@ -544,7 +544,7 @@ Completion notes:
 
 ### Phase 6: Complete targeted responsive and accessibility quality
 
-Status: completed on 2026-07-17; changes remain uncommitted and unpushed
+Status: completed on 2026-07-17 and published in `579b146`
 
 Target outcome: the actual reviewer journey, including Worklog and observation management when present, remains clear and operable across target viewports and input methods.
 
@@ -682,4 +682,4 @@ Optional Phase 8 may add atomic JSON import/export and advanced recovery after t
 
 Required execution order is Phase 0 through Phase 7. Phase 4 has closed the mandatory Worklog/README gap before the should-have observation-management enhancement in Phase 5. Phase 6 verifies the implemented journey, and Phase 7 deploys and closes the MOX submission. Phase 8 is a separate optional extension, not a release dependency.
 
-The next authority gate is **Phase 7: Deploy to Vercel and complete the MOX submission gate**. Phase 6 is complete in the current uncommitted working tree. No Vercel connection, deployment, commit, or push begins without a separate direct command.
+The next authority gate is **Phase 7: Deploy to Vercel and complete the MOX submission gate**. Phase 6 is published in `579b146`. No Vercel connection or deployment begins without a separate direct command.
