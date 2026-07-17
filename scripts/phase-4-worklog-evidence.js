@@ -42,14 +42,14 @@ async (page) => {
   const timeline = page.getByRole("region", { name: "Хронология работы с AI" });
   const checkpoints = timeline.getByRole("article");
   assert(
-    (await checkpoints.count()) === 6,
-    "Worklog did not render six checkpoints.",
+    (await checkpoints.count()) === 7,
+    "Worklog did not render seven checkpoints.",
   );
 
   const links = timeline.getByRole("link");
   assert(
-    (await links.count()) === 12,
-    "Worklog does not expose the 12 accepted evidence links.",
+    (await links.count()) === 14,
+    "Worklog does not expose the 14 accepted evidence links.",
   );
   for (const link of await links.all()) {
     const href = await link.getAttribute("href");

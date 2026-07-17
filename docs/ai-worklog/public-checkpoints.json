@@ -130,5 +130,27 @@
         "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/1b2bb24e049a0fc9aca4704ef288400a97bec4ec/docs/verification/phase-3-evidence-and-activity.md"
       }
     ]
+  },
+  {
+    "id": "quality-and-release",
+    "stage": "07 · Проверка и публикация",
+    "date": "2026-07-17",
+    "goal": "Сделать итоговый интерактивный продукт публично доступным и связать релиз с воспроизводимой проверкой.",
+    "aiContribution": "AI проверил production-сборку, приватность, браузерный маршрут, адаптивность и подготовил автоматический smoke-тест для Vercel.",
+    "humanDecision": "Выбрана публикация статического приложения через GitHub-интеграцию Vercel; наблюдения остаются локальными, без аналитики и внешней передачи.",
+    "change": "Репозиторий получил явную Vercel-конфигурацию, защитные HTTP-заголовки и единый релизный сценарий проверки результата.",
+    "verification": "Полный repository gate, production build, dependency audit и локальный release smoke прошли до проверки того же сценария на Vercel.",
+    "evidence": [
+      {
+        "label": "Политика Vercel-деплоя",
+        "kind": "architecture",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/6d7663e3f219b5dc8cf615460ff245ea6b503894/vercel.json"
+      },
+      {
+        "label": "Релизный браузерный сценарий",
+        "kind": "test",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/6d7663e3f219b5dc8cf615460ff245ea6b503894/scripts/phase-7-release-smoke.js"
+      }
+    ]
   }
 ]

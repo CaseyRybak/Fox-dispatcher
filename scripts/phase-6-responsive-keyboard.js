@@ -88,8 +88,8 @@ async (page) => {
   await worklogHeading.waitFor();
   await worklogCheckpoints.first().waitFor();
   assert(
-    (await worklogCheckpoints.count()) === 6,
-    "The keyboard reviewer flow did not reach the six Worklog checkpoints.",
+    (await worklogCheckpoints.count()) === 7,
+    "The keyboard reviewer flow did not reach the seven Worklog checkpoints.",
   );
 
   for (const viewport of [

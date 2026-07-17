@@ -8,16 +8,16 @@ describe("public AI Worklog", () => {
     window.history.replaceState(null, "", "#worklog");
   });
 
-  it("renders six factual checkpoints with separated responsibility", () => {
+  it("renders seven factual checkpoints with separated responsibility", () => {
     render(<App />);
 
     expect(
       screen.getByRole("heading", { level: 1, name: "AI Worklog" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("6 ключевых чекпоинтов")).toBeInTheDocument();
+    expect(screen.getByText("7 ключевых чекпоинтов")).toBeInTheDocument();
 
     const checkpoints = screen.getAllByRole("article");
-    expect(checkpoints).toHaveLength(6);
+    expect(checkpoints).toHaveLength(7);
 
     for (const checkpoint of checkpoints) {
       expect(
@@ -42,7 +42,7 @@ describe("public AI Worklog", () => {
     });
     const links = within(evidence).getAllByRole("link");
 
-    expect(links).toHaveLength(12);
+    expect(links).toHaveLength(14);
 
     for (const link of links) {
       expect(link).toHaveAttribute(
