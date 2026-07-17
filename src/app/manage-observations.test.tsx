@@ -85,7 +85,7 @@ describe("observation management", () => {
     expect(
       within(summary).getByRole("heading", { name: "Лиса 4" }),
     ).toBeInTheDocument();
-    expect(within(summary).getByText("Индекс 8,0 из 10")).toBeInTheDocument();
+    expect(within(summary).getByText("8,0 из 10")).toBeInTheDocument();
   });
 
   it("recalculates filtered scope, options, and the selected calculation from one edit", async () => {
@@ -156,10 +156,12 @@ describe("observation management", () => {
     await user.click(screen.getByRole("link", { name: "Сводка" }));
     expect(
       within(
-        screen.getByRole("region", { name: "Самая подозрительная лиса" }),
-      ).getByText("3", {
-        selector: "dd",
-      }),
+        within(
+          screen.getByRole("region", {
+            name: "Самая подозрительная лиса",
+          }),
+        ).getByLabelText("Состав текущего отчёта"),
+      ).getByText("3"),
     ).toBeInTheDocument();
 
     await user.click(screen.getByRole("link", { name: "Параметры" }));

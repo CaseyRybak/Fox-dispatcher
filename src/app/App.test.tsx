@@ -40,7 +40,11 @@ describe("application shell", () => {
       name: "Самая подозрительная лиса",
     });
 
-    expect(within(summary).getByText("4", { selector: "dd" }));
+    expect(
+      within(
+        within(summary).getByLabelText("Состав текущего отчёта"),
+      ).getByText("4"),
+    ).toBeInTheDocument();
     expect(within(summary).getByText("3 из 5 наблюдений"));
     expect(
       within(summary).getByRole("heading", { level: 2, name: "Лиса 1" }),

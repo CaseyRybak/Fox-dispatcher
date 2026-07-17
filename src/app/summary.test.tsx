@@ -31,22 +31,30 @@ describe("interactive suspicion summary", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.queryByText("Сводка наблюдений")).not.toBeInTheDocument();
-    expect(screen.getByText("Индекс 7,8 из 10")).toBeInTheDocument();
+    expect(screen.getByText("7,8 из 10")).toBeInTheDocument();
     const leaderReason = screen.getByRole("region", {
       name: "Почему Лиса 1",
     });
+    expect(screen.queryByText("Почему Лиса 1")).not.toBeInTheDocument();
     expect(
       within(leaderReason).getByText(
         "Средняя подозрительность по всем наблюдениям",
       ),
     ).toBeInTheDocument();
-    expect(leaderReason).toHaveTextContent("Средняя 8,5 · 2 наблюдения");
-    expect(leaderReason).toHaveTextContent("Индекс 6,8");
+    expect(leaderReason).toHaveTextContent("8,5 · 2 наблюдения");
+    expect(leaderReason).not.toHaveTextContent("Средняя 8,5");
+    expect(leaderReason).toHaveTextContent("В индексе 6,8");
     expect(
       within(leaderReason).getByText("Наличие добычи"),
     ).toBeInTheDocument();
     expect(leaderReason).toHaveTextContent("В 1 из 2 наблюдений");
-    expect(leaderReason).toHaveTextContent("Индекс 1");
+    expect(leaderReason).toHaveTextContent("В индексе 1");
+    const composition = within(leaderReason).getByRole("figure", {
+      name: "Состав индекса Лисы 1",
+    });
+    expect(composition).toHaveTextContent("Подозрительность 6,8");
+    expect(composition).toHaveTextContent("Добыча 1");
+    expect(composition).toHaveTextContent("Итоговый индекс - 7,8");
     expect(screen.getByText("Уникальные лисы")).toBeInTheDocument();
     expect(
       screen.getByText("Основная локация").closest("div"),
@@ -77,9 +85,12 @@ describe("interactive suspicion summary", () => {
     expect(within(explanation).queryByText("01")).not.toBeInTheDocument();
     expect(within(explanation).queryByText("02")).not.toBeInTheDocument();
     expect(within(explanation).queryByText("03")).not.toBeInTheDocument();
-    expect(explanation).toHaveTextContent(
-      "Для Лисы 1 объединены 2 наблюдения. Средняя подозрительность - 8,5.",
-    );
+    expect(
+      within(explanation).getByText("Для Лисы 1 проведено наблюдений - 2."),
+    ).toBeInTheDocument();
+    expect(
+      within(explanation).getByText("Средняя подозрительность - 8,5."),
+    ).toBeInTheDocument();
     expect(explanation).toHaveTextContent("8,5 × 80% = 6,8");
     expect(explanation).toHaveTextContent(
       "Добыча отмечена в 1 из 2 наблюдений.",
@@ -197,18 +208,23 @@ describe("interactive suspicion summary", () => {
 
     render(<App />);
 
-    expect(screen.getByText("Индекс 0,9 из 10")).toBeInTheDocument();
+    expect(screen.getByText("0,9 из 10")).toBeInTheDocument();
     expect(
       screen.getByRole("region", { name: "Почему Лиса «fox_repeat»" }),
     ).toHaveTextContent(
-      "Средняя подозрительность по всем наблюдениямСредняя 1/3 · 3 наблюденияИндекс 4/15Наличие добычиВ 1 из 3 наблюденийИндекс 2/3",
+      "Средняя подозрительность по всем наблюдениям1/3 · 3 наблюденияВ индексе 4/15Наличие добычиВ 1 из 3 наблюденийВ индексе 2/3",
     );
     expect(
       screen.getByRole("region", { name: "Расчет индекса подозрительности" }),
     ).toHaveTextContent("Точный результат - 14/15. На экране - 0,9 из 10.");
     expect(screen.getByText("рыжая · 2 цвета · 10:00")).toBeInTheDocument();
-    expect(screen.getByText("4/15")).toBeInTheDocument();
-    expect(screen.getByText("2/3")).toBeInTheDocument();
+    expect(screen.getAllByText("4/15")).toHaveLength(2);
+    expect(screen.getAllByText("2/3")).toHaveLength(2);
+    expect(
+      screen.getByRole("figure", {
+        name: "Состав индекса Лисы «fox_repeat»",
+      }),
+    ).toHaveTextContent("Итоговый индекс - 0,9");
     expect(screen.getByText("1/3 × 80%")).toBeInTheDocument();
   });
 
@@ -428,7 +444,7 @@ describe("interactive suspicion summary", () => {
     fireEvent.change(slider, { target: { value: "30" } });
 
     expect(getLeaderHeading("Лиса 3")).toBeInTheDocument();
-    expect(screen.getByText("Индекс 7,9 из 10")).toBeInTheDocument();
+    expect(screen.getByText("7,9 из 10")).toBeInTheDocument();
     expect(screen.getByRole("status")).toBeEmptyDOMElement();
 
     fireEvent.pointerUp(slider);
@@ -449,7 +465,7 @@ describe("interactive suspicion summary", () => {
     fireEvent.blur(exactControl);
 
     expect(getLeaderHeading("Лиса 3"));
-    expect(screen.getByText("Индекс 8,1 из 10"));
+    expect(screen.getByText("8,1 из 10"));
     expect(screen.getAllByRole("status")).toHaveLength(1);
     expect(screen.getByRole("status")).toHaveTextContent(
       "Вес добычи изменён с 30% до 35%. Лидер не изменился: Лиса 3, идентификатор fox_003, индекс 8,1.",

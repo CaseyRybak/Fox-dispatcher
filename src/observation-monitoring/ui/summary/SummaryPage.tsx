@@ -128,8 +128,12 @@ export function SummaryPage({
                       </p>
                     )}
                   </div>
-                  <p className="leader-result__score">
-                    Индекс {leader.scoreLabel} из 10
+                  <p
+                    aria-label={`Индекс ${leader.scoreLabel} из 10`}
+                    className="leader-result__score"
+                  >
+                    <span>Индекс</span>
+                    <strong>{leader.scoreLabel} из 10</strong>
                   </p>
                 </div>
                 <div
@@ -144,15 +148,30 @@ export function SummaryPage({
                     <LeaderReason
                       key={currentLeader.foxId}
                       leader={currentLeader}
+                      showFoxName={leaders.length > 1}
                     />
                   ))}
                 </div>
+                <dl
+                  className="metric-ledger"
+                  aria-label="Состав текущего отчёта"
+                >
+                  {viewModel.metrics.map((metric) => (
+                    <div className="metric-ledger__item" key={metric.label}>
+                      <dt>{metric.label}</dt>
+                      <dd>
+                        <strong>{metric.value}</strong>
+                        {metric.detail && <span>{metric.detail}</span>}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
                 <div className="outcome-docket__actions">
                   <a className="primary-action" href="#observations">
                     Изменить параметры
                   </a>
                   <button
-                    className="primary-action"
+                    className="secondary-action"
                     onClick={focusPolicyControl}
                     type="button"
                   >
@@ -160,18 +179,6 @@ export function SummaryPage({
                   </button>
                 </div>
               </div>
-
-              <dl className="metric-ledger" aria-label="Состав текущего отчёта">
-                {viewModel.metrics.map((metric) => (
-                  <div className="metric-ledger__item" key={metric.label}>
-                    <dt>{metric.label}</dt>
-                    <dd>
-                      {metric.value}
-                      {metric.detail && <span>{metric.detail}</span>}
-                    </dd>
-                  </div>
-                ))}
-              </dl>
             </section>
 
             <SuspicionCalculationExplainer
@@ -271,22 +278,31 @@ export function SummaryPage({
   );
 }
 
-function LeaderReason({ leader }: { readonly leader: RankedFoxViewModel }) {
-  const titleId = `leader-reason-${leader.foxId}`;
+function LeaderReason({
+  leader,
+  showFoxName,
+}: {
+  readonly leader: RankedFoxViewModel;
+  readonly showFoxName: boolean;
+}) {
+  const foxName = formatFoxDisplayName(leader.foxId);
 
   return (
-    <section aria-labelledby={titleId} className="leader-reason" role="region">
-      <h3 id={titleId}>Почему {formatFoxDisplayName(leader.foxId)}</h3>
+    <section
+      aria-label={`Почему ${foxName}`}
+      className="leader-reason"
+      role="region"
+    >
+      {showFoxName && <h3>{foxName}</h3>}
       <dl className="leader-reason__list">
         <div>
           <dt>Средняя подозрительность по всем наблюдениям</dt>
           <dd>
             <span>
-              Средняя {leader.meanSuspicionExactLabel} ·{" "}
-              {leader.observationCount}{" "}
+              {leader.meanSuspicionExactLabel} · {leader.observationCount}{" "}
               {formatObservationCount(leader.observationCount)}
             </span>
-            <strong>Индекс {leader.suspicionContributionExactLabel}</strong>
+            <strong>В индексе {leader.suspicionContributionExactLabel}</strong>
           </dd>
         </div>
         <div>
@@ -296,11 +312,62 @@ function LeaderReason({ leader }: { readonly leader: RankedFoxViewModel }) {
               В {leader.preyObservationCount} из {leader.observationCount}{" "}
               наблюдений
             </span>
-            <strong>Индекс {leader.preyContributionExactLabel}</strong>
+            <strong>В индексе {leader.preyContributionExactLabel}</strong>
           </dd>
         </div>
       </dl>
+      <IndexComposition leader={leader} />
     </section>
+  );
+}
+
+function IndexComposition({ leader }: { readonly leader: RankedFoxViewModel }) {
+  const roundedContributionTotal =
+    leader.suspicionContributionPercent + leader.preyContributionPercent;
+  const suspicionBarPercent =
+    roundedContributionTotal === 0
+      ? 0
+      : (leader.scoreTenths * leader.suspicionContributionPercent) /
+        roundedContributionTotal;
+  const preyBarPercent = Math.max(0, leader.scoreTenths - suspicionBarPercent);
+  const remainderPercent = Math.max(0, 100 - leader.scoreTenths);
+  const foxName = formatFoxDisplayName(leader.foxId);
+
+  return (
+    <figure
+      aria-label={`Состав индекса ${foxName.replace(/^Лиса /u, "Лисы ")}`}
+      className="index-composition"
+    >
+      <div aria-hidden="true" className="index-composition__track">
+        <span
+          className="index-composition__segment index-composition__segment--suspicion"
+          style={{ width: `${suspicionBarPercent}%` }}
+        />
+        <span
+          className="index-composition__segment index-composition__segment--prey"
+          style={{ width: `${preyBarPercent}%` }}
+        />
+        <span
+          className="index-composition__segment index-composition__segment--remainder"
+          style={{ width: `${remainderPercent}%` }}
+        />
+      </div>
+      <figcaption className="index-composition__legend">
+        <span>
+          <i aria-hidden="true" data-signal="suspicion" />
+          Подозрительность{" "}
+          <strong>{leader.suspicionContributionExactLabel}</strong>
+        </span>
+        <span>
+          <i aria-hidden="true" data-signal="prey" />
+          Добыча <strong>{leader.preyContributionExactLabel}</strong>
+        </span>
+        <span>
+          <i aria-hidden="true" data-signal="remainder" />
+          Итоговый индекс - <strong>{leader.scoreLabel}</strong>
+        </span>
+      </figcaption>
+    </figure>
   );
 }
 
@@ -391,9 +458,14 @@ function CalculationSteps({
       <li>
         <StepHeading>Средняя подозрительность по всем наблюдениям</StepHeading>
         <p>
-          Для {foxNameAfterFor} объединены {leader.observationCount}{" "}
-          {formatObservationCount(leader.observationCount)}. Средняя
-          подозрительность - {leader.meanSuspicionExactLabel}.
+          <span>
+            Для {foxNameAfterFor} проведено наблюдений -{" "}
+            {leader.observationCount}.
+          </span>
+          <br />
+          <span>
+            Средняя подозрительность - {leader.meanSuspicionExactLabel}.
+          </span>
         </p>
         <strong className="calculation-explainer__formula">
           {leader.meanSuspicionExactLabel} × {viewModel.suspicionWeightPercent}%
@@ -413,7 +485,7 @@ function CalculationSteps({
       </li>
       <li>
         <StepHeading>Итоговый индекс</StepHeading>
-        <p>Складываем вклады двух признаков.</p>
+        <p>Складываем значения двух параметров.</p>
         <strong className="calculation-explainer__formula">
           {leader.suspicionContributionExactLabel} +{" "}
           {leader.preyContributionExactLabel} = {leader.scoreExactLabel}
