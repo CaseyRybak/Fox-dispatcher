@@ -108,6 +108,12 @@ On 2026-07-17 the revision-pinned release smoke was repeated against the mutable
 
 A separate public Phase 8 smoke repeated atomic import/reload, deterministic export download, future-version raw recovery, four zero-violation axe scans, and the 320 px import dialog with zero browser errors and no request outside the production origin.
 
+## Current production follow-up
+
+The first phase-consistency and mobile-UX hardening was subsequently published in `675a6aa86ade70b8daaafb08d046541e4e4f2ba2`. A revision-pinned smoke against the mutable production alias verified HTTP 200, that exact embedded revision, the accepted privacy headers, all three mobile routes, persisted local editing, seven Worklog checkpoints, same-origin static GET requests, no horizontal overflow, and zero browser errors.
+
+The working-tree corrections in the completed audit-corrections plan have not been committed or deployed and are not included in this public-production claim.
+
 ## Honest boundary
 
 A native screen-reader session was unavailable in the release environment. Phase 6 records axe, keyboard, responsive, zoom, text-spacing, reduced-motion, forced-colors, and Chromium accessibility-tree evidence without presenting those checks as a native screen-reader test. JSON import/export was delivered later as the separately authorized Phase 8 extension; it remains outside the historical Phase 7 core gate.

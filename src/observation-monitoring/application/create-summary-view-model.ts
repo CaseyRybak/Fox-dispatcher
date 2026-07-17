@@ -10,24 +10,27 @@ import {
 import {
   calculateSuspicionReport,
   roundFractionToTenths,
+  type ExactFraction,
   type FoxAssessment,
 } from "@/observation-monitoring/domain/suspicion-report";
 
 export interface RankedFoxViewModel {
   readonly color: string;
+  readonly colorSummaryLabel: string;
   readonly explanation: string;
   readonly foxId: string;
   readonly latestLocation: string;
   readonly latestTime: string;
   readonly meanSuspicionLabel: string;
+  readonly meanSuspicionExactLabel: string;
   readonly observationCount: number;
-  readonly preyContributionLabel: string;
+  readonly preyContributionExactLabel: string;
   readonly preyObservationCount: number;
   readonly preyRatioLabel: string;
   readonly rank: number;
   readonly scoreLabel: string;
   readonly scoreTenths: number;
-  readonly suspicionContributionLabel: string;
+  readonly suspicionContributionExactLabel: string;
   readonly suspicionContributionPercent: number;
   readonly preyContributionPercent: number;
 }
@@ -109,7 +112,14 @@ export function createSummaryViewModel(
     observations,
     createScoringPolicy(preyWeightPercent),
   );
-  const ranking = report.assessments.map(createRankedFoxViewModel);
+  const colorsByFox = collectColorsByFox(observations);
+  const ranking = report.assessments.map((assessment, index) =>
+    createRankedFoxViewModel(
+      assessment,
+      index,
+      colorsByFox.get(assessment.foxId)?.size ?? 1,
+    ),
+  );
   const leadingLocation = report.locationActivity[0];
   const selectedRankingItem =
     ranking.find(({ foxId }) => foxId === options.selectedFoxId) ?? ranking[0];
@@ -192,6 +202,7 @@ export function createPolicyAnnouncement(
 function createRankedFoxViewModel(
   assessment: FoxAssessment,
   index: number,
+  colorCount: number,
 ): RankedFoxViewModel {
   const meanSuspicionLabel = formatTenths(
     roundFractionToTenths(assessment.meanSuspicion),
@@ -202,27 +213,117 @@ function createRankedFoxViewModel(
   const preyContributionTenths = roundFractionToTenths(
     assessment.preyContribution,
   );
-  const suspicionContributionLabel = formatTenths(suspicionContributionTenths);
-  const preyContributionLabel = formatTenths(preyContributionTenths);
+  const meanSuspicionExactLabel = formatExactFraction(assessment.meanSuspicion);
+  const suspicionContributionExactLabel = formatExactFraction(
+    assessment.suspicionContribution,
+  );
+  const preyContributionExactLabel = formatExactFraction(
+    assessment.preyContribution,
+  );
+  const scoreExactLabel = formatExactFraction(assessment.score);
+  const scoreLabel = formatTenths(roundFractionToTenths(assessment.score));
 
   return {
     color: assessment.latestObservation.color,
-    explanation: `Средняя оценка ${meanSuspicionLabel} дала ${suspicionContributionLabel} балла; добыча в ${assessment.preyObservationCount} из ${assessment.observationCount} ${formatRecordCount(assessment.observationCount)} добавила ${preyContributionLabel}.`,
+    colorSummaryLabel:
+      colorCount > 1
+        ? `${assessment.latestObservation.color} · ${formatColorCount(colorCount)}`
+        : assessment.latestObservation.color,
+    explanation: `Средняя оценка ${meanSuspicionExactLabel} дала точный вклад ${suspicionContributionExactLabel}; добыча в ${assessment.preyObservationCount} из ${assessment.observationCount} ${formatRecordCount(assessment.observationCount)} дала ${preyContributionExactLabel}. Точный итог ${scoreExactLabel}, отображается как ${scoreLabel}.`,
     foxId: assessment.foxId,
     latestLocation: assessment.latestObservation.location,
     latestTime: assessment.latestObservation.time,
     meanSuspicionLabel,
+    meanSuspicionExactLabel,
     observationCount: assessment.observationCount,
-    preyContributionLabel,
+    preyContributionExactLabel,
     preyContributionPercent: preyContributionTenths,
     preyObservationCount: assessment.preyObservationCount,
     preyRatioLabel: `${assessment.preyObservationCount}/${assessment.observationCount}`,
     rank: index + 1,
-    scoreLabel: formatTenths(roundFractionToTenths(assessment.score)),
+    scoreLabel,
     scoreTenths: roundFractionToTenths(assessment.score),
-    suspicionContributionLabel,
+    suspicionContributionExactLabel,
     suspicionContributionPercent: suspicionContributionTenths,
   };
+}
+
+function collectColorsByFox(
+  observations: readonly Observation[],
+): ReadonlyMap<string, ReadonlySet<string>> {
+  const colorsByFox = new Map<string, Set<string>>();
+
+  for (const observation of observations) {
+    const colors = colorsByFox.get(observation.fox_id) ?? new Set<string>();
+    colors.add(observation.color);
+    colorsByFox.set(observation.fox_id, colors);
+  }
+
+  return colorsByFox;
+}
+
+function formatExactFraction(fraction: ExactFraction): string {
+  const divisor = greatestCommonDivisor(
+    Math.abs(fraction.numerator),
+    fraction.denominator,
+  );
+  const numerator = fraction.numerator / divisor;
+  const denominator = fraction.denominator / divisor;
+  let finiteDenominator = denominator;
+  let powersOfTwo = 0;
+  let powersOfFive = 0;
+
+  while (finiteDenominator % 2 === 0) {
+    finiteDenominator /= 2;
+    powersOfTwo += 1;
+  }
+  while (finiteDenominator % 5 === 0) {
+    finiteDenominator /= 5;
+    powersOfFive += 1;
+  }
+
+  if (finiteDenominator !== 1) {
+    return `${numerator}/${denominator}`;
+  }
+
+  const decimalPlaces = Math.max(powersOfTwo, powersOfFive);
+  const scale = 10 ** decimalPlaces;
+  const scaledValue = (numerator * scale) / denominator;
+
+  if (decimalPlaces === 0) {
+    return String(scaledValue);
+  }
+
+  const integerPart = Math.floor(scaledValue / scale);
+  const decimalPart = String(scaledValue % scale).padStart(decimalPlaces, "0");
+
+  return `${integerPart},${decimalPart}`;
+}
+
+function greatestCommonDivisor(left: number, right: number): number {
+  let currentLeft = left;
+  let currentRight = right;
+
+  while (currentRight !== 0) {
+    [currentLeft, currentRight] = [currentRight, currentLeft % currentRight];
+  }
+
+  return currentLeft || 1;
+}
+
+function formatColorCount(count: number): string {
+  const mod100 = count % 100;
+  const mod10 = count % 10;
+  const word =
+    mod100 >= 11 && mod100 <= 14
+      ? "цветов"
+      : mod10 === 1
+        ? "цвет"
+        : mod10 >= 2 && mod10 <= 4
+          ? "цвета"
+          : "цветов";
+
+  return `${count} ${word}`;
 }
 
 function formatTenths(tenths: number): string {

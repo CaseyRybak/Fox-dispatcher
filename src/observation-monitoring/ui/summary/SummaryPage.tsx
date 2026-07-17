@@ -4,7 +4,6 @@ import {
   useState,
   type CSSProperties,
   type ChangeEvent,
-  type KeyboardEvent,
 } from "react";
 
 import type {
@@ -61,6 +60,7 @@ export function SummaryPage({
     evidenceSelection,
   );
   const hasFilters = hasActiveReportFilters(filters);
+  const isDatasetEmpty = viewModel.scope.totalObservationCount === 0;
 
   const commitCurrentWeight = () => {
     onPreyWeightCommit(viewModel.preyWeightPercent);
@@ -93,12 +93,21 @@ export function SummaryPage({
             <h1 className="summary-empty-title" tabIndex={-1}>
               Сводка наблюдений
             </h1>
-            <h2 id="empty-title">В этой выборке ничего не найдено</h2>
+            <h2 id="empty-title">
+              {isDatasetEmpty
+                ? "Наблюдений пока нет"
+                : "В этой выборке ничего не найдено"}
+            </h2>
             <p>
-              Измените или сбросьте фильтры — исходный набор остаётся без
-              изменений.
+              {isDatasetEmpty
+                ? "В журнале нет записей. Откройте управление данными, чтобы добавить наблюдение, импортировать JSON или вернуть стартовый набор."
+                : "Измените или сбросьте фильтры — исходный набор остаётся без изменений."}
             </p>
-            {hasFilters && (
+            {isDatasetEmpty ? (
+              <a className="primary-action" href="#observations">
+                Открыть управление данными
+              </a>
+            ) : hasFilters ? (
               <button
                 className="primary-action"
                 onClick={() => onFiltersChange(DEFAULT_REPORT_FILTERS)}
@@ -106,7 +115,7 @@ export function SummaryPage({
               >
                 Сбросить фильтры
               </button>
-            )}
+            ) : null}
           </section>
           {scopeToolbar}
         </>
@@ -210,16 +219,16 @@ export function SummaryPage({
                 role="group"
               >
                 <ContributionRow
-                  detail={`${selectedFox.meanSuspicionLabel} × ${viewModel.suspicionWeightPercent}%`}
+                  detail={`${selectedFox.meanSuspicionExactLabel} × ${viewModel.suspicionWeightPercent}%`}
                   label="Оценка смотрителя"
                   percent={selectedFox.suspicionContributionPercent}
-                  value={selectedFox.suspicionContributionLabel}
+                  value={selectedFox.suspicionContributionExactLabel}
                 />
                 <ContributionRow
                   detail={`${selectedFox.preyRatioLabel} × 10 × ${viewModel.preyWeightPercent}%`}
                   label="Признак добычи"
                   percent={selectedFox.preyContributionPercent}
-                  value={selectedFox.preyContributionLabel}
+                  value={selectedFox.preyContributionExactLabel}
                 />
               </div>
 
@@ -500,7 +509,7 @@ function RankingRow({
   return (
     <li className={className}>
       <button
-        aria-label={`Показать доказательства: ${formatFoxDisplayName(assessment.foxId)}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча ${assessment.preyRatioLabel}; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.color}; записей ${assessment.observationCount}; идентификатор ${assessment.foxId}`}
+        aria-label={`Показать доказательства: ${formatFoxDisplayName(assessment.foxId)}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча ${assessment.preyRatioLabel}; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.colorSummaryLabel}; записей ${assessment.observationCount}; идентификатор ${assessment.foxId}`}
         aria-pressed={isSelected}
         className="ranking-row__button"
         onClick={() => onSelect(assessment.foxId)}
@@ -522,7 +531,7 @@ function RankingRow({
               className="color-swatch"
               data-color={assessment.color}
             />
-            {assessment.color} · {assessment.latestTime}
+            {assessment.colorSummaryLabel} · {assessment.latestTime}
           </span>
           <span className="ranking-row__location">
             {assessment.latestLocation}
@@ -552,6 +561,7 @@ function PolicyControl({
   readonly onPreyWeightCommit: (preyWeightPercent: number) => void;
   readonly viewModel: SummaryViewModel;
 }) {
+  const isCompact = useMediaQuery("(max-width: 640px)");
   return (
     <fieldset className="policy-control">
       <legend>Политика оценки</legend>
@@ -567,34 +577,30 @@ function PolicyControl({
         min="0"
         onBlur={commitCurrentWeight}
         onChange={handleWeightChange(onPreyWeightChange)}
-        onKeyUp={handleWeightKeyUp(commitCurrentWeight)}
         onPointerUp={commitCurrentWeight}
         step="5"
         type="range"
         value={viewModel.preyWeightPercent}
       />
-      <div className="policy-control__exact">
-        <label htmlFor="prey-weight-exact">
-          Влияние добычи, точное значение
-        </label>
-        <div>
-          <input
-            id="prey-weight-exact"
-            max="100"
-            min="0"
-            onBlur={commitCurrentWeight}
-            onChange={handleWeightChange(onPreyWeightChange)}
-            step="5"
-            type="number"
-            value={viewModel.preyWeightPercent}
-          />
-          <span aria-hidden="true">%</span>
-        </div>
-      </div>
+      <ExactWeightControl
+        onPreyWeightChange={onPreyWeightChange}
+        onPreyWeightCommit={onPreyWeightCommit}
+        preyWeightPercent={viewModel.preyWeightPercent}
+      />
       <div className="policy-control__weights">
         <span>Оценка смотрителя {viewModel.suspicionWeightPercent}%</span>
         <span>Добыча {viewModel.preyWeightPercent}%</span>
       </div>
+      {isCompact && viewModel.leader && (
+        <section
+          aria-label="Текущий результат расчёта"
+          className="policy-control__compact-result"
+        >
+          <span>Текущий лидер</span>
+          <strong>{formatFoxDisplayName(viewModel.leader.foxId)}</strong>
+          <span>{viewModel.leader.scoreLabel} из 10</span>
+        </section>
+      )}
       <p id="prey-weight-help">
         Добыча — настраиваемый сигнал диспетчерского внимания. Остальной вес
         автоматически принадлежит прямой оценке смотрителя.
@@ -611,6 +617,111 @@ function PolicyControl({
         Вернуть 20%
       </button>
     </fieldset>
+  );
+}
+
+function ExactWeightControl({
+  onPreyWeightChange,
+  onPreyWeightCommit,
+  preyWeightPercent,
+}: {
+  readonly onPreyWeightChange: (preyWeightPercent: number) => void;
+  readonly onPreyWeightCommit: (preyWeightPercent: number) => void;
+  readonly preyWeightPercent: number;
+}) {
+  const [draft, setDraft] = useState({
+    committedWeight: preyWeightPercent,
+    dirty: false,
+    error: "",
+    value: String(preyWeightPercent),
+  });
+
+  if (draft.committedWeight !== preyWeightPercent) {
+    setDraft({
+      committedWeight: preyWeightPercent,
+      dirty: false,
+      error: "",
+      value: String(preyWeightPercent),
+    });
+  }
+
+  const commitExactWeight = () => {
+    if (!draft.dirty) {
+      return;
+    }
+
+    const nextWeight = Number(draft.value);
+
+    if (
+      draft.value.trim() === "" ||
+      !Number.isInteger(nextWeight) ||
+      nextWeight < 0 ||
+      nextWeight > 100 ||
+      nextWeight % 5 !== 0
+    ) {
+      setDraft((current) => ({
+        ...current,
+        dirty: false,
+        error: "Введите целое число от 0 до 100 с шагом 5.",
+      }));
+      return;
+    }
+
+    setDraft({
+      committedWeight: nextWeight,
+      dirty: false,
+      error: "",
+      value: String(nextWeight),
+    });
+    onPreyWeightChange(nextWeight);
+    onPreyWeightCommit(nextWeight);
+  };
+
+  return (
+    <div className="policy-control__exact">
+      <div className="policy-control__exact-copy">
+        <label htmlFor="prey-weight-exact">
+          Влияние добычи, точное значение
+        </label>
+        <p className="field-hint" id="prey-weight-exact-hint">
+          От 0 до 100%, шаг 5.
+        </p>
+        {draft.error && (
+          <p className="field-error" id="prey-weight-exact-error">
+            {draft.error}
+          </p>
+        )}
+      </div>
+      <div className="policy-control__exact-input">
+        <input
+          aria-describedby={`prey-weight-exact-hint${draft.error ? " prey-weight-exact-error" : ""}`}
+          aria-invalid={Boolean(draft.error)}
+          id="prey-weight-exact"
+          max="100"
+          min="0"
+          onBlur={commitExactWeight}
+          onChange={(event) => {
+            const nextValue = event.currentTarget.value;
+            setDraft((current) => ({
+              ...current,
+              dirty: true,
+              error: "",
+              value: nextValue,
+            }));
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              commitExactWeight();
+            }
+          }}
+          step="5"
+          type="number"
+          value={draft.value}
+        />
+        <span aria-hidden="true">%</span>
+      </div>
+    </div>
   );
 }
 
@@ -907,23 +1018,6 @@ function handleWeightChange(
       preyWeightPercent % 5 === 0
     ) {
       onPreyWeightChange(preyWeightPercent);
-    }
-  };
-}
-
-function handleWeightKeyUp(commitCurrentWeight: () => void) {
-  return (event: KeyboardEvent<HTMLInputElement>) => {
-    if (
-      [
-        "ArrowLeft",
-        "ArrowRight",
-        "ArrowDown",
-        "ArrowUp",
-        "Home",
-        "End",
-      ].includes(event.key)
-    ) {
-      commitCurrentWeight();
     }
   };
 }

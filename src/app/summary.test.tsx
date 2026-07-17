@@ -23,7 +23,7 @@ describe("interactive suspicion summary", () => {
     expect(screen.getByText("7,8 из 10")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Средняя оценка 8,5 дала 6,8 балла; добыча в 1 из 2 записей добавила 1,0.",
+        "Средняя оценка 8,5 дала точный вклад 6,8; добыча в 1 из 2 записей дала 1. Точный итог 7,8, отображается как 7,8.",
       ),
     ).toBeInTheDocument();
 
@@ -56,6 +56,59 @@ describe("interactive suspicion summary", () => {
     ).toHaveValue(20);
     expect(screen.getByText("Оценка смотрителя 80%"));
     expect(screen.getByText("Добыча 20%"));
+  });
+
+  it("keeps repeating contributions exact and marks multiple observed colors", () => {
+    window.localStorage.setItem(
+      "fox-dispatcher.dashboard",
+      JSON.stringify({
+        observations: [
+          {
+            color: "серая",
+            fox_id: "fox_repeat",
+            has_prey: true,
+            id: "obs_repeat_1",
+            location: "Поляна",
+            suspicion_level: 1,
+            time: "08:00",
+          },
+          {
+            color: "рыжая",
+            fox_id: "fox_repeat",
+            has_prey: false,
+            id: "obs_repeat_2",
+            location: "Поляна",
+            suspicion_level: 0,
+            time: "09:00",
+          },
+          {
+            color: "рыжая",
+            fox_id: "fox_repeat",
+            has_prey: false,
+            id: "obs_repeat_3",
+            location: "Овраг",
+            suspicion_level: 0,
+            time: "10:00",
+          },
+        ],
+        schemaVersion: 1,
+        scoringPolicy: { preyWeightPercent: 20 },
+        updatedAt: "2026-07-17T09:00:00.000Z",
+      }),
+    );
+
+    render(<App />);
+
+    expect(screen.getByText("0,9 из 10")).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Средняя оценка 1/3 дала точный вклад 4/15; добыча в 1 из 3 записей дала 2/3. Точный итог 14/15, отображается как 0,9.",
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByText("рыжая · 2 цвета · 10:00")).toBeInTheDocument();
+    expect(screen.getByText("4/15")).toBeInTheDocument();
+    expect(screen.getByText("2/3")).toBeInTheDocument();
+    expect(screen.getByText("1/3 × 80%")).toBeInTheDocument();
   });
 
   it("keeps similar canonical fox identifiers distinguishable", () => {
@@ -130,6 +183,68 @@ describe("interactive suspicion summary", () => {
     expect(toggle).toHaveAttribute("aria-expanded", "true");
   });
 
+  it("keeps the recalculated leader next to the policy on compact screens", () => {
+    const defaultMatchMedia = window.matchMedia;
+    vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+      ...defaultMatchMedia(query),
+      matches: query === "(max-width: 640px)",
+    }));
+
+    render(<App />);
+
+    const result = screen.getByRole("region", {
+      name: "Текущий результат расчёта",
+    });
+    expect(result).toHaveTextContent("Лиса 1");
+    expect(result).toHaveTextContent("7,8 из 10");
+
+    fireEvent.change(screen.getByRole("slider", { name: "Влияние добычи" }), {
+      target: { value: "30" },
+    });
+
+    expect(result).toHaveTextContent("Лиса 3");
+    expect(result).toHaveTextContent("7,9 из 10");
+  });
+
+  it("routes a truly empty dataset to the existing data-management actions", async () => {
+    const user = userEvent.setup();
+    window.localStorage.setItem(
+      "fox-dispatcher.dashboard",
+      JSON.stringify({
+        observations: [],
+        schemaVersion: 1,
+        scoringPolicy: { preyWeightPercent: 20 },
+        updatedAt: "2026-07-17T09:00:00.000Z",
+      }),
+    );
+
+    render(<App />);
+
+    expect(
+      screen.getByRole("heading", { name: "Наблюдений пока нет" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "В журнале нет записей. Откройте управление данными, чтобы добавить наблюдение, импортировать JSON или вернуть стартовый набор.",
+      ),
+    ).toBeInTheDocument();
+    const manage = screen.getByRole("link", {
+      name: "Открыть управление данными",
+    });
+    await user.click(manage);
+
+    expect(window.location.hash).toBe("#observations");
+    expect(
+      screen.getByRole("button", { name: "Добавить наблюдение" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Импортировать JSON" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Вернуть стартовые данные" }),
+    ).toBeInTheDocument();
+  });
+
   it("previews immediately and announces one committed result", () => {
     render(<App />);
 
@@ -167,6 +282,68 @@ describe("interactive suspicion summary", () => {
     expect(screen.getByRole("status")).toHaveTextContent(
       "Лидер изменился: Лиса 1, идентификатор fox_001, 7,8.",
     );
+  });
+
+  it("announces a keyboard slider sequence only when the control is left", () => {
+    render(<App />);
+
+    const slider = screen.getByRole("slider", { name: "Влияние добычи" });
+    fireEvent.change(slider, { target: { value: "25" } });
+    fireEvent.keyUp(slider, { key: "ArrowRight" });
+    fireEvent.change(slider, { target: { value: "30" } });
+    fireEvent.keyUp(slider, { key: "ArrowRight" });
+
+    expect(getLeaderHeading("Лиса 3")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+
+    fireEvent.blur(slider);
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Лидер изменился: Лиса 3, идентификатор fox_003, 7,9.",
+    );
+  });
+
+  it("accepts sequential exact-weight editing and rejects invalid commits", () => {
+    render(<App />);
+
+    let exactControl = screen.getByRole("spinbutton", {
+      name: "Влияние добычи, точное значение",
+    });
+    const slider = screen.getByRole("slider", { name: "Влияние добычи" });
+
+    fireEvent.change(exactControl, { target: { value: "" } });
+    expect(exactControl).toHaveValue(null);
+    fireEvent.change(exactControl, { target: { value: "3" } });
+    expect(exactControl).toHaveValue(3);
+    expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
+    fireEvent.change(exactControl, { target: { value: "30" } });
+    expect(exactControl).toHaveValue(30);
+    expect(slider).toHaveValue("20");
+    fireEvent.blur(exactControl);
+
+    expect(slider).toHaveValue("30");
+    expect(getLeaderHeading("Лиса 3")).toBeInTheDocument();
+
+    exactControl = screen.getByRole("spinbutton", {
+      name: "Влияние добычи, точное значение",
+    });
+    fireEvent.change(exactControl, { target: { value: "33" } });
+    fireEvent.blur(exactControl);
+    expect(exactControl).toHaveValue(33);
+    expect(exactControl).toHaveAttribute("aria-invalid", "true");
+    expect(exactControl).toHaveAccessibleDescription(
+      /Введите целое число от 0 до 100 с шагом 5/,
+    );
+    expect(slider).toHaveValue("30");
+
+    fireEvent.change(exactControl, { target: { value: "25" } });
+    exactControl.focus();
+    fireEvent.keyDown(exactControl, { key: "Enter" });
+    exactControl = screen.getByRole("spinbutton", {
+      name: "Влияние добычи, точное значение",
+    });
+    expect(exactControl).toHaveAttribute("aria-invalid", "false");
+    expect(exactControl).toHaveFocus();
+    expect(slider).toHaveValue("25");
   });
 
   it("keeps an explicit fox selection while the ranking recalculates", async () => {

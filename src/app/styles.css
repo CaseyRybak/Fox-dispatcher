@@ -830,7 +830,17 @@ h3 {
   font-size: 12px;
 }
 
-.policy-control__exact > div {
+.policy-control__exact-copy {
+  display: grid;
+  gap: 4px;
+}
+
+.policy-control__exact-copy p {
+  margin: 0;
+  font-size: 11px;
+}
+
+.policy-control__exact-input {
   display: flex;
   align-items: center;
   border: 1px solid var(--control-border);
@@ -849,7 +859,7 @@ h3 {
   text-align: right;
 }
 
-.policy-control__exact span {
+.policy-control__exact-input span {
   padding-right: 12px;
   color: var(--moss-muted);
   font-size: 13px;
@@ -869,6 +879,40 @@ h3 {
   background: #f1f5f2;
   font-size: 11px;
   font-weight: 650;
+}
+
+.policy-control__compact-result {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 4px 16px;
+  align-items: baseline;
+  padding: 12px 14px;
+  border: 1px solid var(--ledger-line);
+  border-left: 4px solid var(--fox-signal);
+  border-radius: 7px;
+  background: #f8f4ec;
+}
+
+.policy-control__compact-result > span:first-child {
+  grid-column: 1 / -1;
+  color: var(--moss-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.policy-control__compact-result > strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.policy-control__compact-result > span:last-child {
+  color: var(--fox-signal);
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
 }
 
 .policy-control > p {
@@ -1248,6 +1292,9 @@ h3 {
 }
 
 .primary-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 44px;
   margin-top: 18px;
   padding: 10px 16px;
@@ -1256,6 +1303,7 @@ h3 {
   color: var(--surface-paper);
   background: var(--pine-structure);
   font-weight: 700;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -2544,13 +2592,17 @@ dialog.reset-confirmation {
 
   .site-header__inner {
     gap: 14px;
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr) auto;
     min-height: 66px;
   }
 
-  .brand__caption,
-  .dataset-status {
+  .brand__caption {
     display: none;
+  }
+
+  .dataset-status {
+    gap: 7px;
+    font-size: 11px;
   }
 
   .primary-nav__link {

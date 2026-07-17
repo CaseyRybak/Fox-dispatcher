@@ -266,6 +266,8 @@ export function ObservationEditor({
           </div>
         )}
 
+        <p className="observation-form__required-note">Все поля обязательны.</p>
+
         <form className="observation-form" noValidate onSubmit={submit}>
           <EditorField
             error={fieldErrors.foxId}
@@ -285,6 +287,7 @@ export function ObservationEditor({
                 }))
               }
               ref={firstFieldRef}
+              required
               type="text"
               value={values.foxId}
             />
@@ -308,6 +311,7 @@ export function ObservationEditor({
                   location: event.target.value,
                 }))
               }
+              required
               type="text"
               value={values.location}
             />
@@ -335,6 +339,7 @@ export function ObservationEditor({
                   color: event.target.value,
                 }))
               }
+              required
               type="text"
               value={values.color}
             />
@@ -363,6 +368,7 @@ export function ObservationEditor({
                   onChange={() =>
                     setValues((current) => ({ ...current, hasPrey: true }))
                   }
+                  required
                   type="radio"
                 />
                 Да
@@ -374,6 +380,7 @@ export function ObservationEditor({
                   onChange={() =>
                     setValues((current) => ({ ...current, hasPrey: false }))
                   }
+                  required
                   type="radio"
                 />
                 Нет
@@ -407,6 +414,7 @@ export function ObservationEditor({
                   suspicionLevel: event.target.value,
                 }))
               }
+              required
               step={1}
               type="number"
               value={values.suspicionLevel}
@@ -429,6 +437,7 @@ export function ObservationEditor({
                   time: event.target.value,
                 }))
               }
+              required
               type="time"
               value={values.time}
             />

@@ -9,7 +9,7 @@ export const observationSchema = z.strictObject({
   color: z.string().trim().min(1).max(80),
   has_prey: z.boolean(),
   suspicion_level: z.number().int().min(0).max(10),
-  time: z.string().regex(timePattern),
+  time: z.string().trim().regex(timePattern),
 });
 
 export const observationArraySchema = z

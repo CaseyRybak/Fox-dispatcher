@@ -18,7 +18,24 @@ describe("targeted accessibility contract", () => {
     );
     const editor = screen.getByRole("dialog", { name: "Новое наблюдение" });
     expect(editor).toHaveAttribute("aria-modal", "true");
+    expect(editor).toHaveTextContent("Все поля обязательны.");
     expect(within(editor).getByRole("textbox", { name: "Лиса" })).toHaveFocus();
+    expect(
+      within(editor).getByRole("textbox", { name: "Лиса" }),
+    ).toBeRequired();
+    expect(
+      within(editor).getByRole("combobox", { name: "Локация" }),
+    ).toBeRequired();
+    expect(
+      within(editor).getByRole("combobox", { name: "Цвет" }),
+    ).toBeRequired();
+    expect(within(editor).getByRole("radio", { name: "Да" })).toBeRequired();
+    expect(
+      within(editor).getByRole("spinbutton", {
+        name: "Оценка подозрительности",
+      }),
+    ).toBeRequired();
+    expect(within(editor).getByLabelText("Время")).toBeRequired();
 
     await user.click(
       within(editor).getByRole("button", { name: "Сохранить наблюдение" }),

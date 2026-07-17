@@ -77,8 +77,8 @@ The screenshots were inspected after the browser run. One first-pass mobile grid
 
 The completed slice was committed, pushed, and deployed through the GitHub/Vercel integration in `89c0f49`. On 2026-07-17 a fresh external run of `test:e2e:import-recovery` against the public alias repeated the two-record import and reload, deterministic download, future-version recovery, four axe scans, and 320 px dialog check. It reported zero axe violations, zero browser errors, and requests only to `https://fox-dispatcher-brown.vercel.app`.
 
-The same audit corrected the browser evidence runner so Playwright CLI `### Error` output cannot be accepted with exit code zero, and moved axe to a CSP-compatible init script. These are local follow-up changes until separately published.
+The same audit corrected the browser evidence runner so Playwright CLI `### Error` output cannot be accepted with exit code zero, and moved axe to a CSP-compatible init script. Those corrections were later published and deployed in `675a6aa86ade70b8daaafb08d046541e4e4f2ba2`.
 
 ## Honest boundary
 
-Phase 8 is published and verified on the public URL. A native screen-reader session remains outside the available environment; the recorded accessibility evidence consists of axe, keyboard, focus, responsive/reflow, forced-color, motion, and Chromium accessibility-tree checks. The consistency/UI corrections made after `89c0f49` are intentionally uncommitted and are not yet present in production.
+Phase 8 and its first consistency/UI follow-up are published and verified on the public URL. A native screen-reader session remains outside the available environment; the recorded accessibility evidence consists of axe, keyboard, focus, responsive/reflow, forced-color, motion, and Chromium accessibility-tree checks. The additional corrections in the completed audit-corrections plan are intentionally uncommitted and are not yet present in production.

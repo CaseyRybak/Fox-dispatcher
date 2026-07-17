@@ -23,7 +23,7 @@ describe("JSON observation import", () => {
         id: " obs_006 ",
         location: " Речной берег ",
         suspicion_level: 6,
-        time: "13:45",
+        time: " 13:45 ",
       },
     ]);
 
@@ -50,6 +50,7 @@ describe("JSON observation import", () => {
       fox_id: "fox_005",
       id: "obs_006",
       location: "Речной берег",
+      time: "13:45",
     });
     expect(result.sourceBytes).toBe(new TextEncoder().encode(source).length);
   });

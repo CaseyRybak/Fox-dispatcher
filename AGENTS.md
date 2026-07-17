@@ -18,13 +18,15 @@ Fox Dispatcher is an interactive local-first dashboard for a forest observer. Th
 - Phase 6 is complete and published in `579b146`: mobile observation cards and sorting, modal editor/reset behavior, bottom navigation, focus protection, axe scans, keyboard flows, required viewports, zoom/reflow, text spacing, reduced motion, forced colors, and Chromium accessibility-tree evidence are recorded.
 - [Phase 6 evidence](docs/verification/accessibility-evidence.md) records the automated, visual, keyboard, and assistive-technology boundary results.
 - Phase 7 is complete: the public Vercel product renders 7 public-safe Worklog checkpoints, passed the production reviewer journey with no console errors or external observation requests, and serves the tested privacy headers. [Release evidence](docs/verification/release-evidence.md) ties the URL, revision, browser result, and honest limitations together.
-- Phase 8 is complete, published on `main`, and deployed in `89c0f49`: atomic JSON import, deterministic full-data export, and explicit corrupt/future-storage recovery passed focused, full, production-browser, axe, and 320 px checks.
+- Phase 8 is complete and was first published and deployed in `89c0f49`: atomic JSON import, deterministic full-data export, and explicit corrupt/future-storage recovery passed focused, full, production-browser, axe, and 320 px checks.
+- The first phase-consistency and mobile-UX hardening is published on `main` and deployed in `675a6aa`; the additional exact-explanation, import-provenance, form-semantics, and compact-result corrections are implemented and verified in the working tree until separately published.
 - Production: [fox-dispatcher-brown.vercel.app](https://fox-dispatcher-brown.vercel.app/), deployed through the GitHub/Vercel integration from `main`.
 
 ## Start here
 
 - [Phase consistency and UI/UX audit](docs/verification/2026-07-17-phase-consistency-ui-audit.md) — current phase matrix, corrected findings, fresh local/public evidence, and remaining boundaries.
 - [Completed Phase 8 plan](docs/exec-plans/completed/2026-07-17-import-export-recovery.md) — import, export, recovery execution and acceptance map.
+- [Completed audit-corrections plan](docs/exec-plans/completed/2026-07-17-audit-corrections.md) — exact explanation, atomic failed-file provenance, forms, empty/mobile context, and fresh verification.
 - [Phase 8 specification](docs/specs/completed/2026-07-17-import-export-recovery.md) — accepted user outcomes, boundaries, states, and evidence.
 - [Completed implementation plan](docs/exec-plans/completed/2026-07-16-fox-dispatcher-implementation.md) — execution slices, acceptance evidence, and optional Phase 8 boundary.
 - [Product specification](docs/product-specs/fox-dispatcher.md) — user outcomes, field semantics, scoring contract, states, and examples.

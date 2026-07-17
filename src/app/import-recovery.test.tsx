@@ -204,6 +204,107 @@ describe("observation import and export", () => {
     expect(source).toHaveValue("manual draft");
     expect(validate).toBeEnabled();
   });
+
+  it("keeps source provenance atomic after a failed file read", async () => {
+    const user = userEvent.setup();
+    const observation = starterObservations[0];
+    if (!observation) throw new Error("Expected a starter observation");
+    const draft = JSON.stringify([observation]);
+    const onValidate = vi.fn(() => ({
+      observations: [observation],
+      ok: true as const,
+      preview: {
+        foxCount: 1,
+        locationCount: 1,
+        locations: [observation.location],
+        observationCount: 1,
+        timeRange: {
+          end: observation.time,
+          start: observation.time,
+        },
+      },
+      sourceBytes: new TextEncoder().encode(draft).length,
+    }));
+
+    render(
+      <ObservationImportDialog
+        onClose={vi.fn()}
+        onReadFile={vi.fn(async () => ({
+          fileName: "broken.json",
+          ok: false as const,
+          reason: "invalid-utf8" as const,
+          summary: "Файл не является корректным UTF-8 JSON",
+        }))}
+        onReplace={vi.fn()}
+        onValidate={onValidate}
+        open
+      />,
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Импорт наблюдений" });
+    const source = within(dialog).getByRole("textbox", {
+      name: "JSON наблюдений",
+    });
+    const validate = within(dialog).getByRole("button", {
+      name: "Проверить данные",
+    });
+    fireEvent.change(source, { target: { value: draft } });
+    await user.click(validate);
+    expect(
+      within(dialog).getByRole("button", { name: "Заменить на 1 наблюдение" }),
+    ).toBeInTheDocument();
+
+    await user.upload(
+      within(dialog).getByLabelText("Выбрать JSON-файл"),
+      new File([new Uint8Array([0xc3, 0x28])], "broken.json", {
+        type: "application/json",
+      }),
+    );
+
+    expect(source).toHaveValue(draft);
+    expect(
+      within(dialog).getByText(
+        "Не прочитан: broken.json. Сохранённый черновик не изменён.",
+      ),
+    ).toBeInTheDocument();
+    expect(validate).toBeDisabled();
+    expect(
+      within(dialog).queryByRole("button", { name: /Заменить/ }),
+    ).not.toBeInTheDocument();
+    expect(within(dialog).getByLabelText("Выбрать JSON-файл")).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(
+      within(dialog).getByLabelText("Выбрать JSON-файл"),
+    ).toHaveAccessibleDescription(/Файл не является корректным UTF-8 JSON/);
+
+    fireEvent.change(source, { target: { value: `${draft} ` } });
+    expect(validate).toBeEnabled();
+    expect(
+      within(dialog).queryByText(/Не прочитан: broken\.json/),
+    ).not.toBeInTheDocument();
+  });
+
+  it("connects JSON validation errors to the source control", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Импортировать JSON" }),
+    );
+    const dialog = screen.getByRole("dialog", { name: "Импорт наблюдений" });
+    const source = within(dialog).getByRole("textbox", {
+      name: "JSON наблюдений",
+    });
+    fireEvent.change(source, { target: { value: "not json" } });
+    await user.click(
+      within(dialog).getByRole("button", { name: "Проверить данные" }),
+    );
+
+    expect(source).toHaveAttribute("aria-invalid", "true");
+    expect(source).toHaveAccessibleDescription(/JSON не удалось прочитать/);
+  });
 });
 
 describe("advanced storage recovery", () => {

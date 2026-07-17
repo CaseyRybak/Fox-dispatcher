@@ -2,7 +2,7 @@
 
 Date: 2026-07-17
 
-Status: Phases 0–8 are complete and published through `89c0f495de90d25d59542f153560fbe6c911e9ad`. The corrective changes described below are verified in the working tree and intentionally uncommitted.
+Status: Phases 0–8 and the corrective changes described below are published through `675a6aa86ade70b8daaafb08d046541e4e4f2ba2`. Additional corrections from the follow-up audit are implemented under the completed audit-corrections plan and remain intentionally uncommitted.
 
 ## Audit scope
 
@@ -23,7 +23,7 @@ Status: Phases 0–8 are complete and published through `89c0f495de90d25d59542f1
 | 4 | public-safe Worklog and reviewer README | Pass; 7 historical checkpoints and 14 pinned links remain unchanged; Phase 8 evidence stays in repository verification docs |
 | 5 | CRUD, undo/reset, persistence, deterministic sorting and focus | Pass; add/edit/delete/undo/reload and failure feedback reproduced |
 | 6 | responsive and accessibility quality | Pass for automated/browser boundary; native screen-reader session remains an explicit external limitation |
-| 7 | public Vercel release, headers, privacy and reviewer journey | Pass; production metadata equals `89c0f49`, exact headers and same-origin static requests verified |
+| 7 | public Vercel release, headers, privacy and reviewer journey | Pass; production metadata equals `675a6aa`, exact headers and same-origin static requests verified |
 | 8 | atomic import, full export, corrupt/future recovery | Pass locally and publicly; deterministic download, reload, raw preservation, 4 axe scans, and 320 px reproduced |
 
 ## Corrected findings
@@ -81,7 +81,7 @@ Local production-browser flows:
 
 Public production:
 
-- release smoke: HTTP 200, exact revision `89c0f495de90d25d59542f153560fbe6c911e9ad`, privacy headers verified, three mobile routes, seven Worklog checkpoints, persisted `Лиса 4 · 8.0`, same-origin static GET allowlist, 0 browser errors;
+- release smoke: HTTP 200, exact revision `675a6aa86ade70b8daaafb08d046541e4e4f2ba2`, privacy headers verified, three mobile routes, seven Worklog checkpoints, persisted `Лиса 4 · 8.0`, same-origin static GET allowlist, 0 browser errors;
 - Phase 8 smoke: import/reload, export, future-version recovery, four zero-violation axe scans, 320 px, production origin only, 0 browser errors.
 
 Accepted post-fix visual artifacts are under `output/playwright/phase-3`, `phase-4`, `phase-5`, `phase-6`, and `phase-8`. `output/playwright/agent-ui-audit` is the independent pre-fix diagnostic baseline and is not completion evidence for the corrected layout.
@@ -91,4 +91,4 @@ Accepted post-fix visual artifacts are under `output/playwright/phase-3`, `phase
 - The audit environment cannot provide a native NVDA, JAWS, VoiceOver, or TalkBack session. Axe, keyboard, focus, reflow, preferences, and Chromium accessibility-tree evidence must not be relabelled as that test.
 - Direct evidence-to-editor navigation from the Summary inspector could shorten an advanced correction workflow. It is now documented as an optional improvement; the accepted editor remains intentionally contextual to the full Observations journal.
 - The mobile Worklog is necessarily long. A compact checkpoint index may help repeat visitors but is not required for task completion or accessibility.
-- Production contains the accepted Phase 8 baseline. The identity, recovery-copy, import-race, mobile hierarchy, runner, documentation, and other audit corrections in this record remain local until a separately authorized commit and deployment.
+- Production contains the accepted Phase 8 baseline and the first audit hardening from this record. The exact-fraction explanation, atomic failed-file provenance, required-field semantics, sequential numeric editing, distinct dataset-empty state, and compact recalculation result in the completed follow-up plan remain local until a separately authorized commit and deployment.

@@ -32,6 +32,12 @@ interface FileBoundaryError {
   readonly summary: string;
 }
 
+interface ImportSourceState {
+  readonly fileName?: string;
+  readonly measuredBytes?: number;
+  readonly text: string;
+}
+
 export function ObservationImportDialog({
   onClose,
   onReadFile,
@@ -39,9 +45,8 @@ export function ObservationImportDialog({
   onValidate,
   open,
 }: ObservationImportDialogProps) {
-  const [source, setSource] = useState("");
-  const [fileName, setFileName] = useState<string>();
-  const [measuredBytes, setMeasuredBytes] = useState<number>();
+  const [source, setSource] = useState<ImportSourceState>({ text: "" });
+  const [fileAttemptName, setFileAttemptName] = useState<string>();
   const [result, setResult] = useState<ObservationImportResult>();
   const [fileError, setFileError] = useState<FileBoundaryError>();
   const [isReading, setIsReading] = useState(false);
@@ -66,14 +71,21 @@ export function ObservationImportDialog({
   }, [fileError, result]);
 
   const validationError = result && !result.ok ? result : fileError;
+  const sourceValidationError = result && !result.ok ? result : undefined;
   const preview = result?.ok ? result : undefined;
+  const fileStatus = isReading
+    ? `Чтение файла: ${fileAttemptName}`
+    : fileError
+      ? `Не прочитан: ${fileAttemptName}. Сохранённый черновик не изменён.`
+      : source.fileName
+        ? `Файл: ${source.fileName}`
+        : undefined;
 
   function changeSource(nextSource: string) {
     fileReadIdRef.current += 1;
-    setSource(nextSource);
-    setFileName(undefined);
+    setSource({ text: nextSource });
+    setFileAttemptName(undefined);
     setIsReading(false);
-    setMeasuredBytes(undefined);
     setResult(undefined);
     setFileError(undefined);
   }
@@ -82,7 +94,7 @@ export function ObservationImportDialog({
     if (!file) return;
     const readId = fileReadIdRef.current + 1;
     fileReadIdRef.current = readId;
-    setFileName(file.name);
+    setFileAttemptName(file.name);
     setFileError(undefined);
     setIsReading(true);
     setResult(undefined);
@@ -90,7 +102,6 @@ export function ObservationImportDialog({
     if (fileReadIdRef.current !== readId) return;
     setIsReading(false);
     if (!readResult.ok) {
-      setMeasuredBytes(file.size);
       setFileError({
         issues: [
           {
@@ -106,8 +117,12 @@ export function ObservationImportDialog({
       return;
     }
 
-    setSource(readResult.text);
-    setMeasuredBytes(readResult.sourceBytes);
+    setSource({
+      fileName: readResult.fileName,
+      measuredBytes: readResult.sourceBytes,
+      text: readResult.text,
+    });
+    setFileAttemptName(undefined);
     setFileError(undefined);
     sourceRef.current?.focus();
   }
@@ -136,9 +151,11 @@ export function ObservationImportDialog({
           <span>Выбрать JSON-файл</span>
           <input
             accept=".json,application/json"
-            aria-describedby={
-              fileName ? "observation-import-file-status" : undefined
-            }
+            aria-describedby={joinIds(
+              fileStatus ? "observation-import-file-status" : undefined,
+              fileError ? "observation-import-error" : undefined,
+            )}
+            aria-invalid={Boolean(fileError)}
             className="import-file-input"
             onChange={(event) => {
               const file = event.currentTarget.files?.[0];
@@ -148,13 +165,13 @@ export function ObservationImportDialog({
             type="file"
           />
         </label>
-        {fileName && (
+        {fileStatus && (
           <p
             aria-live="polite"
             className="import-file-name"
             id="observation-import-file-status"
           >
-            {isReading ? "Чтение файла" : "Файл"}: {fileName}
+            {fileStatus}
           </p>
         )}
 
@@ -165,12 +182,16 @@ export function ObservationImportDialog({
           JSON наблюдений
         </label>
         <textarea
-          aria-describedby="observation-import-hint"
+          aria-describedby={joinIds(
+            "observation-import-hint",
+            sourceValidationError ? "observation-import-error" : undefined,
+          )}
+          aria-invalid={Boolean(sourceValidationError)}
           id="observation-import-source"
           onChange={(event) => changeSource(event.target.value)}
           ref={sourceRef}
           spellCheck={false}
-          value={source}
+          value={source.text}
         />
         <p className="field-hint" id="observation-import-hint">
           Массив до 1000 записей и 2 МиБ UTF-8. Все поля проверяются строго.
@@ -180,6 +201,7 @@ export function ObservationImportDialog({
       {validationError && (
         <div
           className="import-error-summary"
+          id="observation-import-error"
           ref={errorRef}
           role="alert"
           tabIndex={-1}
@@ -258,10 +280,9 @@ export function ObservationImportDialog({
         </button>
         <button
           className="secondary-action"
-          disabled={isReading}
+          disabled={isReading || Boolean(fileError)}
           onClick={() => {
-            setFileError(undefined);
-            setResult(onValidate(source, measuredBytes));
+            setResult(onValidate(source.text, source.measuredBytes));
           }}
           type="button"
         >
@@ -272,9 +293,8 @@ export function ObservationImportDialog({
             className="danger-action"
             onClick={() => {
               onReplace(preview.observations);
-              setSource("");
-              setFileName(undefined);
-              setMeasuredBytes(undefined);
+              setSource({ text: "" });
+              setFileAttemptName(undefined);
               setResult(undefined);
               setIsReading(false);
             }}
@@ -286,6 +306,11 @@ export function ObservationImportDialog({
       </div>
     </dialog>
   );
+}
+
+function joinIds(...ids: readonly (string | undefined)[]) {
+  const value = ids.filter(Boolean).join(" ");
+  return value || undefined;
 }
 
 function replacementLabel(count: number) {
