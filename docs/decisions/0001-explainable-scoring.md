@@ -49,7 +49,7 @@ scoreNumerator = sumSuspicion * (100 - w) + preyCount * 10 * w
 scoreDenominator = observationCount * 100
 ```
 
-Scores and mean suspicion values are compared by cross multiplication within the documented 1000-record limit. Display rounding is decimal half-up to one place; exact `7.45` therefore displays as `7.5`. This avoids IEEE-754 drift changing a displayed value or preventing a mathematical tie from reaching the recorded tie-breaks.
+Scores and mean suspicion values are compared by cross multiplication within the documented 1000-record limit. Display rounding is decimal half-up to one place; exact `7.45` therefore displays as `7.5`. This avoids IEEE-754 drift changing a displayed value or preventing a mathematical tie from being recognized. Every fox whose exact score equals the exact maximum is a co-leader; tie-breaks order those foxes deterministically but do not reduce the public result to one fox.
 
 All final string tie-breaks use locale-independent UTF-16 ordinal comparison. Observations with the same `time` use `id` ascending as their deterministic secondary order.
 

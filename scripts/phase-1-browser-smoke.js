@@ -6,7 +6,13 @@ async (page) => {
       throw new Error(message);
     }
   };
-  const waitForDestination = async ({ hash, heading, link, title }) => {
+  const waitForDestination = async ({
+    expectFocus = true,
+    hash,
+    heading,
+    link,
+    title,
+  }) => {
     const destinationHeading = page.getByRole("heading", {
       level: 1,
       name: heading,
@@ -19,11 +25,14 @@ async (page) => {
         globalThis.document.title === expectedTitle,
       { expectedHash: hash, expectedTitle: title },
     );
+    const headingHasFocus = await destinationHeading.evaluate(
+      (element) => element === element.ownerDocument.activeElement,
+    );
     assert(
-      (await destinationHeading.evaluate(
-        (element) => element === element.ownerDocument.activeElement,
-      )) === true,
-      `The ${heading} heading did not receive focus.`,
+      headingHasFocus === expectFocus,
+      expectFocus
+        ? `The ${heading} heading did not receive route focus.`
+        : `The ${heading} heading received focus on initial load.`,
     );
     assert(
       (await page
@@ -55,8 +64,9 @@ async (page) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto(`${baseUrl}/#summary`);
   await waitForDestination({
+    expectFocus: false,
     hash: "#summary",
-    heading: "Сводка наблюдений",
+    heading: "Самая подозрительная лиса",
     link: "Сводка",
     title: "Сводка — Лисий диспетчер",
   });
@@ -64,13 +74,22 @@ async (page) => {
     (await page.locator("html").getAttribute("lang")) === "ru",
     "The document language is not Russian.",
   );
+  assert(
+    (await page.getByText("Оценка 80% · добыча 20%").count()) === 0,
+    "The removed header formula status is still visible.",
+  );
+  assert(
+    (await page.getByRole("region", { name: "Состояние данных" }).count()) ===
+      0,
+    "The healthy persistence status is still visible on Summary.",
+  );
 
-  await page.getByRole("link", { name: "Наблюдения", exact: true }).click();
+  await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await waitForDestination({
     hash: "#observations",
-    heading: "Наблюдения",
-    link: "Наблюдения",
-    title: "Наблюдения — Лисий диспетчер",
+    heading: "Параметры",
+    link: "Параметры",
+    title: "Параметры — Лисий диспетчер",
   });
   assert(
     (await page.locator("tbody tr").count()) === 5,
@@ -113,9 +132,9 @@ async (page) => {
   await page.goBack();
   await waitForDestination({
     hash: "#observations",
-    heading: "Наблюдения",
-    link: "Наблюдения",
-    title: "Наблюдения — Лисий диспетчер",
+    heading: "Параметры",
+    link: "Параметры",
+    title: "Параметры — Лисий диспетчер",
   });
   await page.goForward();
   await waitForDestination({

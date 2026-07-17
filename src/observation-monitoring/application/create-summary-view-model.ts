@@ -1,5 +1,8 @@
 import type { Observation } from "@/observation-monitoring/domain/observation";
-import { formatFoxIdentityLabel } from "@/observation-monitoring/application/fox-display-name";
+import {
+  formatFoxIdentityLabel,
+  formatFoxIdentityList,
+} from "@/observation-monitoring/application/fox-display-name";
 import {
   createScoringPolicy,
   DEFAULT_SCORING_POLICY,
@@ -25,6 +28,7 @@ export interface RankedFoxViewModel {
   readonly preyObservationCount: number;
   readonly preyRatioLabel: string;
   readonly rank: number;
+  readonly scoreExactLabel: string;
   readonly scoreLabel: string;
   readonly scoreTenths: number;
   readonly suspicionContributionExactLabel: string;
@@ -38,23 +42,7 @@ export interface SummaryMetricViewModel {
   readonly value: string;
 }
 
-export interface EvidenceObservationViewModel {
-  readonly accessibleLabel: string;
-  readonly color: string;
-  readonly hasPrey: boolean;
-  readonly id: string;
-  readonly location: string;
-  readonly preyLabel: string;
-  readonly suspicionLevel: number;
-  readonly time: string;
-  readonly timelinePositionPercent: number;
-}
-
-export interface SelectedFoxViewModel extends RankedFoxViewModel {
-  readonly evidence: readonly EvidenceObservationViewModel[];
-  readonly observations: readonly EvidenceObservationViewModel[];
-  readonly timeRangeLabel: string;
-}
+export type SelectedFoxViewModel = RankedFoxViewModel;
 
 export interface LocationActivityViewModel {
   readonly location: string;
@@ -82,6 +70,7 @@ export interface SummaryScopeViewModel {
 
 export interface SummaryViewModel {
   readonly leader?: RankedFoxViewModel;
+  readonly leaders: readonly RankedFoxViewModel[];
   readonly locationActivity: readonly LocationActivityViewModel[];
   readonly metrics: readonly SummaryMetricViewModel[];
   readonly preyWeightPercent: number;
@@ -118,6 +107,7 @@ export function createSummaryViewModel(
     ),
   );
   const leadingLocation = report.locationActivity[0];
+  const leaderFoxIds = new Set(report.leaders.map(({ foxId }) => foxId));
   const selectedRankingItem =
     ranking.find(({ foxId }) => foxId === options.selectedFoxId) ?? ranking[0];
   const totalObservationCount =
@@ -125,6 +115,7 @@ export function createSummaryViewModel(
 
   return {
     leader: ranking[0],
+    leaders: ranking.filter(({ foxId }) => leaderFoxIds.has(foxId)),
     locationActivity: report.locationActivity.map((activity) => ({
       location: activity.location,
       observationCount: activity.observationCount,
@@ -143,20 +134,11 @@ export function createSummaryViewModel(
         value: String(report.uniqueFoxCount),
       },
       {
-        label: "Наблюдения",
-        value: String(report.observationCount),
-      },
-      {
         detail: leadingLocation
-          ? `${leadingLocation.observationCount} из ${report.observationCount}`
+          ? `${leadingLocation.observationCount} из ${report.observationCount} наблюдений`
           : undefined,
-        label: "Больше всего наблюдений",
+        label: "Основная локация",
         value: leadingLocation?.location ?? "Нет данных",
-      },
-      {
-        detail: "и добыча",
-        label: "Факторы индекса",
-        value: "Оценка смотрителя",
       },
     ],
     preyWeightPercent,
@@ -170,26 +152,33 @@ export function createSummaryViewModel(
       label: `Отчёт по ${observations.length} из ${totalObservationCount} наблюдений`,
       totalObservationCount,
     },
-    selectedFox: selectedRankingItem
-      ? createSelectedFoxViewModel(selectedRankingItem, observations)
-      : undefined,
+    selectedFox: selectedRankingItem,
     suspicionWeightPercent: 100 - preyWeightPercent,
   };
 }
 
 export function createPolicyAnnouncement(
   previousPreyWeightPercent: number,
-  previousLeaderFoxId: string | undefined,
+  previousLeaderFoxIds: readonly string[],
   viewModel: SummaryViewModel,
 ): string {
   const leader = viewModel.leader;
+  const leaderFoxIds = viewModel.leaders.map(({ foxId }) => foxId);
   const weightChange = `Вес добычи изменён с ${previousPreyWeightPercent}% до ${viewModel.preyWeightPercent}%.`;
 
   if (!leader) {
     return `${weightChange} В выборке нет наблюдений.`;
   }
 
-  if (previousLeaderFoxId !== leader.foxId) {
+  const leadersAreUnchanged =
+    previousLeaderFoxIds.length === leaderFoxIds.length &&
+    previousLeaderFoxIds.every((foxId, index) => foxId === leaderFoxIds[index]);
+
+  if (leaderFoxIds.length > 1) {
+    return `${weightChange} ${leadersAreUnchanged ? "Лидеры не изменились:" : "Новые лидеры —"} ${formatFoxIdentityList(leaderFoxIds)}, индекс ${leader.scoreLabel}.`;
+  }
+
+  if (!leadersAreUnchanged) {
     return `${weightChange} Новый лидер — ${formatFoxIdentityLabel(leader.foxId)}, индекс ${leader.scoreLabel}.`;
   }
 
@@ -242,6 +231,7 @@ function createRankedFoxViewModel(
     preyObservationCount: assessment.preyObservationCount,
     preyRatioLabel: `${assessment.preyObservationCount}/${assessment.observationCount}`,
     rank: index + 1,
+    scoreExactLabel,
     scoreLabel,
     scoreTenths: roundFractionToTenths(assessment.score),
     suspicionContributionExactLabel,
@@ -331,69 +321,6 @@ function formatTenths(tenths: number): string {
   return `${Math.floor(tenths / 10)},${tenths % 10}`;
 }
 
-function createSelectedFoxViewModel(
-  assessment: RankedFoxViewModel,
-  observations: readonly Observation[],
-): SelectedFoxViewModel {
-  const foxObservations = observations
-    .filter(({ fox_id }) => fox_id === assessment.foxId)
-    .sort(compareObservationRecency);
-  const chronologicalObservations = [...foxObservations].sort(
-    compareObservationChronology,
-  );
-  const observationMinutes = chronologicalObservations.map(({ time }) =>
-    timeToMinutes(time),
-  );
-  const earliestMinutes = observationMinutes[0] ?? 0;
-  const latestMinutes = observationMinutes.at(-1) ?? earliestMinutes;
-  const timeSpan = latestMinutes - earliestMinutes;
-  const evidence = chronologicalObservations.map((observation) =>
-    createEvidenceObservationViewModel(
-      observation,
-      timeSpan === 0
-        ? 50
-        : 10 +
-            ((timeToMinutes(observation.time) - earliestMinutes) / timeSpan) *
-              80,
-    ),
-  );
-
-  return {
-    ...assessment,
-    evidence,
-    observations: foxObservations.map((observation) =>
-      createEvidenceObservationViewModel(
-        observation,
-        evidence.find(({ id }) => id === observation.id)
-          ?.timelinePositionPercent ?? 50,
-      ),
-    ),
-    timeRangeLabel:
-      evidence.length > 1
-        ? `${evidence[0]?.time}–${evidence.at(-1)?.time}`
-        : (evidence[0]?.time ?? "Нет наблюдений"),
-  };
-}
-
-function createEvidenceObservationViewModel(
-  observation: Observation,
-  timelinePositionPercent: number,
-): EvidenceObservationViewModel {
-  const preyLabel = observation.has_prey ? "С добычей" : "Без добычи";
-
-  return {
-    accessibleLabel: `${observation.id}, ${observation.time}, оценка ${observation.suspicion_level}, ${preyLabel.toLowerCase()}, ${observation.location}`,
-    color: observation.color,
-    hasPrey: observation.has_prey,
-    id: observation.id,
-    location: observation.location,
-    preyLabel,
-    suspicionLevel: observation.suspicion_level,
-    time: observation.time,
-    timelinePositionPercent,
-  };
-}
-
 function createRecentObservationViewModel(
   observation: Observation,
 ): RecentObservationViewModel {
@@ -438,31 +365,6 @@ function compareObservationRecency(
   }
 
   return 0;
-}
-
-function compareObservationChronology(
-  left: Observation,
-  right: Observation,
-): number {
-  if (left.time !== right.time) {
-    return left.time < right.time ? -1 : 1;
-  }
-
-  if (left.id < right.id) {
-    return -1;
-  }
-
-  if (left.id > right.id) {
-    return 1;
-  }
-
-  return 0;
-}
-
-function timeToMinutes(time: string): number {
-  const [hours = 0, minutes = 0] = time.split(":").map(Number);
-
-  return hours * 60 + minutes;
 }
 
 export function formatObservationCount(count: number): string {

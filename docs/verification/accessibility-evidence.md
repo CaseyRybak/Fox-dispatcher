@@ -75,7 +75,7 @@ Artifacts:
 
 ## Assistive-technology boundary
 
-Chromium's accessibility tree was inspected in the production build and contains the named primary navigation, `Сводка наблюдений` heading, and `Влияние добычи` slider. This is useful screen-reader-oriented evidence, but it is not a native screen-reader session.
+Chromium's accessibility tree was inspected in the production build and contains the named primary navigation, `Самая подозрительная лиса` heading, and `Влияние добычи` slider. This is useful screen-reader-oriented evidence, but it is not a native screen-reader session.
 
 NVDA and VoiceOver are unavailable in the Linux execution environment, and Orca is not installed. No native screen-reader pass is claimed. A final manual NVDA, VoiceOver, or Orca smoke remains a transparent release-environment check rather than a hidden completion claim.
 

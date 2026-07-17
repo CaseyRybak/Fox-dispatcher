@@ -79,14 +79,16 @@ describe("observation management", () => {
     );
 
     await user.click(screen.getByRole("link", { name: "Сводка" }));
-    const summary = screen.getByRole("region", { name: "Сводка наблюдений" });
+    const summary = screen.getByRole("region", {
+      name: "Самая подозрительная лиса",
+    });
     expect(
       within(summary).getByRole("heading", { name: "Лиса 4" }),
     ).toBeInTheDocument();
-    expect(within(summary).getByText("8,0 из 10")).toBeInTheDocument();
+    expect(within(summary).getByText("Индекс 8,0 из 10")).toBeInTheDocument();
   });
 
-  it("recalculates filtered scope, options, activity, recency, and evidence from one edit", async () => {
+  it("recalculates filtered scope, options, activity, recency, and the selected calculation from one edit", async () => {
     const user = userEvent.setup();
     window.history.replaceState(null, "", "#summary");
     render(<App />);
@@ -95,7 +97,7 @@ describe("observation management", () => {
       screen.getByRole("combobox", { name: "Локация" }),
       "Северная поляна",
     );
-    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+    await user.click(screen.getByRole("link", { name: "Параметры" }));
     await user.click(screen.getByRole("button", { name: "Изменить obs_005" }));
     const editor = screen.getByRole("dialog", {
       name: "Изменить наблюдение obs_005",
@@ -143,14 +145,14 @@ describe("observation management", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: /^Показать доказательства: Лиса 4, индекс 2,4/,
+        name: /^Показать расчёт: Лиса 4, индекс 2,4/,
       }),
     );
     expect(
       screen.getByRole("complementary", {
         name: "Расчёт: Лиса 4, идентификатор fox_004",
       }),
-    ).toHaveTextContent("Речной берег");
+    ).toHaveTextContent("Средняя подозрительность");
   });
 
   it("deletes the only fox_004 observation, exposes one-step undo, and restores it", async () => {
@@ -167,13 +169,13 @@ describe("observation management", () => {
     await user.click(screen.getByRole("link", { name: "Сводка" }));
     expect(
       within(
-        screen.getByRole("region", { name: "Сводка наблюдений" }),
+        screen.getByRole("region", { name: "Самая подозрительная лиса" }),
       ).getByText("3", {
         selector: "dd",
       }),
     ).toBeInTheDocument();
 
-    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+    await user.click(screen.getByRole("link", { name: "Параметры" }));
     await user.click(
       screen.getByRole("button", { name: "Отменить удаление obs_005" }),
     );
@@ -399,7 +401,7 @@ describe("observation management", () => {
     fireEvent.change(slider, { target: { value: "30" } });
     fireEvent.pointerUp(slider);
 
-    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+    await user.click(screen.getByRole("link", { name: "Параметры" }));
     await user.click(screen.getByRole("button", { name: "Удалить obs_005" }));
     await user.click(
       screen.getByRole("button", { name: "Вернуть стартовые данные" }),
@@ -481,7 +483,7 @@ describe("observation management", () => {
       screen.getByRole("combobox", { name: "Цвет" }),
       "фиолетовая",
     );
-    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+    await user.click(screen.getByRole("link", { name: "Параметры" }));
     await user.click(
       screen.getByRole("button", { name: "Вернуть стартовые данные" }),
     );
@@ -508,7 +510,7 @@ describe("observation management", () => {
       screen.getByRole("combobox", { name: "Локация" }),
       "Северная поляна",
     );
-    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+    await user.click(screen.getByRole("link", { name: "Параметры" }));
 
     const scope = screen.getByRole("region", {
       name: "Активная область наблюдений",

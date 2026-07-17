@@ -46,7 +46,7 @@ async (page) => {
   await page.reload();
   await scan("summary desktop");
 
-  await page.getByRole("link", { name: "Наблюдения", exact: true }).click();
+  await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await scan("observations desktop");
   await page.getByRole("button", { name: "Добавить наблюдение" }).click();
   await page.getByRole("dialog", { name: "Новое наблюдение" }).waitFor();
@@ -90,7 +90,7 @@ async (page) => {
   await scan("AI Worklog desktop");
 
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.getByRole("link", { name: "Наблюдения", exact: true }).click();
+  await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await page
     .getByRole("list", { name: "Наблюдения текущей выборки" })
     .waitFor();

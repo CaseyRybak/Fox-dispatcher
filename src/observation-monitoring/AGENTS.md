@@ -4,7 +4,7 @@
 
 ## Current slice
 
-Phase 3 is published on `main` in `9834af5`; its consistency hardening was published in `1b2bb24`, and the final focus and runner-guard corrections were published with Phase 4 in `699d457`. One report scope connects filters, ranking, selected-fox evidence, location activity, recent observations, and the read-only observation ledger. Production-browser evidence covers keyboard selection, policy recalculation, every filter type, combined scope, deterministic chip focus, the zero state, cross-route scope, and 320 px reflow.
+Phase 3 is published on `main` in `9834af5`; its consistency hardening was published in `1b2bb24`, and the final focus and runner-guard corrections were published with Phase 4 in `699d457`. One report scope connects filters, ranking, selected-fox calculation, location activity, recent observations, and the observation ledger. Production-browser evidence covers keyboard selection, policy recalculation, every filter type, combined scope, deterministic chip focus, the zero state, cross-route scope, and 320 px reflow.
 
 Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6d`, with consistency hardening in `df434c9`: application commands validate and mutate one authoritative observation set; browser adapters generate secure IDs and persist a strict version-1 envelope; the Observations UI adds editing, deletion, undo, starter reset, status, deterministic sorting, focus recovery, and live feedback. Phase 6 is complete and published in `579b146`: the ledger switches to sortable mobile field cards, editor and reset flows use native modal dialogs, and focused accessibility/browser gates cover the reviewer journey. Phase 7 is complete: application/deployment policy revision `170ee1d` passed the recorded public Vercel reviewer journey; the protected-preview and mobile-coverage boundaries are explicit in the [release evidence](../../docs/verification/release-evidence.md). Phase 8 was published and deployed in `89c0f49`: atomic import/export and raw corrupt/future-version recovery passed focused, production-browser, axe, and 320 px checks.
 
@@ -12,9 +12,9 @@ Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6
 
 - `domain/observation.ts` — observation values and pure observation-set counts.
 - `domain/scoring-policy.ts` — validated integer prey-weight policy from 0 through 100 in steps of 5.
-- `domain/suspicion-report.ts` — pure exact report aggregation, ordering, and decimal half-up display rounding.
+- `domain/suspicion-report.ts` — pure exact report aggregation, full co-leader detection, deterministic ordering, and decimal half-up display rounding.
 - `application/create-observation-set-overview.ts` — read-only view model consumed by the shell.
-- `application/create-summary-view-model.ts` — presentation-ready scope, ranking, metrics, contributions, selected-fox evidence, location activity, recent observations, and policy-announcement copy.
+- `application/create-summary-view-model.ts` — presentation-ready scope, ranking, exact co-leaders, metrics, contributions, selected-fox calculation, location activity, recent observations, and policy-announcement copy.
 - `application/report-scope.ts` — deterministic fox, location, color, and prey filtering plus full-dataset filter options.
 - `application/public-worklog.ts` — public checkpoint and evidence values shared across the adapter/UI boundary.
 - `application/observation-management.ts` — atomic add/edit/delete/undo/reset behavior and the six-field editor contract.
@@ -26,7 +26,7 @@ Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6
 - `adapters/public-worklog/public-worklog.ts` — strict 5-7 checkpoint Zod parser and immutable bundled source.
 - `adapters/starter-data/starter-observations.ts` — Zod boundary for the bundled starter JSON.
 - `ui/ApplicationShell.tsx` — navigation and destination composition.
-- `ui/summary/SummaryPage.tsx` — scope controls, leader outcome, selectable ranking, contribution ledger, evidence strip, synchronized prey-weight controls, locations, and recent observations.
+- `ui/summary/SummaryPage.tsx` — scope controls, leader outcome, selectable ranking, contribution ledger, synchronized prey-weight controls, locations, and recent observations.
 - `ui/observations/ObservationsPage.tsx`, `ObservationEditor.tsx`, and `ObservationImportDialog.tsx` — editable ledger/cards, validated modal forms, import preview, export actions, delete/undo/reset, storage recovery, status, and focus recovery.
 - `ui/ai-worklog/WorklogPage.tsx` — semantic public timeline separating AI contribution, human decision, result, verification, and evidence.
 

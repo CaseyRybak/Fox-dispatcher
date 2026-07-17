@@ -44,14 +44,16 @@ async (page) => {
   );
 
   await page.getByRole("link", { name: "Сводка", exact: true }).click();
-  const summary = page.getByRole("region", { name: "Сводка наблюдений" });
+  const summary = page.getByRole("region", {
+    name: "Самая подозрительная лиса",
+  });
   await summary.getByRole("heading", { level: 2, name: "Лиса 4" }).waitFor();
   assert(
     (await summary.getByText("8,0 из 10").count()) === 1,
     "Editing obs_005 to 10 did not produce the 8.0 fox_004 leader.",
   );
 
-  await page.getByRole("link", { name: "Наблюдения", exact: true }).click();
+  await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await page.getByRole("button", { name: "Удалить obs_005" }).click();
   await page.getByText("Наблюдение obs_005 удалено", { exact: true }).waitFor();
   const neighbor = page.getByRole("button", { name: "Изменить obs_004" });
@@ -71,7 +73,7 @@ async (page) => {
     "Deleting the only fox_004 record did not reduce unique foxes to 3.",
   );
 
-  await page.getByRole("link", { name: "Наблюдения", exact: true }).click();
+  await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await page.getByRole("button", { name: "Отменить удаление obs_005" }).click();
   const restoredAction = page.getByRole("button", { name: "Изменить obs_005" });
   await restoredAction.waitFor();

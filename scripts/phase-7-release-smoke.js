@@ -67,14 +67,16 @@ async (page) => {
   await page.reload();
   await page.waitForLoadState("networkidle");
   const expectedOrigin = originOf(baseUrl);
-  const summary = page.getByRole("region", { name: "Сводка наблюдений" });
+  const summary = page.getByRole("region", {
+    name: "Самая подозрительная лиса",
+  });
   await summary.getByRole("heading", { level: 2, name: "Лиса 1" }).waitFor();
   assert(
     (await summary.getByText("7,8 из 10").count()) === 1,
     "The deployed starter report does not show the 7.8 leader.",
   );
 
-  await page.getByRole("link", { name: "Наблюдения", exact: true }).click();
+  await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await page.getByRole("button", { name: "Изменить obs_005" }).waitFor();
   await page.getByRole("link", { name: "AI Worklog", exact: true }).click();
   await page.getByRole("heading", { level: 1, name: "AI Worklog" }).waitFor();
@@ -96,7 +98,7 @@ async (page) => {
   await exactWeight.fill("20");
   await page.keyboard.press("Tab");
 
-  await page.getByRole("link", { name: "Наблюдения", exact: true }).click();
+  await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await page.getByRole("button", { name: "Изменить obs_005" }).click();
   const editor = page.getByRole("dialog", {
     name: "Изменить наблюдение obs_005",
@@ -141,7 +143,7 @@ async (page) => {
     path: "output/playwright/phase-7/production-summary-320px.png",
   });
 
-  await page.getByRole("link", { name: "Наблюдения", exact: true }).click();
+  await page.getByRole("link", { name: "Параметры", exact: true }).click();
   const mobileEditButton = page.getByRole("button", {
     name: "Изменить obs_005",
   });

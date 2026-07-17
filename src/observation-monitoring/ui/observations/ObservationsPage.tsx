@@ -253,7 +253,7 @@ export function ObservationsPage({
       <header className="page-heading observation-page-heading">
         <div>
           <p className="eyebrow">Редактируемый полевой журнал</p>
-          <h1 tabIndex={-1}>Наблюдения</h1>
+          <h1 tabIndex={-1}>Параметры</h1>
           <p>
             Добавляйте и уточняйте записи — сводка, рейтинг и активность
             пересчитываются из одного набора.

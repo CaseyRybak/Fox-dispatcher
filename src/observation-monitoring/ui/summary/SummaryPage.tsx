@@ -8,14 +8,13 @@ import {
 
 import {
   formatObservationCount,
-  type EvidenceObservationViewModel,
   type LocationActivityViewModel,
   type RankedFoxViewModel,
-  type SelectedFoxViewModel,
   type SummaryViewModel,
 } from "@/observation-monitoring/application/create-summary-view-model";
 import {
   formatFoxDisplayName,
+  formatFoxDisplayNameList,
   formatFoxIdentityLabel,
   hasDistinctFoxDisplayName,
 } from "@/observation-monitoring/application/fox-display-name";
@@ -38,11 +37,6 @@ interface SummaryPageProps {
   readonly viewModel: SummaryViewModel;
 }
 
-interface EvidenceSelection {
-  readonly foxId: string;
-  readonly observationId: string;
-}
-
 export function SummaryPage({
   filterOptions,
   filters,
@@ -52,14 +46,9 @@ export function SummaryPage({
   onSelectFox,
   viewModel,
 }: SummaryPageProps) {
-  const [evidenceSelection, setEvidenceSelection] =
-    useState<EvidenceSelection>();
   const leader = viewModel.leader;
+  const leaders = viewModel.leaders;
   const selectedFox = viewModel.selectedFox;
-  const selectedObservationId = getSelectedObservationId(
-    selectedFox,
-    evidenceSelection,
-  );
   const hasFilters = hasActiveReportFilters(filters);
   const isDatasetEmpty = viewModel.scope.totalObservationCount === 0;
 
@@ -67,12 +56,8 @@ export function SummaryPage({
     onPreyWeightCommit(viewModel.preyWeightPercent);
   };
 
-  const selectEvidence = (observationId: string) => {
-    if (!selectedFox) {
-      return;
-    }
-
-    setEvidenceSelection({ foxId: selectedFox.foxId, observationId });
+  const focusPolicyControl = () => {
+    document.querySelector<HTMLInputElement>("#prey-weight")?.focus();
   };
 
   const scopeToolbar = (
@@ -91,14 +76,11 @@ export function SummaryPage({
         <>
           <section className="empty-report" aria-labelledby="empty-title">
             <p className="eyebrow">Текущая область</p>
-            <h1 className="summary-empty-title" tabIndex={-1}>
-              Сводка наблюдений
-            </h1>
-            <h2 id="empty-title">
+            <h1 id="empty-title" tabIndex={-1}>
               {isDatasetEmpty
                 ? "Наблюдений пока нет"
                 : "В этой выборке ничего не найдено"}
-            </h2>
+            </h1>
             <p>
               {isDatasetEmpty
                 ? "В журнале нет записей. Откройте управление данными, чтобы добавить наблюдение, импортировать JSON или вернуть стартовый набор."
@@ -122,66 +104,82 @@ export function SummaryPage({
         </>
       ) : (
         <>
-          <section className="outcome-docket" aria-labelledby="summary-title">
-            <div className="outcome-docket__intro">
-              <h1
-                className="summary-route-title"
-                id="summary-title"
-                tabIndex={-1}
-              >
-                Сводка наблюдений
-              </h1>
-              <p className="eyebrow">Самая подозрительная сейчас</p>
-              <div className="leader-result">
-                <div className="leader-result__identity">
-                  <h2 className="leader-result__fox" id="leader-title">
-                    {formatFoxDisplayName(leader.foxId)}
-                  </h2>
-                  {hasDistinctFoxDisplayName(leader.foxId) && (
-                    <p className="data-id">{leader.foxId}</p>
-                  )}
+          <div className="summary-overview">
+            <section className="outcome-docket" aria-labelledby="summary-title">
+              <div className="outcome-docket__intro">
+                <h1
+                  className="outcome-docket__title"
+                  id="summary-title"
+                  tabIndex={-1}
+                >
+                  Самая подозрительная лиса
+                </h1>
+                <div className="leader-result">
+                  <div className="leader-result__identity">
+                    <h2 className="leader-result__fox" id="leader-title">
+                      {formatFoxDisplayNameList(
+                        leaders.map(({ foxId }) => foxId),
+                      )}
+                    </h2>
+                    {leaders.some(({ foxId }) =>
+                      hasDistinctFoxDisplayName(foxId),
+                    ) && (
+                      <p className="data-id">
+                        {leaders.map(({ foxId }) => foxId).join(" · ")}
+                      </p>
+                    )}
+                  </div>
+                  <p className="leader-result__score">
+                    Индекс {leader.scoreLabel} из 10
+                  </p>
                 </div>
-                <p className="leader-result__score">
-                  {leader.scoreLabel} из 10
-                </p>
+                <div
+                  className={[
+                    "leader-reasons",
+                    leaders.length > 1 ? "leader-reasons--multiple" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
+                >
+                  {leaders.map((currentLeader) => (
+                    <LeaderReason
+                      key={currentLeader.foxId}
+                      leader={currentLeader}
+                    />
+                  ))}
+                </div>
+                <div className="outcome-docket__actions">
+                  <a className="primary-action" href="#observations">
+                    Изменить параметры
+                  </a>
+                  <button
+                    className="primary-action"
+                    onClick={focusPolicyControl}
+                    type="button"
+                  >
+                    Изменить вес параметров
+                  </button>
+                </div>
               </div>
-              <p className="leader-result__explanation">
-                <strong>
-                  Почему {formatFoxDisplayName(leader.foxId)} первая:
-                </strong>{" "}
-                {leader.explanation}
-              </p>
-              <p className="leader-result__latest">
-                Последняя запись лидера: <time>{leader.latestTime}</time> ·{" "}
-                {leader.latestLocation}
-              </p>
-              <p className="leader-result__factors">
-                Индекс рассчитывается по всем наблюдениям лисы. Их количество
-                влияет на среднюю оценку и долю записей с добычей, но само по
-                себе не добавляет и не снимает баллы. Цвет, локация и время в
-                формулу не входят.
-              </p>
-              <p className="leader-result__scope">
-                Индекс определяет приоритет наблюдения, а не вероятность
-                опасности.
-              </p>
-              <a className="primary-action" href="#observations">
-                Изменить наблюдения
-              </a>
-            </div>
 
-            <dl className="metric-ledger" aria-label="Состав текущего отчёта">
-              {viewModel.metrics.map((metric) => (
-                <div className="metric-ledger__item" key={metric.label}>
-                  <dt>{metric.label}</dt>
-                  <dd>
-                    {metric.value}
-                    {metric.detail && <span>{metric.detail}</span>}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </section>
+              <dl className="metric-ledger" aria-label="Состав текущего отчёта">
+                {viewModel.metrics.map((metric) => (
+                  <div className="metric-ledger__item" key={metric.label}>
+                    <dt>{metric.label}</dt>
+                    <dd>
+                      {metric.value}
+                      {metric.detail && <span>{metric.detail}</span>}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
+
+            <SuspicionCalculationExplainer
+              leaders={leaders}
+              viewModel={viewModel}
+            />
+          </div>
 
           {scopeToolbar}
 
@@ -189,8 +187,10 @@ export function SummaryPage({
             <section className="ranking-panel" aria-labelledby="ranking-title">
               <header className="panel-heading">
                 <div>
-                  <p className="eyebrow">Порядок внимания</p>
                   <h2 id="ranking-title">Рейтинг лис</h2>
+                  <p className="panel-heading__description">
+                    Выберите лису для отображения расчетов.
+                  </p>
                 </div>
                 <p>{formatPositionCount(viewModel.ranking.length)}</p>
               </header>
@@ -202,7 +202,9 @@ export function SummaryPage({
                 {viewModel.ranking.map((assessment) => (
                   <RankingRow
                     assessment={assessment}
-                    isLeader={assessment.foxId === leader.foxId}
+                    isLeader={leaders.some(
+                      ({ foxId }) => foxId === assessment.foxId,
+                    )}
                     isSelected={assessment.foxId === selectedFox.foxId}
                     key={assessment.foxId}
                     onSelect={onSelectFox}
@@ -211,55 +213,58 @@ export function SummaryPage({
               </ol>
             </section>
 
-            <aside
-              aria-label={`Расчёт: ${formatFoxIdentityLabel(selectedFox.foxId)}`}
-              className="calculation-panel"
-            >
-              <div className="calculation-panel__heading">
-                <div>
-                  <p className="eyebrow">Расчёт выбранной лисы</p>
-                  <h2>{formatFoxDisplayName(selectedFox.foxId)}</h2>
-                  {hasDistinctFoxDisplayName(selectedFox.foxId) && (
-                    <p className="data-id">{selectedFox.foxId}</p>
-                  )}
-                </div>
-                <p>
-                  Индекс <strong>{selectedFox.scoreLabel}</strong>
-                </p>
-              </div>
-
-              <div
-                aria-label="Вклады в индекс"
-                className="contribution-ledger"
-                role="group"
+            <div className="assessment-side">
+              <aside
+                aria-label={`Расчёт: ${formatFoxIdentityLabel(selectedFox.foxId)}`}
+                className="calculation-panel"
               >
-                <ContributionRow
-                  detail={`${selectedFox.meanSuspicionExactLabel} × ${viewModel.suspicionWeightPercent}%`}
-                  label="Оценка смотрителя"
-                  percent={selectedFox.suspicionContributionPercent}
-                  value={selectedFox.suspicionContributionExactLabel}
-                />
-                <ContributionRow
-                  detail={`${selectedFox.preyRatioLabel} × 10 × ${viewModel.preyWeightPercent}%`}
-                  label="Признак добычи"
-                  percent={selectedFox.preyContributionPercent}
-                  value={selectedFox.preyContributionExactLabel}
-                />
-              </div>
+                <div className="calculation-panel__heading">
+                  <div>
+                    <p className="eyebrow">Расчет индекса</p>
+                    <h2>{formatFoxDisplayName(selectedFox.foxId)}</h2>
+                    {hasDistinctFoxDisplayName(selectedFox.foxId) && (
+                      <p className="data-id">{selectedFox.foxId}</p>
+                    )}
+                  </div>
+                  <p>
+                    Индекс <strong>{selectedFox.scoreLabel}</strong>
+                  </p>
+                </div>
 
-              <PolicyControl
-                commitCurrentWeight={commitCurrentWeight}
-                onPreyWeightChange={onPreyWeightChange}
-                onPreyWeightCommit={onPreyWeightCommit}
-                viewModel={viewModel}
-              />
+                <div
+                  aria-label="Вклады в индекс"
+                  className="contribution-ledger"
+                  role="group"
+                >
+                  <ContributionRow
+                    detail={`${selectedFox.meanSuspicionExactLabel} × ${viewModel.suspicionWeightPercent}%`}
+                    label="Средняя подозрительность по всем наблюдениям"
+                    percent={selectedFox.suspicionContributionPercent}
+                    value={selectedFox.suspicionContributionExactLabel}
+                  />
+                  <ContributionRow
+                    detail={`${selectedFox.preyRatioLabel} × 10 × ${viewModel.preyWeightPercent}%`}
+                    label="Наличие добычи"
+                    percent={selectedFox.preyContributionPercent}
+                    value={selectedFox.preyContributionExactLabel}
+                  />
+                </div>
+              </aside>
 
-              <EvidenceInspector
-                onSelectEvidence={selectEvidence}
-                selectedFox={selectedFox}
-                selectedObservationId={selectedObservationId}
-              />
-            </aside>
+              <section
+                aria-labelledby="parameter-weights-title"
+                className="policy-panel"
+                role="region"
+              >
+                <h2 id="parameter-weights-title">Вес параметров</h2>
+                <PolicyControl
+                  commitCurrentWeight={commitCurrentWeight}
+                  onPreyWeightChange={onPreyWeightChange}
+                  onPreyWeightCommit={onPreyWeightCommit}
+                  viewModel={viewModel}
+                />
+              </section>
+            </div>
           </div>
 
           <div className="report-context-grid">
@@ -279,6 +284,163 @@ export function SummaryPage({
         </>
       )}
     </div>
+  );
+}
+
+function LeaderReason({ leader }: { readonly leader: RankedFoxViewModel }) {
+  const titleId = `leader-reason-${leader.foxId}`;
+
+  return (
+    <section aria-labelledby={titleId} className="leader-reason" role="region">
+      <h3 id={titleId}>Почему {formatFoxDisplayName(leader.foxId)}</h3>
+      <dl className="leader-reason__list">
+        <div>
+          <dt>Средняя подозрительность по всем наблюдениям</dt>
+          <dd>
+            <span>
+              Средняя {leader.meanSuspicionExactLabel} ·{" "}
+              {leader.observationCount}{" "}
+              {formatObservationCount(leader.observationCount)}
+            </span>
+            <strong>Индекс {leader.suspicionContributionExactLabel}</strong>
+          </dd>
+        </div>
+        <div>
+          <dt>Наличие добычи</dt>
+          <dd>
+            <span>
+              В {leader.preyObservationCount} из {leader.observationCount}{" "}
+              наблюдений
+            </span>
+            <strong>Индекс {leader.preyContributionExactLabel}</strong>
+          </dd>
+        </div>
+      </dl>
+    </section>
+  );
+}
+
+function SuspicionCalculationExplainer({
+  leaders,
+  viewModel,
+}: {
+  readonly leaders: readonly RankedFoxViewModel[];
+  readonly viewModel: SummaryViewModel;
+}) {
+  const titleId = "calculation-explanation";
+  const hasMultipleLeaders = leaders.length > 1;
+
+  return (
+    <section
+      aria-labelledby={titleId}
+      className="calculation-explainer"
+      role="region"
+    >
+      <header className="calculation-explainer__heading">
+        <h2 id={titleId}>Расчет индекса подозрительности</h2>
+        <div className="calculation-explainer__intro">
+          <p>
+            Индекс складывается из двух частей: средней подозрительности по всем
+            наблюдениям и наличия добычи.
+          </p>
+          <p>
+            При стартовых настройках средняя подозрительность лисы имеет 80%
+            веса в итоговом индексе, а наличие добычи — 20%. Вес параметров
+            можно изменить ниже. Параметры наблюдений и количество лис можно
+            изменить в разделе <a href="#observations">«Параметры»</a>.
+          </p>
+        </div>
+      </header>
+
+      <h3 className="calculation-explainer__detail-title">
+        {hasMultipleLeaders
+          ? "Детальный расчет индекса самых подозрительных лис"
+          : "Детальный расчет индекса самой подозрительной лисы"}
+      </h3>
+      {leaders.map((leader) => (
+        <div className="calculation-explainer__leader" key={leader.foxId}>
+          {hasMultipleLeaders && (
+            <header className="calculation-explainer__leader-heading">
+              <h4>{formatFoxDisplayName(leader.foxId)}</h4>
+              {hasDistinctFoxDisplayName(leader.foxId) && (
+                <p className="data-id">{leader.foxId}</p>
+              )}
+            </header>
+          )}
+          <CalculationSteps
+            leader={leader}
+            nested={hasMultipleLeaders}
+            viewModel={viewModel}
+          />
+        </div>
+      ))}
+
+      <p className="calculation-explainer__boundary">
+        Количество наблюдений не добавляет баллы самостоятельно. Оно влияет на
+        среднюю подозрительность и долю наблюдений с добычей. Цвет, локация и
+        время в расчёте индекса не участвуют.
+      </p>
+    </section>
+  );
+}
+
+function CalculationSteps({
+  leader,
+  nested,
+  viewModel,
+}: {
+  readonly leader: RankedFoxViewModel;
+  readonly nested: boolean;
+  readonly viewModel: SummaryViewModel;
+}) {
+  const foxName = formatFoxDisplayName(leader.foxId);
+  const foxNameAfterFor = hasDistinctFoxDisplayName(leader.foxId)
+    ? foxName.replace(/^Лиса /u, "Лисы ")
+    : foxName;
+  const exactScoreIsDisplayed = leader.scoreExactLabel === leader.scoreLabel;
+  const StepHeading = nested ? "h5" : "h4";
+
+  return (
+    <ol className="calculation-explainer__steps">
+      <li>
+        <StepHeading>Средняя подозрительность по всем наблюдениям</StepHeading>
+        <p>
+          Для {foxNameAfterFor} объединены {leader.observationCount}{" "}
+          {formatObservationCount(leader.observationCount)}. Средняя
+          подозрительность — {leader.meanSuspicionExactLabel}.
+        </p>
+        <strong className="calculation-explainer__formula">
+          {leader.meanSuspicionExactLabel} × {viewModel.suspicionWeightPercent}%
+          = {leader.suspicionContributionExactLabel}
+        </strong>
+      </li>
+      <li>
+        <StepHeading>Наличие добычи</StepHeading>
+        <p>
+          Добыча отмечена в {leader.preyObservationCount} из{" "}
+          {leader.observationCount} наблюдений.
+        </p>
+        <strong className="calculation-explainer__formula">
+          {leader.preyRatioLabel} × 10 × {viewModel.preyWeightPercent}% ={" "}
+          {leader.preyContributionExactLabel}
+        </strong>
+      </li>
+      <li>
+        <StepHeading>Итоговый индекс</StepHeading>
+        <p>Складываем вклады двух признаков.</p>
+        <strong className="calculation-explainer__formula">
+          {leader.suspicionContributionExactLabel} +{" "}
+          {leader.preyContributionExactLabel} = {leader.scoreExactLabel}
+          {exactScoreIsDisplayed ? " из 10" : ""}
+        </strong>
+        {!exactScoreIsDisplayed && (
+          <p>
+            Точный результат — {leader.scoreExactLabel}. На экране —{" "}
+            {leader.scoreLabel} из 10.
+          </p>
+        )}
+      </li>
+    </ol>
   );
 }
 
@@ -369,7 +531,6 @@ function ScopeToolbar({
         <strong ref={scopeLabelRef} tabIndex={-1}>
           {scopeLabel}
         </strong>
-        <span>Все показатели используют одну область.</span>
         {isCompact && (
           <button
             aria-controls="scope-toolbar-controls"
@@ -389,11 +550,11 @@ function ScopeToolbar({
         id="scope-toolbar-controls"
       >
         <label className="filter-field filter-field--search">
-          <span>Найти fox_id</span>
+          <span>Найти лису</span>
           <input
             autoComplete="off"
             onChange={(event) => updateFilter("foxQuery", event.target.value)}
-            placeholder="например, fox_001"
+            placeholder="Лиса 1 или fox_001"
             type="search"
             value={filters.foxQuery}
           />
@@ -524,7 +685,7 @@ function RankingRow({
   return (
     <li className={className}>
       <button
-        aria-label={`Показать доказательства: ${formatFoxDisplayName(assessment.foxId)}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.colorSummaryLabel}; наблюдений ${assessment.observationCount}; идентификатор ${assessment.foxId}`}
+        aria-label={`Показать расчёт: ${formatFoxDisplayName(assessment.foxId)}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.colorSummaryLabel}; наблюдений ${assessment.observationCount}; идентификатор ${assessment.foxId}`}
         aria-pressed={isSelected}
         className="ranking-row__button"
         onClick={() => onSelect(assessment.foxId)}
@@ -583,14 +744,14 @@ function PolicyControl({
   const isCompact = useMediaQuery("(max-width: 640px)");
   return (
     <fieldset className="policy-control">
-      <legend>Политика оценки</legend>
+      <legend className="visually-hidden">Настройка веса параметров</legend>
       <div className="policy-control__label-row">
         <label htmlFor="prey-weight">Влияние добычи</label>
         <span>{viewModel.preyWeightPercent}%</span>
       </div>
       <input
-        aria-describedby="prey-weight-help prey-weight-result-hint"
-        aria-valuetext={`${viewModel.preyWeightPercent}% — оценка ${viewModel.suspicionWeightPercent}%, добыча ${viewModel.preyWeightPercent}%`}
+        aria-describedby="prey-weight-help"
+        aria-valuetext={`${viewModel.preyWeightPercent}% — влияние подозрительности ${viewModel.suspicionWeightPercent}%, наличие добычи ${viewModel.preyWeightPercent}%`}
         id="prey-weight"
         max="100"
         min="0"
@@ -607,26 +768,28 @@ function PolicyControl({
         preyWeightPercent={viewModel.preyWeightPercent}
       />
       <div className="policy-control__weights">
-        <span>Оценка смотрителя {viewModel.suspicionWeightPercent}%</span>
-        <span>Добыча {viewModel.preyWeightPercent}%</span>
+        <span>
+          Влияние подозрительности {viewModel.suspicionWeightPercent}%
+        </span>
+        <span>Наличие добычи {viewModel.preyWeightPercent}%</span>
       </div>
       {isCompact && viewModel.leader && (
         <section
           aria-label="Текущий результат расчёта"
           className="policy-control__compact-result"
         >
-          <span>Текущий лидер</span>
-          <strong>{formatFoxDisplayName(viewModel.leader.foxId)}</strong>
+          <span>
+            {viewModel.leaders.length > 1 ? "Текущие лидеры" : "Текущий лидер"}
+          </span>
+          <strong>
+            {formatFoxDisplayNameList(
+              viewModel.leaders.map(({ foxId }) => foxId),
+            )}
+          </strong>
           <span>{viewModel.leader.scoreLabel} из 10</span>
         </section>
       )}
-      <p id="prey-weight-help">
-        Добыча — настраиваемый сигнал диспетчерского внимания. Остальной вес
-        автоматически принадлежит прямой оценке смотрителя.
-      </p>
-      <p className="policy-control__result-hint" id="prey-weight-result-hint">
-        Измените вес добычи — рейтинг, лидер и объяснение пересчитаются сразу.
-      </p>
+      <p id="prey-weight-help">Измените вес параметров</p>
       <button
         className="text-action"
         disabled={viewModel.preyWeightPercent === 20}
@@ -636,7 +799,7 @@ function PolicyControl({
         }}
         type="button"
       >
-        Вернуть 20%
+        Сбросить значения
       </button>
     </fieldset>
   );
@@ -744,126 +907,6 @@ function ExactWeightControl({
         <span aria-hidden="true">%</span>
       </div>
     </div>
-  );
-}
-
-function EvidenceInspector({
-  onSelectEvidence,
-  selectedFox,
-  selectedObservationId,
-}: {
-  readonly onSelectEvidence: (observationId: string) => void;
-  readonly selectedFox: SelectedFoxViewModel;
-  readonly selectedObservationId: string | undefined;
-}) {
-  return (
-    <section className="evidence-inspector" aria-labelledby="evidence-title">
-      <div className="evidence-inspector__heading">
-        <div>
-          <p className="eyebrow">Исходные записи</p>
-          <h3 id="evidence-title">Лента доказательств</h3>
-        </div>
-        <span>{selectedFox.timeRangeLabel}</span>
-      </div>
-      <p className="evidence-inspector__help">
-        Горизонталь — время, высота — прямая оценка. Линия маршрута не строится.
-      </p>
-
-      <div
-        aria-label={`Наблюдения: ${formatFoxIdentityLabel(selectedFox.foxId)}, по времени и оценке`}
-        className="evidence-strip"
-        role="group"
-      >
-        <span aria-hidden="true" className="evidence-strip__axis" />
-        {selectedFox.evidence.map((observation) => (
-          <EvidenceMarker
-            isSelected={observation.id === selectedObservationId}
-            key={observation.id}
-            observation={observation}
-            onSelect={onSelectEvidence}
-          />
-        ))}
-      </div>
-
-      <ol
-        aria-label={`Исходные наблюдения: ${formatFoxIdentityLabel(selectedFox.foxId)}`}
-        className="evidence-records"
-      >
-        {selectedFox.observations.map((observation) => {
-          const isSelected = observation.id === selectedObservationId;
-
-          return (
-            <li
-              className={
-                isSelected
-                  ? "evidence-record evidence-record--selected"
-                  : "evidence-record"
-              }
-              key={observation.id}
-            >
-              <button
-                aria-pressed={isSelected}
-                onClick={() => onSelectEvidence(observation.id)}
-                type="button"
-              >
-                <span className="evidence-record__time">
-                  <time>{observation.time}</time>
-                  <span className="data-id">{observation.id}</span>
-                </span>
-                <span className="evidence-record__place">
-                  <strong>{observation.location}</strong>
-                  <span>
-                    <span
-                      aria-hidden="true"
-                      className="color-swatch"
-                      data-color={observation.color}
-                    />
-                    {observation.color}
-                  </span>
-                </span>
-                <span className="evidence-record__facts">
-                  <strong>{observation.suspicionLevel} / 10</strong>
-                  <span>{observation.preyLabel}</span>
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ol>
-      <p className="evidence-inspector__boundary">
-        В индекс не входят локация, цвет, время и число появлений сами по себе.
-      </p>
-    </section>
-  );
-}
-
-function EvidenceMarker({
-  isSelected,
-  observation,
-  onSelect,
-}: {
-  readonly isSelected: boolean;
-  readonly observation: EvidenceObservationViewModel;
-  readonly onSelect: (observationId: string) => void;
-}) {
-  const style = {
-    "--evidence-level": observation.suspicionLevel,
-    "--evidence-x": `${observation.timelinePositionPercent}%`,
-  } as CSSProperties;
-
-  return (
-    <button
-      aria-label={observation.accessibleLabel}
-      aria-pressed={isSelected}
-      className="evidence-marker"
-      onClick={() => onSelect(observation.id)}
-      style={style}
-      type="button"
-    >
-      <strong>{observation.suspicionLevel}</strong>
-      <time>{observation.time}</time>
-      {observation.hasPrey && <span aria-hidden="true">добыча</span>}
-    </button>
   );
 }
 
@@ -989,23 +1032,6 @@ function ContributionRow({
       </span>
     </div>
   );
-}
-
-function getSelectedObservationId(
-  selectedFox: SelectedFoxViewModel | undefined,
-  evidenceSelection: EvidenceSelection | undefined,
-): string | undefined {
-  if (
-    selectedFox &&
-    evidenceSelection?.foxId === selectedFox.foxId &&
-    selectedFox.observations.some(
-      ({ id }) => id === evidenceSelection.observationId,
-    )
-  ) {
-    return evidenceSelection.observationId;
-  }
-
-  return selectedFox?.observations[0]?.id;
 }
 
 function formatPositionCount(count: number): string {

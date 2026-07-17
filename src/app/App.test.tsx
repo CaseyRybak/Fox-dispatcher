@@ -26,12 +26,17 @@ describe("application shell", () => {
       screen.getByText("Fox Dispatcher · explainable scoring"),
     ).toHaveAttribute("lang", "en");
     expect(
-      screen.getByRole("heading", { level: 1, name: "Сводка наблюдений" }),
+      screen.getByRole("heading", {
+        level: 1,
+        name: "Самая подозрительная лиса",
+      }),
     ).toBeInTheDocument();
-    const summary = screen.getByRole("region", { name: "Сводка наблюдений" });
+    const summary = screen.getByRole("region", {
+      name: "Самая подозрительная лиса",
+    });
 
-    expect(within(summary).getByText("5", { selector: "dd" }));
     expect(within(summary).getByText("4", { selector: "dd" }));
+    expect(within(summary).getByText("3 из 5 наблюдений"));
     expect(
       within(summary).getByRole("heading", { level: 2, name: "Лиса 1" }),
     ).toBeInTheDocument();

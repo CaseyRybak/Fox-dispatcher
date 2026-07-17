@@ -327,7 +327,7 @@ async (page) => {
     "Forced-colors preference was not active in the browser.",
   );
   const forcedColorsFocus = page.getByRole("link", {
-    name: "Наблюдения",
+    name: "Параметры",
     exact: true,
   });
   await forcedColorsFocus.focus();
@@ -351,7 +351,7 @@ async (page) => {
   const accessibilityTree = await page.locator("body").ariaSnapshot();
   assert(
     accessibilityTree.includes('navigation "Основная навигация"') &&
-      accessibilityTree.includes('heading "Сводка наблюдений"') &&
+      accessibilityTree.includes('heading "Самая подозрительная лиса"') &&
       accessibilityTree.includes('slider "Влияние добычи"'),
     `The browser accessibility tree is missing the primary journey: ${accessibilityTree}`,
   );

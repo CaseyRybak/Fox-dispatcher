@@ -11,16 +11,28 @@ describe("hash navigation", () => {
     document.documentElement.removeAttribute("lang");
   });
 
-  it("synchronizes language, title, current link, heading focus, and browser history", async () => {
+  it("keeps the general parameters action linked to Parameters", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("link", { name: "Изменить параметры" }));
+
+    expect(window.location.hash).toBe("#observations");
+    expect(
+      await screen.findByRole("heading", { level: 1, name: "Параметры" }),
+    ).toBeInTheDocument();
+  });
+
+  it("synchronizes language, title, current link, route focus, and browser history", async () => {
     const user = userEvent.setup();
     render(<App />);
 
     const summaryHeading = screen.getByRole("heading", {
       level: 1,
-      name: "Сводка наблюдений",
+      name: "Самая подозрительная лиса",
     });
 
-    await waitFor(() => expect(summaryHeading).toHaveFocus());
+    expect(summaryHeading).not.toHaveFocus();
     expect(document.documentElement).toHaveAttribute("lang", "ru");
     expect(document.title).toBe("Сводка — Лисий диспетчер");
     expect(screen.getByRole("link", { name: "Сводка" })).toHaveAttribute(
@@ -28,15 +40,15 @@ describe("hash navigation", () => {
       "page",
     );
 
-    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+    await user.click(screen.getByRole("link", { name: "Параметры" }));
 
     const observationsHeading = await screen.findByRole("heading", {
       level: 1,
-      name: "Наблюдения",
+      name: "Параметры",
     });
     await waitFor(() => expect(observationsHeading).toHaveFocus());
-    expect(document.title).toBe("Наблюдения — Лисий диспетчер");
-    expect(screen.getByRole("link", { name: "Наблюдения" })).toHaveAttribute(
+    expect(document.title).toBe("Параметры — Лисий диспетчер");
+    expect(screen.getByRole("link", { name: "Параметры" })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -57,11 +69,11 @@ describe("hash navigation", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("heading", { level: 1, name: "Наблюдения" }),
+        screen.getByRole("heading", { level: 1, name: "Параметры" }),
       ).toHaveFocus();
     });
-    expect(document.title).toBe("Наблюдения — Лисий диспетчер");
-    expect(screen.getByRole("link", { name: "Наблюдения" })).toHaveAttribute(
+    expect(document.title).toBe("Параметры — Лисий диспетчер");
+    expect(screen.getByRole("link", { name: "Параметры" })).toHaveAttribute(
       "aria-current",
       "page",
     );
@@ -85,11 +97,9 @@ describe("hash navigation", () => {
     window.history.replaceState(null, "", "#observations");
     render(<App />);
 
-    await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { level: 1, name: "Наблюдения" }),
-      ).toHaveFocus();
-    });
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Параметры" }),
+    ).not.toHaveFocus();
 
     await user.click(
       screen.getByRole("link", { name: "Перейти к содержанию" }),
@@ -98,9 +108,9 @@ describe("hash navigation", () => {
     expect(window.location.hash).toBe("#observations");
     expect(screen.getByRole("main")).toHaveFocus();
     expect(
-      screen.getByRole("heading", { level: 1, name: "Наблюдения" }),
+      screen.getByRole("heading", { level: 1, name: "Параметры" }),
     ).toBeInTheDocument();
-    expect(document.title).toBe("Наблюдения — Лисий диспетчер");
+    expect(document.title).toBe("Параметры — Лисий диспетчер");
   });
 
   it("keeps one live-status node mounted across destinations", async () => {
@@ -109,7 +119,7 @@ describe("hash navigation", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: /^Показать доказательства: Лиса 2, индекс 4,0/,
+        name: /^Показать расчёт: Лиса 2, индекс 4,0/,
       }),
     );
     const status = screen.getByRole("status");
@@ -118,7 +128,7 @@ describe("hash navigation", () => {
       "Показаны доказательства: Лиса 2, идентификатор fox_002.",
     );
 
-    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+    await user.click(screen.getByRole("link", { name: "Параметры" }));
 
     expect(screen.getByRole("status")).toBe(status);
   });

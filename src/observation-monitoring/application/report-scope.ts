@@ -1,4 +1,5 @@
 import type { Observation } from "@/observation-monitoring/domain/observation";
+import { formatFoxDisplayName } from "./fox-display-name";
 
 export type PreyFilter = "all" | "with-prey" | "without-prey";
 
@@ -26,11 +27,12 @@ export function applyReportFilters(
   filters: ReportFilters,
 ): readonly Observation[] {
   const normalizedFoxQuery = filters.foxQuery.trim().toLowerCase();
+  const exactFoxIds = collectExactFoxIds(observations, normalizedFoxQuery);
 
   return observations.filter((observation) => {
     if (
       normalizedFoxQuery !== "" &&
-      !observation.fox_id.toLowerCase().includes(normalizedFoxQuery)
+      !matchesFoxQuery(observation.fox_id, normalizedFoxQuery, exactFoxIds)
     ) {
       return false;
     }
@@ -53,6 +55,43 @@ export function applyReportFilters(
 
     return true;
   });
+}
+
+function collectExactFoxIds(
+  observations: readonly Observation[],
+  normalizedQuery: string,
+): ReadonlySet<string> {
+  if (normalizedQuery === "") return new Set();
+
+  const exactIdentifierMatches = observations
+    .map(({ fox_id }) => fox_id)
+    .filter((foxId) => foxId.toLowerCase() === normalizedQuery);
+
+  if (exactIdentifierMatches.length > 0) {
+    return new Set(exactIdentifierMatches);
+  }
+
+  return new Set(
+    observations
+      .map(({ fox_id }) => fox_id)
+      .filter(
+        (foxId) =>
+          formatFoxDisplayName(foxId).toLowerCase() === normalizedQuery,
+      ),
+  );
+}
+
+function matchesFoxQuery(
+  foxId: string,
+  normalizedQuery: string,
+  exactFoxIds: ReadonlySet<string>,
+): boolean {
+  if (exactFoxIds.size > 0) return exactFoxIds.has(foxId);
+
+  return (
+    foxId.toLowerCase().includes(normalizedQuery) ||
+    formatFoxDisplayName(foxId).toLowerCase().includes(normalizedQuery)
+  );
 }
 
 export function createReportFilterOptions(

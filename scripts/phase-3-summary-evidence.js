@@ -53,7 +53,7 @@ async (page) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${baseUrl}/#summary`);
   await page
-    .getByRole("heading", { level: 1, name: "Сводка наблюдений" })
+    .getByRole("heading", { level: 1, name: "Самая подозрительная лиса" })
     .waitFor();
   await assertScope("Отчёт по 5 из 5 наблюдений");
   await page.screenshot({
@@ -68,7 +68,7 @@ async (page) => {
     ["Лиса 4", "2,4"],
   ]) {
     const rankingButton = page.getByRole("button", {
-      name: new RegExp(`^Показать доказательства: ${foxId}, индекс ${score}`),
+      name: new RegExp(`^Показать расчёт: ${foxId}, индекс ${score}`),
     });
 
     await rankingButton.focus();
@@ -85,7 +85,7 @@ async (page) => {
   }
 
   const fox002 = page.getByRole("button", {
-    name: /^Показать доказательства: Лиса 2, индекс 4,0/,
+    name: /^Показать расчёт: Лиса 2, индекс 4,0/,
   });
   await fox002.focus();
   await page.keyboard.press("Enter");
@@ -106,8 +106,13 @@ async (page) => {
     .waitFor();
   await page.getByRole("complementary", { name: "Расчёт: Лиса 2" }).waitFor();
 
-  const foxSearch = page.getByRole("searchbox", { name: "Найти fox_id" });
+  const foxSearch = page.getByRole("searchbox", { name: "Найти лису" });
   await foxSearch.fill("fox_001");
+  await assertScope("Отчёт по 2 из 5 наблюдений");
+  await assertFilterAnnouncement("Фильтры применены: 2 из 5 наблюдений.");
+  await resetFilters();
+
+  await foxSearch.fill("Лиса 1");
   await assertScope("Отчёт по 2 из 5 наблюдений");
   await assertFilterAnnouncement("Фильтры применены: 2 из 5 наблюдений.");
   await resetFilters();
@@ -170,8 +175,8 @@ async (page) => {
     ),
     "The zero-result filter moved focus away from its control.",
   );
-  await page.getByRole("link", { name: "Наблюдения" }).click();
-  await page.getByRole("heading", { level: 1, name: "Наблюдения" }).waitFor();
+  await page.getByRole("link", { name: "Параметры" }).click();
+  await page.getByRole("heading", { level: 1, name: "Параметры" }).waitFor();
   await page
     .getByRole("heading", { name: "В этой выборке ничего не найдено" })
     .waitFor();
@@ -189,7 +194,7 @@ async (page) => {
   );
   await page.getByRole("link", { name: "Сводка", exact: true }).click();
   await page
-    .getByRole("heading", { level: 1, name: "Сводка наблюдений" })
+    .getByRole("heading", { level: 1, name: "Самая подозрительная лиса" })
     .waitFor();
 
   await page
@@ -198,7 +203,7 @@ async (page) => {
     })
     .click();
   await page.getByRole("link", { name: "Все наблюдения" }).click();
-  await page.getByRole("heading", { level: 1, name: "Наблюдения" }).waitFor();
+  await page.getByRole("heading", { level: 1, name: "Параметры" }).waitFor();
   assert(
     (await page.locator("caption").textContent()) ===
       "Отчёт по 3 из 5 наблюдений",
@@ -211,13 +216,12 @@ async (page) => {
 
   await page.getByRole("link", { name: "Сводка", exact: true }).click();
   await page
-    .getByRole("heading", { level: 1, name: "Сводка наблюдений" })
+    .getByRole("heading", { level: 1, name: "Самая подозрительная лиса" })
     .waitFor();
   await resetFilters();
   await page.setViewportSize({ width: 320, height: 800 });
   await assertNoPageOverflow();
   await page.getByRole("complementary", { name: "Расчёт: Лиса 1" }).waitFor();
-  await page.getByRole("region", { name: "Лента доказательств" }).waitFor();
   await page.screenshot({
     fullPage: true,
     path: "output/playwright/phase-3/mobile-summary-320px.png",

@@ -116,6 +116,7 @@ describe("explainable suspicion scoring", () => {
     expect(report.locationActivity).toEqual([]);
     expect(report.latestObservation).toBeUndefined();
     expect(report.leader).toBeUndefined();
+    expect(report.leaders).toEqual([]);
   });
 
   it("calculates one observation without a special case", () => {
@@ -157,6 +158,10 @@ describe("explainable suspicion scoring", () => {
     );
 
     expect(report.assessments.map(({ foxId }) => foxId)).toEqual([
+      "fox_b",
+      "fox_a",
+    ]);
+    expect(report.leaders.map(({ foxId }) => foxId)).toEqual([
       "fox_b",
       "fox_a",
     ]);

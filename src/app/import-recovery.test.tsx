@@ -74,7 +74,7 @@ describe("observation import and export", () => {
       screen.getByRole("combobox", { name: "Локация" }),
       "Северная поляна",
     );
-    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+    await user.click(screen.getByRole("link", { name: "Параметры" }));
 
     await user.click(
       screen.getByRole("button", { name: "Импортировать JSON" }),
@@ -137,7 +137,7 @@ describe("observation import and export", () => {
       screen.getByRole("combobox", { name: "Локация" }),
       "Северная поляна",
     );
-    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+    await user.click(screen.getByRole("link", { name: "Параметры" }));
     expect(screen.getByText("Отчёт по 3 из 5 наблюдений")).toBeInTheDocument();
 
     await user.click(

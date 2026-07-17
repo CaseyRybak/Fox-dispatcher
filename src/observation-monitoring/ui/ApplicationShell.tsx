@@ -64,6 +64,7 @@ interface ApplicationShellProps {
   readonly onUndoDelete: () => void;
   readonly overview: ObservationSetOverview;
   readonly lastDeletion?: ObservationDeletionUndo;
+  readonly persistenceBlocked: boolean;
   readonly persistenceMessage: string;
   readonly recovery?: DashboardStateRecovery;
   readonly summary: SummaryViewModel;
@@ -75,7 +76,7 @@ const destinations: readonly {
   readonly label: string;
 }[] = [
   { id: "summary", label: "Сводка" },
-  { id: "observations", label: "Наблюдения" },
+  { id: "observations", label: "Параметры" },
   { id: "worklog", label: "AI Worklog" },
 ];
 
@@ -101,6 +102,7 @@ export function ApplicationShell({
   onSelectRecoveryRaw,
   onUndoDelete,
   overview,
+  persistenceBlocked,
   persistenceMessage,
   recovery,
   summary,
@@ -153,12 +155,6 @@ export function ApplicationShell({
               </a>
             ))}
           </nav>
-
-          <p className="dataset-status">
-            <span className="dataset-status__signal" aria-hidden="true" />
-            Оценка {summary.suspicionWeightPercent}% · добыча{" "}
-            {summary.preyWeightPercent}%
-          </p>
         </div>
       </header>
 
@@ -168,9 +164,12 @@ export function ApplicationShell({
         ref={mainContentRef}
         tabIndex={-1}
       >
-        {destination !== "observations" && (
-          <section aria-label="Состояние данных" className="global-data-status">
-            <span className="data-management-bar__signal" aria-hidden="true" />
+        {destination !== "observations" && persistenceBlocked && (
+          <section
+            aria-label="Состояние данных"
+            className="global-persistence-warning"
+          >
+            <span className="report-update__signal" aria-hidden="true" />
             <p>{persistenceMessage}</p>
           </section>
         )}
@@ -179,7 +178,7 @@ export function ApplicationShell({
             aria-label="Последнее изменение отчёта"
             className="global-report-update"
           >
-            <span className="dataset-status__signal" aria-hidden="true" />
+            <span className="report-update__signal" aria-hidden="true" />
             <p>{announcement}</p>
           </section>
         )}

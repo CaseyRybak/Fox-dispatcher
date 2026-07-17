@@ -30,7 +30,7 @@ Status: Phases 0–8 and the corrective changes described below are published on
 
 ### Product correctness and state
 
-- Friendly labels previously collapsed distinct IDs such as `fox_1`, `fox_01`, and `fox_001` into the same visible `Лиса 1`. Canonical IDs now remain visible and part of accessible identity on every result and ledger surface.
+- Friendly labels no longer collapse distinct IDs: canonical `fox_NNN` values receive unique `Лиса N` names, while noncanonical values such as `fox_1` and `fox_01` include their full ID in a unique display name. Canonical IDs also remain visible and part of accessible identity on every result and ledger surface.
 - A stale asynchronous file read could overwrite a newer file, manual JSON, or preview. Import source revisions now enforce last-source-wins and disable validation only while the authoritative read is pending.
 - New records previously defaulted prey to `Нет`, bypassing the intended explicit choice. The empty draft is now unselected and the application boundary accepts only a validated boolean.
 - Russian error counts now use the 1/21/11 plural rules rather than the last digit alone.

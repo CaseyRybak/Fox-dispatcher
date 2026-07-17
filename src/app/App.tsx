@@ -30,7 +30,10 @@ import {
   DEFAULT_REPORT_FILTERS,
   type ReportFilters,
 } from "@/observation-monitoring/application/report-scope";
-import { formatFoxIdentityLabel } from "@/observation-monitoring/application/fox-display-name";
+import {
+  formatFoxIdentityLabel,
+  formatFoxIdentityList,
+} from "@/observation-monitoring/application/fox-display-name";
 import { createBrowserDashboardStateStore } from "@/observation-monitoring/adapters/browser-dashboard-state/browser-dashboard-state";
 import {
   createBrowserObservationExporter,
@@ -55,7 +58,7 @@ const destinations = new Set<Destination>([
 ]);
 const destinationTitles: Readonly<Record<Destination, string>> = {
   summary: "Сводка — Лисий диспетчер",
-  observations: "Наблюдения — Лисий диспетчер",
+  observations: "Параметры — Лисий диспетчер",
   worklog: "AI Worklog — Лисий диспетчер",
 };
 
@@ -148,6 +151,9 @@ export function App({
   const [persistenceMessage, setPersistenceMessage] = useState(
     bootstrap.persistenceMessage,
   );
+  const [persistenceBlocked, setPersistenceBlocked] = useState(
+    bootstrap.persistenceBlocked,
+  );
   const [announcement, setAnnouncement] = useState({
     message: "",
     revision: 0,
@@ -159,7 +165,10 @@ export function App({
   const committedWeightRef = useRef(
     bootstrap.dashboard.scoringPolicy.preyWeightPercent,
   );
-  const committedLeaderRef = useRef(initialSummary.leader?.foxId);
+  const committedLeaderRef = useRef(
+    initialSummary.leaders.map(({ foxId }) => foxId),
+  );
+  const initialDestinationRef = useRef(destination);
 
   const reportFilterOptions = useMemo(
     () => createReportFilterOptions(dashboard.observations),
@@ -195,7 +204,9 @@ export function App({
   useEffect(() => {
     document.documentElement.lang = "ru";
     document.title = destinationTitles[destination];
-    document.querySelector<HTMLElement>("#main-content h1")?.focus();
+    if (destination !== initialDestinationRef.current) {
+      document.querySelector<HTMLElement>("#main-content h1")?.focus();
+    }
   }, [destination]);
 
   function changePreyWeight(nextPreyWeightPercent: number) {
@@ -225,7 +236,9 @@ export function App({
       `${createPolicyAnnouncement(committedWeightRef.current, committedLeaderRef.current, committedViewModel)}${persistenceWarning ? ` ${persistenceWarning}` : ""}`,
     );
     committedWeightRef.current = nextPreyWeightPercent;
-    committedLeaderRef.current = committedViewModel.leader?.foxId;
+    committedLeaderRef.current = committedViewModel.leaders.map(
+      ({ foxId }) => foxId,
+    );
   }
 
   function changeReportFilters(nextFilters: ReportFilters) {
@@ -253,7 +266,9 @@ export function App({
     );
     if (nextSelectedFoxId !== selectedFoxId)
       setSelectedFoxId(nextSelectedFoxId);
-    committedLeaderRef.current = nextViewModel.leader?.foxId;
+    committedLeaderRef.current = nextViewModel.leaders.map(
+      ({ foxId }) => foxId,
+    );
     setReportFilters(nextFilters);
   }
 
@@ -317,6 +332,7 @@ export function App({
   function resetStarter() {
     const clearResult = dashboardStateStore.clear();
     persistenceBlockedRef.current = clearResult.status !== "cleared";
+    setPersistenceBlocked(persistenceBlockedRef.current);
     if (clearResult.status === "cleared") setRecovery(undefined);
     setPersistenceMessage(
       clearResult.status === "cleared"
@@ -377,7 +393,9 @@ export function App({
     setDashboard(nextDashboard);
     const persistenceWarning = persistDashboard(nextDashboard);
     setSelectedFoxId(nextViewModel.selectedFox?.foxId);
-    committedLeaderRef.current = nextViewModel.leader?.foxId;
+    committedLeaderRef.current = nextViewModel.leaders.map(
+      ({ foxId }) => foxId,
+    );
     if (clearUndo) setLastDeletion(undefined);
     announce(
       createObservationMutationAnnouncement(
@@ -401,6 +419,7 @@ export function App({
     }
 
     persistenceBlockedRef.current = true;
+    setPersistenceBlocked(true);
     setPersistenceMessage(
       "Не удалось сохранить — изменения останутся до закрытия страницы",
     );
@@ -444,6 +463,7 @@ export function App({
       onUndoDelete={undoDelete}
       overview={overview}
       persistenceMessage={persistenceMessage}
+      persistenceBlocked={persistenceBlocked}
       recovery={recovery}
       summary={summaryViewModel}
       worklog={publicWorklog}
@@ -473,7 +493,9 @@ function createObservationMutationAnnouncement(
   persistenceWarning: string | undefined,
 ) {
   const leaderResult = viewModel.leader
-    ? `Теперь лидирует ${formatFoxIdentityLabel(viewModel.leader.foxId)}, ${viewModel.leader.scoreLabel}.`
+    ? viewModel.leaders.length > 1
+      ? `Теперь лидируют ${formatFoxIdentityList(viewModel.leaders.map(({ foxId }) => foxId))}, ${viewModel.leader.scoreLabel}.`
+      : `Теперь лидирует ${formatFoxIdentityLabel(viewModel.leader.foxId)}, ${viewModel.leader.scoreLabel}.`
     : "В текущей выборке нет лидера.";
   const nextSelectedFoxId = viewModel.selectedFox?.foxId;
   const selectionResult =

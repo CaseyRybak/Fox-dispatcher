@@ -84,6 +84,33 @@ describe("report scope", () => {
     expect(reportObservations).toHaveLength(5);
   });
 
+  it("finds a fox by its unique display name or canonical identifier", () => {
+    const byDisplayName = applyReportFilters(reportObservations, {
+      ...DEFAULT_REPORT_FILTERS,
+      foxQuery: "  лИсА 1  ",
+    });
+    const byIdentifier = applyReportFilters(reportObservations, {
+      ...DEFAULT_REPORT_FILTERS,
+      foxQuery: "FOX_001",
+    });
+
+    expect(byDisplayName.map(({ id }) => id)).toEqual(["obs_001", "obs_003"]);
+    expect(byIdentifier.map(({ id }) => id)).toEqual(["obs_001", "obs_003"]);
+  });
+
+  it("treats a full display name as an exact name instead of a numeric prefix", () => {
+    const observations = applyReportFilters(
+      [
+        reportObservations[0]!,
+        { ...reportObservations[1]!, fox_id: "fox_010" },
+        { ...reportObservations[3]!, fox_id: "fox_012" },
+      ],
+      { ...DEFAULT_REPORT_FILTERS, foxQuery: "Лиса 1" },
+    );
+
+    expect(observations.map(({ fox_id }) => fox_id)).toEqual(["fox_001"]);
+  });
+
   it("derives deterministic filter options from the full dataset", () => {
     expect(createReportFilterOptions(reportObservations)).toEqual({
       colors: ["рыжая", "серебристая", "черная"],
@@ -111,9 +138,6 @@ describe("report scope", () => {
       "fox_004",
     ]);
     expect(viewModel.selectedFox?.foxId).toBe("fox_004");
-    expect(viewModel.selectedFox?.observations.map(({ id }) => id)).toEqual([
-      "obs_005",
-    ]);
     expect(viewModel.locationActivity).toEqual([
       expect.objectContaining({
         location: "Северная поляна",
@@ -140,25 +164,5 @@ describe("report scope", () => {
 
     expect(viewModel.leader?.foxId).toBe("fox_001");
     expect(viewModel.selectedFox?.foxId).toBe("fox_001");
-  });
-
-  it("orders multi-record evidence by chronology and source records by recency", () => {
-    const viewModel = createSummaryViewModel(reportObservations, 20, {
-      selectedFoxId: "fox_001",
-    });
-
-    expect(viewModel.selectedFox?.observations.map(({ id }) => id)).toEqual([
-      "obs_003",
-      "obs_001",
-    ]);
-    expect(viewModel.selectedFox?.evidence.map(({ id }) => id)).toEqual([
-      "obs_001",
-      "obs_003",
-    ]);
-    expect(viewModel.selectedFox?.evidence).toEqual([
-      expect.objectContaining({ timelinePositionPercent: 10 }),
-      expect.objectContaining({ timelinePositionPercent: 90 }),
-    ]);
-    expect(viewModel.selectedFox?.timeRangeLabel).toBe("08:20–10:40");
   });
 });

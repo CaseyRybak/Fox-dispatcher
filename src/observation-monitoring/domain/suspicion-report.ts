@@ -26,6 +26,7 @@ export interface SuspicionReport {
   readonly assessments: readonly FoxAssessment[];
   readonly latestObservation?: Observation;
   readonly leader?: FoxAssessment;
+  readonly leaders: readonly FoxAssessment[];
   readonly locationActivity: readonly LocationActivity[];
   readonly observationCount: number;
   readonly policy: ScoringPolicy;
@@ -68,11 +69,18 @@ export function calculateSuspicionReport(
   const latestObservation = [...observations].sort(
     compareObservationRecency,
   )[0];
+  const leader = assessments[0];
+  const leaders = leader
+    ? assessments.filter(
+        (assessment) => compareFractions(assessment.score, leader.score) === 0,
+      )
+    : [];
 
   return {
     assessments,
     latestObservation,
-    leader: assessments[0],
+    leader,
+    leaders,
     locationActivity,
     observationCount: observations.length,
     policy,
