@@ -15,6 +15,11 @@ describe("application shell", () => {
       screen.getByRole("navigation", { name: "Основная навигация" }),
     ).toBeInTheDocument();
     expect(
+      screen
+        .getByRole("link", { name: "Лисий диспетчер — сводка" })
+        .querySelector("img.brand__mark"),
+    ).toHaveAttribute("src", "/favicon.svg");
+    expect(
       screen.getByRole("link", { name: "Лицензии компонентов" }),
     ).toHaveAttribute("href", "/third-party-notices.txt");
     expect(
@@ -24,6 +29,9 @@ describe("application shell", () => {
 
     expect(within(summary).getByText("5", { selector: "dd" }));
     expect(within(summary).getByText("4", { selector: "dd" }));
+    expect(
+      within(summary).getByRole("heading", { level: 2, name: "Лиса 1" }),
+    ).toBeInTheDocument();
 
     window.location.hash = "#observations";
     fireEvent(window, new HashChangeEvent("hashchange"));

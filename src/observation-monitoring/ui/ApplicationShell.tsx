@@ -99,9 +99,14 @@ export function ApplicationShell({
             href="#summary"
             aria-label="Лисий диспетчер — сводка"
           >
-            <span className="brand__mark" aria-hidden="true">
-              ЛД
-            </span>
+            <img
+              alt=""
+              aria-hidden="true"
+              className="brand__mark"
+              height="42"
+              src="/favicon.svg"
+              width="42"
+            />
             <span>
               <span className="brand__name">Лисий диспетчер</span>
               <span className="brand__caption">Полевой журнал наблюдений</span>

@@ -9,6 +9,7 @@ import type {
   ObservationDraft,
   ObservationMutationResult,
 } from "@/observation-monitoring/application/observation-management";
+import { formatFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
 import { ObservationEditor } from "@/observation-monitoring/ui/observations/ObservationEditor";
 
 interface ObservationsPageProps {
@@ -410,7 +411,7 @@ export function ObservationsPage({
                     <time dateTime={observation.time}>{observation.time}</time>
                   </td>
                   <td className="data-id">{observation.id}</td>
-                  <td>{observation.foxId}</td>
+                  <td>{formatFoxDisplayName(observation.foxId)}</td>
                   <td>{observation.location}</td>
                   <td>{observation.color}</td>
                   <td>{observation.hasPrey ? "Есть" : "Нет"}</td>
@@ -565,7 +566,7 @@ function MobileObservationLedger({
             <div className="observation-card__heading">
               <div>
                 <time dateTime={observation.time}>{observation.time}</time>
-                <strong>{observation.foxId}</strong>
+                <strong>{formatFoxDisplayName(observation.foxId)}</strong>
               </div>
               <span className="observation-card__score">
                 {observation.suspicionLevel} / 10

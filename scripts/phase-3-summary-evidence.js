@@ -58,20 +58,20 @@ async (page) => {
   await assertScope("Отчёт по 5 из 5 наблюдений");
 
   for (const [foxId, score] of [
-    ["fox_001", "7,8"],
-    ["fox_003", "7,6"],
-    ["fox_002", "4,0"],
-    ["fox_004", "2,4"],
+    ["Лиса 1", "7,8"],
+    ["Лиса 3", "7,6"],
+    ["Лиса 2", "4,0"],
+    ["Лиса 4", "2,4"],
   ]) {
     const rankingButton = page.getByRole("button", {
-      name: `Показать доказательства ${foxId}, индекс ${score}`,
+      name: new RegExp(`^Показать доказательства: ${foxId}, индекс ${score}`),
     });
 
     await rankingButton.focus();
     await page.keyboard.press("Enter");
     await page
       .getByRole("complementary", {
-        name: `Расчёт выбранной лисы ${foxId}`,
+        name: `Расчёт: ${foxId}`,
       })
       .waitFor();
     assert(
@@ -81,13 +81,11 @@ async (page) => {
   }
 
   const fox002 = page.getByRole("button", {
-    name: "Показать доказательства fox_002, индекс 4,0",
+    name: /^Показать доказательства: Лиса 2, индекс 4,0/,
   });
   await fox002.focus();
   await page.keyboard.press("Enter");
-  await page
-    .getByRole("complementary", { name: "Расчёт выбранной лисы fox_002" })
-    .waitFor();
+  await page.getByRole("complementary", { name: "Расчёт: Лиса 2" }).waitFor();
   assert(
     (await fox002.getAttribute("aria-pressed")) === "true",
     "fox_002 was not selected.",
@@ -99,12 +97,10 @@ async (page) => {
   await exactWeight.fill("30");
   await page.keyboard.press("Tab");
   await page
-    .getByRole("heading", { level: 2, name: "fox_003" })
+    .getByRole("heading", { level: 2, name: "Лиса 3" })
     .first()
     .waitFor();
-  await page
-    .getByRole("complementary", { name: "Расчёт выбранной лисы fox_002" })
-    .waitFor();
+  await page.getByRole("complementary", { name: "Расчёт: Лиса 2" }).waitFor();
 
   const foxSearch = page.getByRole("searchbox", { name: "Найти fox_id" });
   await foxSearch.fill("fox_001");
@@ -216,9 +212,7 @@ async (page) => {
   await resetFilters();
   await page.setViewportSize({ width: 320, height: 800 });
   await assertNoPageOverflow();
-  await page
-    .getByRole("complementary", { name: "Расчёт выбранной лисы fox_001" })
-    .waitFor();
+  await page.getByRole("complementary", { name: "Расчёт: Лиса 1" }).waitFor();
   await page.getByRole("region", { name: "Лента доказательств" }).waitFor();
 
   assert(

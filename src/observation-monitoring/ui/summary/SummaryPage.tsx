@@ -14,6 +14,7 @@ import type {
   SelectedFoxViewModel,
   SummaryViewModel,
 } from "@/observation-monitoring/application/create-summary-view-model";
+import { formatFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
 import {
   DEFAULT_REPORT_FILTERS,
   hasActiveReportFilters,
@@ -113,7 +114,7 @@ export function SummaryPage({
               <p className="eyebrow">Лидер текущей выборки</p>
               <div className="leader-result">
                 <h2 className="leader-result__fox" id="leader-title">
-                  {leader.foxId}
+                  {formatFoxDisplayName(leader.foxId)}
                 </h2>
                 <p className="leader-result__score">
                   {leader.scoreLabel} из 10
@@ -170,13 +171,13 @@ export function SummaryPage({
             </section>
 
             <aside
-              aria-label={`Расчёт выбранной лисы ${selectedFox.foxId}`}
+              aria-label={`Расчёт: ${formatFoxDisplayName(selectedFox.foxId)}`}
               className="calculation-panel"
             >
               <div className="calculation-panel__heading">
                 <div>
                   <p className="eyebrow">Расчёт выбранной лисы</p>
-                  <h2>{selectedFox.foxId}</h2>
+                  <h2>{formatFoxDisplayName(selectedFox.foxId)}</h2>
                 </div>
                 <p>
                   Индекс <strong>{selectedFox.scoreLabel}</strong>
@@ -458,7 +459,7 @@ function RankingRow({
   return (
     <li className={className}>
       <button
-        aria-label={`Показать доказательства ${assessment.foxId}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча ${assessment.preyRatioLabel}; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.color}; записей ${assessment.observationCount}`}
+        aria-label={`Показать доказательства: ${formatFoxDisplayName(assessment.foxId)}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча ${assessment.preyRatioLabel}; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.color}; записей ${assessment.observationCount}`}
         aria-pressed={isSelected}
         className="ranking-row__button"
         onClick={() => onSelect(assessment.foxId)}
@@ -468,7 +469,7 @@ function RankingRow({
           {String(assessment.rank).padStart(2, "0")}
         </span>
         <span className="ranking-row__identity">
-          <strong>{assessment.foxId}</strong>
+          <strong>{formatFoxDisplayName(assessment.foxId)}</strong>
           <span className="ranking-row__latest">
             <span
               aria-hidden="true"
@@ -590,7 +591,7 @@ function EvidenceInspector({
       </p>
 
       <div
-        aria-label={`Наблюдения ${selectedFox.foxId} по времени и оценке`}
+        aria-label={`Наблюдения: ${formatFoxDisplayName(selectedFox.foxId)}, по времени и оценке`}
         className="evidence-strip"
       >
         <span aria-hidden="true" className="evidence-strip__axis" />
@@ -605,7 +606,7 @@ function EvidenceInspector({
       </div>
 
       <ol
-        aria-label={`Исходные наблюдения ${selectedFox.foxId}`}
+        aria-label={`Исходные наблюдения: ${formatFoxDisplayName(selectedFox.foxId)}`}
         className="evidence-records"
       >
         {selectedFox.observations.map((observation) => {
@@ -764,7 +765,7 @@ function RecentObservations({
           <li key={observation.id}>
             <time>{observation.time}</time>
             <span>
-              <strong>{observation.foxId}</strong>
+              <strong>{formatFoxDisplayName(observation.foxId)}</strong>
               <span>{observation.location}</span>
             </span>
             <span>

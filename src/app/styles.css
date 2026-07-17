@@ -99,16 +99,10 @@ textarea:focus-visible,
 }
 
 .brand__mark {
-  display: grid;
-  place-items: center;
+  display: block;
   width: 42px;
   height: 42px;
-  color: var(--surface-paper);
-  background: var(--forest-ink);
-  border-radius: 50% 50% 42% 42%;
-  font-family: "Unbounded Variable", sans-serif;
-  font-size: 11px;
-  letter-spacing: -0.08em;
+  border-radius: 10px;
 }
 
 .brand__name,

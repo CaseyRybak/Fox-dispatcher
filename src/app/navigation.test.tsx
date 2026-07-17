@@ -109,12 +109,12 @@ describe("hash navigation", () => {
 
     await user.click(
       screen.getByRole("button", {
-        name: /^Показать доказательства fox_002, индекс 4,0/,
+        name: /^Показать доказательства: Лиса 2, индекс 4,0/,
       }),
     );
     const status = screen.getByRole("status");
 
-    expect(status).toHaveTextContent("Показаны доказательства fox_002.");
+    expect(status).toHaveTextContent("Показаны доказательства Лиса 2.");
 
     await user.click(screen.getByRole("link", { name: "Наблюдения" }));
 

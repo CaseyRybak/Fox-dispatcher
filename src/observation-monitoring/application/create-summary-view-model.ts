@@ -1,4 +1,5 @@
 import type { Observation } from "@/observation-monitoring/domain/observation";
+import { formatFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
 import {
   createScoringPolicy,
   DEFAULT_SCORING_POLICY,
@@ -143,7 +144,9 @@ export function createSummaryViewModel(
         value: leadingLocation?.location ?? "Нет данных",
       },
       {
-        detail: report.latestObservation?.fox_id,
+        detail: report.latestObservation
+          ? formatFoxDisplayName(report.latestObservation.fox_id)
+          : undefined,
         label: "Последнее событие",
         value: report.latestObservation?.time ?? "Нет данных",
       },
@@ -177,10 +180,10 @@ export function createPolicyAnnouncement(
   }
 
   if (previousLeaderFoxId !== leader.foxId) {
-    return `Лидер изменился: ${leader.foxId}, ${leader.scoreLabel}.`;
+    return `Лидер изменился: ${formatFoxDisplayName(leader.foxId)}, ${leader.scoreLabel}.`;
   }
 
-  return `Влияние добычи ${viewModel.preyWeightPercent}%. Лидер ${leader.foxId}, индекс ${leader.scoreLabel}.`;
+  return `Влияние добычи ${viewModel.preyWeightPercent}%. Лидер ${formatFoxDisplayName(leader.foxId)}, индекс ${leader.scoreLabel}.`;
 }
 
 function createRankedFoxViewModel(

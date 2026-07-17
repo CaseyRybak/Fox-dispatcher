@@ -45,7 +45,7 @@ async (page) => {
 
   await page.getByRole("link", { name: "Сводка", exact: true }).click();
   const summary = page.getByRole("region", { name: "Сводка наблюдений" });
-  await summary.getByRole("heading", { level: 2, name: "fox_004" }).waitFor();
+  await summary.getByRole("heading", { level: 2, name: "Лиса 4" }).waitFor();
   assert(
     (await summary.getByText("8,0 из 10").count()) === 1,
     "Editing obs_005 to 10 did not produce the 8.0 fox_004 leader.",

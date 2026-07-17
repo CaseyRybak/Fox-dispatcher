@@ -38,13 +38,13 @@ describe("observation management", () => {
       screen.getByRole("button", { name: "Изменить obs_005" }),
     ).toHaveFocus();
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Наблюдение obs_005 сохранено. Теперь лидирует fox_004, 8,0.",
+      "Наблюдение obs_005 сохранено. Теперь лидирует Лиса 4, 8,0.",
     );
 
     await user.click(screen.getByRole("link", { name: "Сводка" }));
     const summary = screen.getByRole("region", { name: "Сводка наблюдений" });
     expect(
-      within(summary).getByRole("heading", { name: "fox_004" }),
+      within(summary).getByRole("heading", { name: "Лиса 4" }),
     ).toBeInTheDocument();
     expect(within(summary).getByText("8,0 из 10")).toBeInTheDocument();
   });
@@ -102,16 +102,16 @@ describe("observation management", () => {
       within(
         screen.getByRole("region", { name: "Последние наблюдения" }),
       ).getAllByRole("listitem")[0],
-    ).toHaveTextContent("13:45fox_004Речной берег");
+    ).toHaveTextContent("13:45Лиса 4Речной берег");
 
     await user.click(
       screen.getByRole("button", {
-        name: /^Показать доказательства fox_004, индекс 2,4/,
+        name: /^Показать доказательства: Лиса 4, индекс 2,4/,
       }),
     );
     expect(
       screen.getByRole("complementary", {
-        name: "Расчёт выбранной лисы fox_004",
+        name: "Расчёт: Лиса 4",
       }),
     ).toHaveTextContent("Речной берег");
   });
@@ -331,7 +331,7 @@ describe("observation management", () => {
     expect(
       within(table).getByRole("columnheader", { name: /Лиса/ }),
     ).toHaveAttribute("aria-sort", "descending");
-    expect(within(table).getAllByRole("row")[1]).toHaveTextContent("fox_004");
+    expect(within(table).getAllByRole("row")[1]).toHaveTextContent("Лиса 4");
   });
 
   it("shows invalid-storage status on the initial summary", () => {
