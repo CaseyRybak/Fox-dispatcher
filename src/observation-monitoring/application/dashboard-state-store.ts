@@ -6,6 +6,14 @@ export interface PersistedDashboardState {
   readonly scoringPolicy: ScoringPolicy;
 }
 
+export type DashboardStateRecovery =
+  | { readonly kind: "corrupt"; readonly rawValue: string }
+  | {
+      readonly kind: "unsupported-version";
+      readonly rawValue: string;
+      readonly schemaVersion: number;
+    };
+
 export type DashboardStateLoadResult =
   | { readonly status: "missing" }
   | {
@@ -13,8 +21,12 @@ export type DashboardStateLoadResult =
       readonly state: PersistedDashboardState;
       readonly updatedAt: string;
     }
-  | { readonly status: "corrupt" }
-  | { readonly status: "unsupported-version" }
+  | { readonly rawValue: string; readonly status: "corrupt" }
+  | {
+      readonly rawValue: string;
+      readonly schemaVersion: number;
+      readonly status: "unsupported-version";
+    }
   | { readonly status: "unavailable" };
 
 export type DashboardStateSaveResult =

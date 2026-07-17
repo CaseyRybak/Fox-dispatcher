@@ -12,7 +12,7 @@ Publication follow-up: Phase 3 and this audit were later published on `main` in 
 
 This audit reads the repository map, product and interface specifications, architecture, three decisions, active implementation plan, historical verification records, legal/research documentation, domain map, package scripts, CI, production source boundaries, focused tests, and available Phase 3 browser artifacts.
 
-The original MOX assignment is still not a repository artifact. The audit can establish internal consistency and implementation readiness, but not word-for-word fidelity to an unavailable external brief.
+The canonical product specification is the source of truth for this audit. The audit establishes internal consistency and implementation readiness against that repository artifact.
 
 ## Canonical ownership after reconciliation
 
@@ -46,7 +46,7 @@ Historical verification files keep their original baselines and results. Publica
 
 The following are incomplete by phase design rather than current documentation defects:
 
-- `README.md` and public `docs/ai-worklog/public-checkpoints.json` belong to Phase 4 after the MOX-priority rebaseline;
+- `README.md` and public `docs/ai-worklog/public-checkpoints.json` belong to Phase 4 after the delivery-priority rebaseline;
 - `vercel.json`, deployed headers, production URL, and release evidence belong to Phase 7;
 - observation management and baseline persistence belong to should-have Phase 5;
 - import/export and advanced recovery belong to optional Phase 8;

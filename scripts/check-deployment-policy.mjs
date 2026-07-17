@@ -66,14 +66,65 @@ if (sourceMaps.length > 0) {
 }
 
 const indexHtml = await readFile("dist/index.html", "utf8");
+const releaseMeta = [...indexHtml.matchAll(/<meta\b[^>]*>/gu)]
+  .map(([tag]) => tag)
+  .find((tag) => /\bname="fox-dispatcher-revision"/u.test(tag));
+const releaseRevision = releaseMeta?.match(/\bcontent="([^"]+)"/u)?.[1];
+if (!releaseRevision || !/^(?:local|[0-9a-f]{40})$/u.test(releaseRevision)) {
+  failures.push(
+    "Production HTML must identify a local or 40-character Git release revision.",
+  );
+}
+
 for (const match of indexHtml.matchAll(
   /<(?:link|script)\b[^>]+(?:href|src)="([^"]+)"/gu,
 )) {
   const resource = match[1];
-  if (!resource?.startsWith("/")) {
+  if (!resource?.startsWith("/") || resource.startsWith("//")) {
     failures.push(
       `Production HTML contains a non-local resource: ${resource}.`,
     );
+  }
+}
+
+for (const file of productionFiles.filter((candidate) =>
+  /\.css$/u.test(candidate),
+)) {
+  const content = await readFile(file, "utf8");
+  for (const match of content.matchAll(/url\(([^)]+)\)/gu)) {
+    const resource = match[1]?.trim().replace(/^["']|["']$/gu, "");
+    if (
+      resource &&
+      !resource.startsWith("data:") &&
+      (!resource.startsWith("/") || resource.startsWith("//"))
+    ) {
+      failures.push(
+        `Production CSS contains a non-local resource: ${resource}.`,
+      );
+    }
+  }
+}
+
+const artifactPatterns = [
+  [
+    "private home path",
+    /(?:^|["'\s])(?:\/(?:home|Users)\/|[A-Za-z]:\\(?:Users|Documents and Settings)\\)/iu,
+  ],
+  ["private key", /-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----/u],
+  ["GitHub token", /(?:github_pat_|gh[pousr]_)[A-Za-z0-9_]+/u],
+  ["AI API key", /sk-[A-Za-z0-9_-]{20,}/u],
+  ["AWS access key", /AKIA[0-9A-Z]{16}/u],
+  ["inline source map", /sourceMappingURL=data:/u],
+  ["debugger statement", /\bdebugger\b/u],
+];
+for (const file of productionFiles.filter((candidate) =>
+  /\.(?:css|html|js|svg|txt)$/u.test(candidate),
+)) {
+  const content = await readFile(file, "utf8");
+  for (const [label, pattern] of artifactPatterns) {
+    if (pattern.test(content)) {
+      failures.push(`${file} contains a ${label}.`);
+    }
   }
 }
 
@@ -85,6 +136,8 @@ for (const file of productionSources.filter((candidate) =>
   for (const [label, pattern] of [
     ["XMLHttpRequest", /\bXMLHttpRequest\b/u],
     ["WebSocket", /\bWebSocket\b/u],
+    ["EventSource", /\bEventSource\b/u],
+    ["WebTransport", /\bWebTransport\b/u],
     ["sendBeacon", /\bsendBeacon\b/u],
     ["runtime fetch", /\bfetch\s*\(/u],
   ]) {
@@ -103,7 +156,7 @@ if (failures.length > 0) {
 }
 
 console.log(
-  `Deployment policy check passed: ${expectedHeaders.size} headers, ${productionFiles.length} production files, no source maps, external resources, or observation-egress APIs.`,
+  `Deployment policy check passed: ${expectedHeaders.size} headers, ${productionFiles.length} production files, release revision ${releaseRevision}, no source maps, external runtime resources, high-signal secrets/debug artifacts, or observation-egress APIs.`,
 );
 
 async function collectFiles(directory) {

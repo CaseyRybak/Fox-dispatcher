@@ -8,7 +8,7 @@ Product contract: [fox-dispatcher.md](../product-specs/fox-dispatcher.md)
 
 ## Context
 
-The assignment asks the interface to identify the most suspicious fox, explain which signals matter, and show a changed report after data or parameters change.
+The product must identify the most suspicious fox, explain which signals matter, and show a changed report after data or parameters change.
 
 The source fields include a direct `suspicion_level` and a boolean `has_prey`. Location, color, identity, and time provide observation context. There is no separate behavior field, calendar date, geographic coordinate, movement path, or validated domain rule connecting repeat count, color, location, or recency to suspiciousness.
 
@@ -89,7 +89,7 @@ This prioritizes the strongest single event but lets one value determine the ent
 
 ### Bonuses for repeat appearances, location, color, or time
 
-The assignment provides no domain basis or coefficients for those bonuses. They would make the result less explainable and introduce unsupported behavior.
+The product data provides no domain basis or coefficients for those bonuses. They would make the result less explainable and introduce unsupported behavior.
 
 ## Consequences
 

@@ -29,6 +29,7 @@
     "test:a11y": "npm run build && node scripts/run-phase-1-browser-smoke.mjs phase-6-accessibility.js",
     "test:e2e:responsive-keyboard": "npm run build && node scripts/run-phase-1-browser-smoke.mjs phase-6-responsive-keyboard.js",
     "test:e2e:release": "npm run build && node scripts/run-phase-1-browser-smoke.mjs phase-7-release-smoke.js",
+    "test:e2e:import-recovery": "npm run build && node scripts/run-phase-1-browser-smoke.mjs phase-8-import-recovery.js",
     "test:run": "vitest run",
     "verify": "run-s format:check lint check:boundaries check:public-content check:worklog-links test:run build check:deployment"
   },

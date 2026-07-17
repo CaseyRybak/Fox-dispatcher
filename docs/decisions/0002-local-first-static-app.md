@@ -1,6 +1,6 @@
 # Decision 0002: Local-first static application
 
-Status: accepted with MOX-priority addendum
+Status: accepted with delivery-priority addendum
 
 Date: 2026-07-16
 
@@ -8,7 +8,7 @@ Architecture: [../../ARCHITECTURE.md](../../ARCHITECTURE.md)
 
 ## Context
 
-The assignment evaluates a small interactive prototype over at most five days. The required product needs starter data, a changeable parameter or data input, report recalculation, AI Worklog, reviewer documentation, and a public demo. Observation editing and persistence strengthen the prototype; import/export and advanced recovery are not required. It does not request accounts, collaboration, cross-device synchronization, server-side analytics, or an AI inference feature.
+The first release is a small interactive prototype. The product needs starter data, a changeable parameter or data input, report recalculation, AI Worklog, reviewer documentation, and a public demo. Observation editing and persistence strengthen the prototype; import/export and advanced recovery are later enhancements. Accounts, collaboration, cross-device synchronization, server-side analytics, and AI inference remain outside its scope.
 
 A backend would add deployment, security, and failure surfaces without improving the core reviewer journey. A browser-only runtime keeps every relevant state transition inspectable by agents and reproducible in tests.
 
@@ -54,7 +54,7 @@ The application renders imported strings as text. Runtime content does not requi
 
 ### Server database and API
 
-This would support synchronization and shared data, neither of which belongs to the assignment outcome. It would also make a simple demo dependent on credentials and service availability.
+This would support synchronization and shared data, neither of which belongs to the product outcome. It would also make a simple demo dependent on credentials and service availability.
 
 ### Session-only state
 
@@ -69,6 +69,6 @@ The task measures AI-first development process, not the presence of an AI API in
 - The production artifact is static and has a small operational footprint.
 - Reviewer edits survive reload in the same browser.
 - Baseline browser storage limitations are visible without requiring a large recovery workflow.
-- Optional future-version recovery can be added after the MOX submission without blocking it.
+- Optional future-version recovery can be added after the core release without blocking it.
 - Cross-device synchronization and accounts remain outside this version.
 - Agents can reproduce the full product locally and in browser automation without external services.

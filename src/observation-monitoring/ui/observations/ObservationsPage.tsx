@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import type { DashboardStateRecovery } from "@/observation-monitoring/application/dashboard-state-store";
+import type {
+  ObservationImportFile,
+  ObservationImportFileResult,
+  ObservationImportResult,
+} from "@/observation-monitoring/application/observation-transfer";
 import type {
   ObservationListItem,
   ObservationSetOverview,
@@ -11,6 +17,7 @@ import type {
 } from "@/observation-monitoring/application/observation-management";
 import { formatFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
 import { ObservationEditor } from "@/observation-monitoring/ui/observations/ObservationEditor";
+import { ObservationImportDialog } from "@/observation-monitoring/ui/observations/ObservationImportDialog";
 
 interface ObservationsPageProps {
   readonly hasActiveFilters: boolean;
@@ -21,12 +28,28 @@ interface ObservationsPageProps {
     observationId: string,
     draft: ObservationDraft,
   ) => ObservationMutationResult;
+  readonly onExport: () => void;
+  readonly onReadImportFile: (
+    file: ObservationImportFile,
+  ) => Promise<ObservationImportFileResult>;
   readonly onResetFilters: () => void;
   readonly onResetStarter: () => void;
+  readonly onReplaceImportedObservations: (
+    observations: Extract<
+      ObservationImportResult,
+      { ok: true }
+    >["observations"],
+  ) => void;
+  readonly onSelectRecoveryRaw: () => void;
+  readonly onValidateImport: (
+    text: string,
+    measuredBytes?: number,
+  ) => ObservationImportResult;
   readonly onDismissUndo: () => void;
   readonly onUndoDelete: () => void;
   readonly overview: ObservationSetOverview;
   readonly persistenceMessage: string;
+  readonly recovery?: DashboardStateRecovery;
   readonly scopeLabel: string;
 }
 
@@ -52,16 +75,23 @@ export function ObservationsPage({
   onAdd,
   onDelete,
   onEdit,
+  onExport,
+  onReadImportFile,
   onDismissUndo,
   onResetFilters,
   onResetStarter,
+  onReplaceImportedObservations,
+  onSelectRecoveryRaw,
   onUndoDelete,
   overview,
   persistenceMessage,
+  recovery,
   scopeLabel,
+  onValidateImport,
 }: ObservationsPageProps) {
   const [editor, setEditor] = useState<EditorState>();
-  const [confirmReset, setConfirmReset] = useState(false);
+  const [confirmReset, setConfirmReset] = useState<"normal" | "recovery">();
+  const [importOpen, setImportOpen] = useState(false);
   const [sort, setSort] = useState<ObservationSort>({
     direction: "descending",
     field: "time",
@@ -72,8 +102,11 @@ export function ObservationsPage({
   const resetButtonRef = useRef<HTMLButtonElement>(null);
   const resetCancelRef = useRef<HTMLButtonElement>(null);
   const resetDialogRef = useRef<HTMLDialogElement>(null);
+  const importButtonRef = useRef<HTMLButtonElement>(null);
+  const recoveryRawRef = useRef<HTMLTextAreaElement>(null);
   const restoreResetFocusRef = useRef(false);
   const restoreFocusAfterResetRef = useRef(false);
+  const restoreImportFocusRef = useRef(false);
   const focusAfterRenderRef = useRef<PendingFocus | undefined>(undefined);
 
   const locationSuggestions = useMemo(
@@ -133,6 +166,13 @@ export function ObservationsPage({
       resetButtonRef.current?.focus();
     }
   }, [confirmReset]);
+
+  useEffect(() => {
+    if (!importOpen && restoreImportFocusRef.current) {
+      restoreImportFocusRef.current = false;
+      importButtonRef.current?.focus();
+    }
+  }, [importOpen]);
 
   function closeEditor() {
     const editedId =
@@ -214,15 +254,91 @@ export function ObservationsPage({
           <span className="data-management-bar__signal" aria-hidden="true" />
           {persistenceMessage}
         </p>
-        <button
-          className="text-action"
-          onClick={() => setConfirmReset(true)}
-          ref={resetButtonRef}
-          type="button"
-        >
-          Вернуть стартовые данные
-        </button>
+        <div className="data-management-actions">
+          <button
+            className="secondary-action"
+            disabled={Boolean(editor)}
+            onClick={() => setImportOpen(true)}
+            ref={importButtonRef}
+            type="button"
+          >
+            Импортировать JSON
+          </button>
+          <button className="secondary-action" onClick={onExport} type="button">
+            Экспортировать все наблюдения
+          </button>
+          <button
+            className="text-action"
+            onClick={() => setConfirmReset("normal")}
+            ref={resetButtonRef}
+            type="button"
+          >
+            Вернуть стартовые данные
+          </button>
+        </div>
       </section>
+
+      {recovery && (
+        <section
+          aria-labelledby="storage-recovery-title"
+          className="storage-recovery"
+        >
+          <div>
+            <p className="eyebrow">Автосохранение приостановлено</p>
+            <h2 id="storage-recovery-title">
+              Восстановление сохранённых данных
+            </h2>
+            <p>
+              {recovery.kind === "unsupported-version"
+                ? `Найдена более новая версия ${recovery.schemaVersion}. Приложение не будет её изменять автоматически.`
+                : "Сохранённое значение повреждено. Оно останется без изменений, пока вы явно не начнёте со стартовых данных."}
+            </p>
+          </div>
+          <details>
+            <summary>Показать сохранённый JSON</summary>
+            <label htmlFor="storage-recovery-raw">Сохранённое значение</label>
+            <textarea
+              id="storage-recovery-raw"
+              readOnly
+              ref={recoveryRawRef}
+              value={recovery.rawValue}
+            />
+            <button
+              className="secondary-action"
+              onClick={() => {
+                recoveryRawRef.current?.focus();
+                recoveryRawRef.current?.select();
+                onSelectRecoveryRaw();
+              }}
+              type="button"
+            >
+              Выделить сохранённый JSON для копирования
+            </button>
+          </details>
+          <button
+            className="danger-action"
+            onClick={() => setConfirmReset("recovery")}
+            type="button"
+          >
+            Удалить сохранение и начать со стартовых данных
+          </button>
+        </section>
+      )}
+
+      <ObservationImportDialog
+        onClose={() => {
+          restoreImportFocusRef.current = true;
+          setImportOpen(false);
+        }}
+        onReadFile={onReadImportFile}
+        onReplace={(observations) => {
+          restoreFocusAfterResetRef.current = true;
+          setImportOpen(false);
+          onReplaceImportedObservations(observations);
+        }}
+        onValidate={onValidateImport}
+        open={importOpen}
+      />
 
       {confirmReset && (
         <dialog
@@ -232,21 +348,29 @@ export function ObservationsPage({
           onCancel={(event) => {
             event.preventDefault();
             restoreResetFocusRef.current = true;
-            setConfirmReset(false);
+            setConfirmReset(undefined);
           }}
           ref={resetDialogRef}
           role="alertdialog"
         >
           <div>
-            <strong id="reset-starter-title">Вернуть стартовые данные?</strong>
-            <p>Текущие записи будут заменены пятью исходными наблюдениями.</p>
+            <strong id="reset-starter-title">
+              {confirmReset === "recovery"
+                ? "Удалить повреждённое сохранение?"
+                : "Вернуть стартовые данные?"}
+            </strong>
+            <p>
+              {confirmReset === "recovery"
+                ? "Исходное сохранённое значение будет удалено, а журнал начнётся с пяти наблюдений."
+                : "Текущие записи будут заменены пятью исходными наблюдениями."}
+            </p>
           </div>
           <div className="inline-confirmation__actions">
             <button
               className="secondary-action"
               onClick={() => {
                 restoreResetFocusRef.current = true;
-                setConfirmReset(false);
+                setConfirmReset(undefined);
               }}
               ref={resetCancelRef}
               type="button"
@@ -257,13 +381,15 @@ export function ObservationsPage({
               className="danger-action"
               onClick={() => {
                 setEditor(undefined);
-                setConfirmReset(false);
+                setConfirmReset(undefined);
                 restoreFocusAfterResetRef.current = true;
                 onResetStarter();
               }}
               type="button"
             >
-              Вернуть 5 стартовых наблюдений
+              {confirmReset === "recovery"
+                ? "Удалить сохранение и восстановить 5 наблюдений"
+                : "Вернуть 5 стартовых наблюдений"}
             </button>
           </div>
         </dialog>

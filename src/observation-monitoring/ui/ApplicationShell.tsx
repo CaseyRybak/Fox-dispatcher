@@ -3,6 +3,12 @@ import { type MouseEvent, useRef } from "react";
 import type { ObservationSetOverview } from "@/observation-monitoring/application/create-observation-set-overview";
 import type { SummaryViewModel } from "@/observation-monitoring/application/create-summary-view-model";
 import type { PublicWorklogCheckpoint } from "@/observation-monitoring/application/public-worklog";
+import type { DashboardStateRecovery } from "@/observation-monitoring/application/dashboard-state-store";
+import type {
+  ObservationImportFile,
+  ObservationImportFileResult,
+  ObservationImportResult,
+} from "@/observation-monitoring/application/observation-transfer";
 import type {
   ObservationDeletionUndo,
   ObservationDraft,
@@ -36,14 +42,30 @@ interface ApplicationShellProps {
     observationId: string,
     draft: ObservationDraft,
   ) => ObservationMutationResult;
+  readonly onExportObservations: () => void;
   readonly onPreyWeightChange: (preyWeightPercent: number) => void;
   readonly onPreyWeightCommit: (preyWeightPercent: number) => void;
   readonly onSelectFox: (foxId: string) => void;
   readonly onResetStarter: () => void;
+  readonly onReadImportFile: (
+    file: ObservationImportFile,
+  ) => Promise<ObservationImportFileResult>;
+  readonly onReplaceImportedObservations: (
+    observations: Extract<
+      ObservationImportResult,
+      { ok: true }
+    >["observations"],
+  ) => void;
+  readonly onSelectRecoveryRaw: () => void;
+  readonly onValidateImport: (
+    text: string,
+    measuredBytes?: number,
+  ) => ObservationImportResult;
   readonly onUndoDelete: () => void;
   readonly overview: ObservationSetOverview;
   readonly lastDeletion?: ObservationDeletionUndo;
   readonly persistenceMessage: string;
+  readonly recovery?: DashboardStateRecovery;
   readonly summary: SummaryViewModel;
   readonly worklog: readonly PublicWorklogCheckpoint[];
 }
@@ -68,16 +90,22 @@ export function ApplicationShell({
   onDeleteObservation,
   onDismissUndo,
   onEditObservation,
+  onExportObservations,
   onFiltersChange,
   onPreyWeightChange,
   onPreyWeightCommit,
   onSelectFox,
   onResetStarter,
+  onReadImportFile,
+  onReplaceImportedObservations,
+  onSelectRecoveryRaw,
   onUndoDelete,
   overview,
   persistenceMessage,
+  recovery,
   summary,
   worklog,
+  onValidateImport,
 }: ApplicationShellProps) {
   const mainContentRef = useRef<HTMLElement>(null);
 
@@ -164,12 +192,18 @@ export function ApplicationShell({
             onDelete={onDeleteObservation}
             onDismissUndo={onDismissUndo}
             onEdit={onEditObservation}
+            onExport={onExportObservations}
+            onReadImportFile={onReadImportFile}
             onResetFilters={() => onFiltersChange(DEFAULT_REPORT_FILTERS)}
             onResetStarter={onResetStarter}
+            onReplaceImportedObservations={onReplaceImportedObservations}
+            onSelectRecoveryRaw={onSelectRecoveryRaw}
             onUndoDelete={onUndoDelete}
             overview={overview}
             persistenceMessage={persistenceMessage}
+            recovery={recovery}
             scopeLabel={summary.scope.label}
+            onValidateImport={onValidateImport}
           />
         )}
         {destination === "worklog" && <WorklogPage checkpoints={worklog} />}

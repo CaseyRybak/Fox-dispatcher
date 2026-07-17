@@ -18,11 +18,13 @@ Fox Dispatcher is an interactive local-first dashboard for a forest observer. Th
 - Phase 6 is complete and published in `579b146`: mobile observation cards and sorting, modal editor/reset behavior, bottom navigation, focus protection, axe scans, keyboard flows, required viewports, zoom/reflow, text spacing, reduced motion, forced colors, and Chromium accessibility-tree evidence are recorded.
 - [Phase 6 evidence](docs/verification/accessibility-evidence.md) records the automated, visual, keyboard, and assistive-technology boundary results.
 - Phase 7 is complete: the public Vercel product renders 7 public-safe Worklog checkpoints, passed the production reviewer journey with no console errors or external observation requests, and serves the tested privacy headers. [Release evidence](docs/verification/release-evidence.md) ties the URL, revision, browser result, and honest limitations together.
-- Phase 8 import/export and advanced recovery remain optional stretch work requiring separate authority.
+- Phase 8 is complete in the working tree: atomic JSON import, deterministic full-data export, and explicit corrupt/future-storage recovery passed focused, full, production-browser, axe, and 320 px checks. It is not yet committed, pushed, or deployed.
 - Production: [fox-dispatcher-brown.vercel.app](https://fox-dispatcher-brown.vercel.app/), deployed through the GitHub/Vercel integration from `main`.
 
 ## Start here
 
+- [Completed Phase 8 plan](docs/exec-plans/completed/2026-07-17-import-export-recovery.md) — import, export, recovery execution and acceptance map.
+- [Phase 8 specification](docs/specs/completed/2026-07-17-import-export-recovery.md) — accepted user outcomes, boundaries, states, and evidence.
 - [Completed implementation plan](docs/exec-plans/completed/2026-07-16-fox-dispatcher-implementation.md) — execution slices, acceptance evidence, and optional Phase 8 boundary.
 - [Product specification](docs/product-specs/fox-dispatcher.md) — user outcomes, field semantics, scoring contract, states, and examples.
 - [Interface specification](docs/design-docs/interface.md) — information hierarchy, responsive layout, interactions, visual language, and accessibility.
@@ -55,7 +57,7 @@ The source context lives under [`src/observation-monitoring/`](src/observation-m
 - `docs/product-specs/` contains product facts and acceptance examples.
 - `docs/design-docs/` contains interface and interaction decisions.
 - `docs/decisions/` contains contextual decision records.
-- `docs/exec-plans/active/` contains authorized ongoing outcomes; there is no active core plan after Phase 7.
+- `docs/exec-plans/active/` contains authorized ongoing outcomes; there is no active plan after Phase 8.
 - `docs/exec-plans/completed/` contains finished plans and evidence summaries.
 - `docs/verification/` will contain reproducible browser and release evidence.
 - `docs/ai-worklog/` will contain structured public checkpoints rendered by the product.
@@ -71,3 +73,5 @@ Repository skills capture proven repeatable procedures. Specifications, executio
 ## Verification entry points
 
 Phase 1 established the pinned Node/npm toolchain and shared `npm run verify` gate. Phase 2 adds `npm run test -- scoring` and `npm run test -- summary` for exact ranking and interactive policy behavior. Phase 3 adds `npm run test -- report-scope`, the selection/filter cases in `npm run test -- summary`, and `npm run test:e2e` for the production Summary-to-evidence flow. Phase 4 adds `npm run check:public-content`, `npm run check:worklog-links`, `npm run test -- worklog`, and `npm run test:e2e:worklog`. Phase 5 adds `npm run test:run -- manage-observations mutations persistence`, component mutation/reload coverage, and `npm run test:e2e:manage-observations`. Phase 6 adds `npm run test:run -- accessibility`, `npm run test:a11y`, and `npm run test:e2e:responsive-keyboard`. Phase 7 adds `npm run check:deployment` to the shared gate and `npm run test:e2e:release` for the deployed reviewer journey. `npm run test -- navigation` focuses hash-route behavior, `npm run test:browser` reproduces the production-preview shell smoke, and `npm run check:boundaries` proves allowed production imports and rejected dependency directions. Browser artifacts live under `output/playwright/`.
+
+Phase 8 adds `npm run test:run -- import-export import-recovery recovery` and `npm run test:e2e:import-recovery`; [its evidence](docs/verification/phase-8-import-export-recovery.md) records atomic replacement, deterministic download, storage preservation, four zero-violation axe scans, and 320 px inspection.

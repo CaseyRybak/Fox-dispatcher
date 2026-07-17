@@ -1,6 +1,10 @@
 import { readFile } from "node:fs/promises";
 
-const publicFiles = ["README.md", "docs/ai-worklog/public-checkpoints.json"];
+const publicFiles = [
+  "README.md",
+  "docs/ai-worklog/public-checkpoints.json",
+  "docs/verification/release-evidence.md",
+];
 const forbiddenPatterns = [
   {
     label: "private Unix home path",

@@ -14,7 +14,7 @@ This review checks the Phase 0 repository artifacts against the active implement
 
 The working tree was clean at audit start. While documentation amendments were in progress, a separate concurrent workflow created Phase 1 package, toolchain, CI, and `src/` files. This audit preserves those files and updates the phase-status wording, but it does not attribute, review, verify, or accept that implementation work.
 
-The original MOX assignment text is not stored in this repository. Therefore the matrix below verifies every assignment-facing requirement normalized by the product specification and active plan, but it cannot prove word-for-word fidelity to an external brief that was not available during this audit. A final submission review should compare the public brief with this matrix without replacing the accepted product decisions silently.
+The matrix below verifies every normalized requirement from the product specification and execution plan. Later product decisions remain traceable through the decision records rather than chat history.
 
 ## Requirement traceability
 
@@ -162,4 +162,4 @@ Observed result: 28 local targets resolved and no failures were printed.
 
 ## Readiness conclusion
 
-The amended Phase 0 contract was internally consistent for its historical scope. The required Phase 1/2 reconciliation later occurred and is recorded in their verification artifacts and `c53d1f1`. The residual Phase 0 boundary remains comparison with the external assignment source, which is not a repository artifact; later-phase runtime, accessibility, and deployment claims require their own evidence.
+The amended Phase 0 contract was internally consistent for its historical scope. The required Phase 1/2 reconciliation later occurred and is recorded in their verification artifacts and `c53d1f1`. Later-phase runtime, accessibility, and deployment claims require their own evidence.

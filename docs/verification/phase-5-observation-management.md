@@ -14,7 +14,7 @@ Phase 5 adds proportionate observation management without changing the suspicion
 
 - add and edit validate `fox_id`, `location`, `color`, `has_prey`, `suspicion_level`, and `time` before one atomic state transition;
 - new technical IDs are immutable `obs_<uuid>` values created by an injected secure browser adapter;
-- delete exposes one persistent undo action, reset explicitly restores the five assignment records, and all derived report sections recalculate from the same accepted array;
+- delete exposes one persistent undo action, reset explicitly restores the five starter records, and all derived report sections recalculate from the same accepted array;
 - observations and scoring policy persist locally in the strict `fox-dispatcher.dashboard` version-1 envelope;
 - invalid or unavailable storage never replaces accepted in-memory data silently; the interface reports memory-only operation and offers explicit starter recovery;
 - filters remain derived and unsaved; JSON import/export, raw-value recovery, and future-version tooling remain optional Phase 8 work.

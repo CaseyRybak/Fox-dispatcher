@@ -1,21 +1,21 @@
 # Fox Dispatcher: implementation outcome
 
-Status: Phases 0-7 are complete; core MOX submission gate closed
+Status: Phases 0-7 are complete; core release gate closed
 
 Deployment target: Vercel
 
-Current gate: core plan complete; optional Phase 8 requires a separate direct command
+Current gate: core plan and separately authorized Phase 8 complete; Phase 8 publication remains separate
 
 Authority boundary: phases, commits, and pushes wait for separate direct user commands
 
 ## Intent
 
-Build a small, polished, interactive "Fox Dispatcher" web application for the MOX AI-first Developer test assignment. A forest observer can inspect the current observation set, understand where activity is concentrated, see which fox leads the explainable suspicion ranking, change data or the scoring policy, and immediately see the report recalculate.
+Build a small, polished, interactive "Fox Dispatcher" web application. A forest observer can inspect the current observation set, understand where activity is concentrated, see which fox leads the explainable suspicion ranking, change data or the scoring policy, and immediately see the report recalculate.
 
 The product demonstrates four things together:
 
 - a usable interactive interface rather than a static dashboard;
-- deterministic and explainable data logic based only on fields in the assignment;
+- deterministic and explainable data logic based only on explicit observation fields;
 - an agent-first repository whose intent, decisions, plans, evidence, and worklog remain discoverable outside chat;
 - a public Vercel deployment that a reviewer can open without local setup.
 
@@ -34,7 +34,7 @@ The primary reviewer journey should take less than one minute:
 | ID | Priority | Acceptance statement | Required evidence |
 |---|---|---|---|
 | P-01 | Must | The public product is interactive and usable without setup | A Vercel production URL completes the primary reviewer journey |
-| D-01 | Must | The first run contains exactly the 5 assignment observations | UI count, fixture test, and browser screenshot agree |
+| D-01 | Must | The first run contains exactly the 5 starter observations | UI count, fixture test, and browser screenshot agree |
 | D-02 | Should | Observations can be added, edited, and removed | Browser flow demonstrates immediate report recalculation |
 | D-03 | Should | Accepted observations and scoring policy persist locally | Reload restores the latest valid state; reset restores the starter state |
 | D-04 | Stretch | JSON import is atomic | Invalid import identifies the field and leaves current state unchanged |
@@ -50,7 +50,7 @@ The primary reviewer journey should take less than one minute:
 | I-03 | Should | Selection and focus survive dynamic updates predictably | Selected fox fallback, chip removal, dialogs, route changes, and undo have browser focus/status assertions |
 | W-01 | Must | AI Worklog is available inside the product | Main navigation opens 5-7 real, public-safe checkpoints |
 | W-02 | Must | Worklog claims are traceable | Checkpoints link to a plan, decision, commit, test, or screenshot |
-| R-01 | Must | Reviewer documentation explains the submission | README records scenario, stack, demo, AI tools, checks, local start, repository, and deployed URL |
+| R-01 | Must | Reviewer documentation explains the product | README records scenario, stack, demo, AI tools, checks, local start, repository, and deployed URL |
 | A-01 | Must | Domain logic is independent of React and storage | Import-boundary checks and unit tests enforce dependency direction |
 | A-02 | Must | The production browser does not send observation data externally | Deployed headers and browser requests match the documented no-egress boundary |
 | Q-01 | Must | Completion claims have fresh evidence | Typecheck, lint, tests, build, browser, and deployed smoke evidence are recorded |
@@ -79,27 +79,25 @@ If `obs_005.suspicion_level` changes from 3 to 10 under the default 80/20 policy
 
 ### Current repository state
 
-Phase 0 materialized the repository map, product specification, interface specification, architecture, and three accepted decision records in `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Phase 1 added the verified package/toolchain, bounded-context source tree, validated assignment fixture, responsive application shell, import-boundary enforcement, tests, CI, and browser evidence. Phase 2 added exact scoring and ordering, an application Summary query, the leader/ranking/contribution interface, synchronized policy controls, and production-preview evidence. Phases 1 and 2 were published together on `main` in `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`; Phase 3 was later published in `9834af5b48705cbf00d8207877c6880a7e6e10f5`, and its consistency hardening and plan rebaseline followed in `1b2bb24e049a0fc9aca4704ef288400a97bec4ec`. The remaining Phase 3 audit corrections and Phase 4 were published together in `699d457a84d8f3fdc8ff5ae7f0b9d15c5ed0aa9c`, which is the published baseline for this follow-up audit.
-
-The published Phase 3 consistency hardening adds complete ranking facts, persistent live status, cross-route zero-state recovery, stronger evidence/filter tests, safer browser-runner cleanup, CI coverage for the production-browser gate, and corrected delivery-state documentation. The corrections published in `699d457` preserve focus after Observations reset, reject misleading extra browser-runner arguments, and state the fresh-browser limitation precisely. External Vercel project configuration remains a later outcome.
-
-Phase 4, published in `699d457`, replaces the Worklog placeholder with 6 structured public-safe checkpoints and 12 evidence links pinned to published revisions. A strict adapter boundary, privacy scan, Git-object link validation, focused tests, production-browser flow, and responsive screenshots protect the public artifact. The new reviewer README explains the scenario, formula, demo flow, stack, local start, AI tools, checks, limitations, repository link, and pending Phase 7 deployment without relying on chat history.
+Phase 0 materialized the repository map, product specification, interface specification, architecture, and three accepted decision records in `cbaf165bda86ab629b30ed19f226d81af14ed35e`. Phases 1 and 2 were published together on `main` in `c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb`; Phase 3 followed in `9834af5b48705cbf00d8207877c6880a7e6e10f5`, with consistency hardening in `1b2bb24e049a0fc9aca4704ef288400a97bec4ec`. The remaining Phase 3 corrections and Phase 4 were published in `699d457a84d8f3fdc8ff5ae7f0b9d15c5ed0aa9c`.
 
 Phase 5 was published on `main` in `0021c6d8bc55b55734ac503676f0e36a30d392ee`, and its consistency hardening was published in `df434c9`. It adds atomic six-field observation commands, secure injected IDs, delete/undo, starter reset, one authoritative report state, strict local version-1 persistence, runtime validation, safe editor targeting, deterministic sorting, focus recovery, and live feedback.
 
 Phase 6 is complete and published in `579b146`. It converts the narrow observation ledger to explicit field cards and mobile sorting, moves editor/reset surfaces to native modal dialogs, adds bottom navigation and focus-obscuring protection, and establishes axe plus responsive-keyboard browser gates. [Accessibility evidence](../../verification/accessibility-evidence.md) records five viewport/orientation checks, zero targeted axe violations across six states, keyboard/dialog focus, 200% scale/reflow, text spacing, reduced motion, forced colors, and the explicit native-screen-reader limitation.
 
-After a direct user review against the original MOX brief, the remaining sequence was rebalanced on 2026-07-16. Mandatory Worklog/README work moved from Phase 7 to Phase 4, observation management became a proportionate should-have Phase 5, targeted quality remained Phase 6, Vercel submission moved to Phase 7, and import/export plus advanced recovery became optional Phase 8. This rebaseline changes priorities and ownership only; it does not claim that any pending phase was implemented.
+Phase 7 application and deployment policy were verified at `170ee1d63908d6c1e8a5ecb938190474b4707e58`; the release record and original production artifacts were published in `aaab9a7019b5bfbffe7d2044fae570db2b283277`, and the final 320 px screenshot was refreshed in `334ec8ad8267fd496ad5628b670a0cd62defa65c`. No runtime or deployment-policy source changed between `170ee1d` and that documentation-only head. The public product is available through the Vercel production alias. [Phase 7 release evidence](../../verification/release-evidence.md) records the tested revision, immutable deployment, repository gate, desktop reviewer journey, 320 px Summary/reflow result, headers, request boundary, artifacts, protected-preview deviation, and remaining native-screen-reader limitation.
+
+After a direct user review of the product brief, the sequence was rebalanced on 2026-07-16. Mandatory Worklog/README work moved from Phase 7 to Phase 4, observation management became a proportionate should-have Phase 5, targeted quality remained Phase 6, the Vercel release moved to Phase 7, and import/export plus advanced recovery became optional Phase 8. Phases 0-7 closed the core release; Phase 8 was later separately authorized and completed through its own plan and evidence.
 
 Relevant existing context:
 
 - `docs/research/skills-audit.md` describes the audited planning, design, accessibility, React, review, and browser skills available to repository agents.
 - `docs/legal/third-party-skills.md` records the provenance of installed third-party and adapted skills.
-- `AGENTS.md` maps the durable product, design, architecture, decisions, and active plan.
+- `AGENTS.md` maps the durable product, design, architecture, decisions, and current plans.
 - `ARCHITECTURE.md` maps the planned bounded context and verification layers.
 - `docs/product-specs/fox-dispatcher.md` is the canonical product and scoring contract.
 - `docs/design-docs/interface.md` is the canonical interface and accessibility contract.
-- This active plan is the execution handoff and phase-status record.
+- This completed plan is the historical execution handoff and Phase 0-7 status record.
 
 ### Planned bounded context
 
@@ -144,7 +142,7 @@ Root and domain `AGENTS.md` files serve as concise maps to entry points and dura
 
 ## Decisions
 
-### 1. Scoring uses only explicit assignment fields
+### 1. Scoring uses only explicit observation fields
 
 For fox `f` in the active observation selection:
 
@@ -229,15 +227,15 @@ A geographic map is excluded because the data has location names but no coordina
 
 `AI Worklog` contains 5-7 real checkpoints. Each checkpoint records the problem, AI contribution, human decision, resulting change, and verification evidence. A testing problem is included only after one is actually found.
 
-### 6. Data management stays proportionate to the assignment
+### 6. Data management stays proportionate to the product
 
-Starter data is bundled with the application. The core submission already satisfies the assignment's change-and-recalculate requirement through the scoring-policy control. Observation CRUD and simple local persistence are a valuable reviewer enhancement, not a blocker for the mandatory Worklog, README, or deployment outcomes.
+Starter data is bundled with the application. The core release already satisfies the change-and-recalculate requirement through the scoring-policy control. Observation CRUD and simple local persistence are a valuable reviewer enhancement, not a blocker for the mandatory Worklog, README, or deployment outcomes.
 
 Phase 5 adds observation validation, add/edit/delete, one-step undo, starter reset, and a small versioned local-storage envelope. It distinguishes missing, valid, invalid, and unavailable storage well enough to preserve the in-memory session and offer starter recovery. Atomic JSON import/export, a 2 MiB pre-parse limit, future-version raw-value recovery, and the full failure matrix move to optional Phase 8.
 
-### 7. MOX submission essentials precede optional product depth
+### 7. Release essentials precede optional product depth
 
-The real AI Worklog and reviewer README are Phase 4 because they are explicit assignment requirements and enough factual evidence already exists from Phases 0-3. Observation management follows in Phase 5 as a strong enhancement. Targeted responsive/accessibility work is Phase 6, and the public Vercel submission is Phase 7. Phase 8 contains optional import/export and advanced recovery work and does not block the MOX release.
+The real AI Worklog and reviewer README are Phase 4 because they are explicit product requirements and enough factual evidence already exists from Phases 0-3. Observation management follows in Phase 5 as a strong enhancement. Targeted responsive/accessibility work is Phase 6, and the public Vercel release is Phase 7. Phase 8 contains optional import/export and advanced recovery work and does not block the core release.
 
 ### 8. Stack and deployment
 
@@ -273,13 +271,13 @@ Preparing the original plan did not itself authorize Git mutation. Phase 0 was s
 
 ## Execution slices
 
-Phases 0 through 6 and their recorded consistency follow-ups are complete. Phase 7 is the remaining MOX delivery slice. Phase 8 is an optional extension and starts only after a separate direct user command once the submission essentials are safe.
+The Phase 0-7 core slices are complete. Phase 7 post-release consistency hardening is implemented locally but still requires a fresh published-revision smoke; it does not invalidate the recorded core release. Phase 8 is governed by separate authority after the core release became safe.
 
 ### Phase 0: Materialize the approved contract
 
 Status: completed on 2026-07-16
 
-Target outcome: another agent can understand the assignment, product policy, interface, architecture, and evidence requirements without chat history.
+Target outcome: another agent can understand the product policy, interface, architecture, and evidence requirements without chat history.
 
 Files and interfaces:
 
@@ -294,7 +292,7 @@ Files and interfaces:
 
 Implementation steps:
 
-1. Transfer the assignment facts and approved product decisions into durable documents without inventing new signals.
+1. Transfer the starter-data facts and approved product decisions into durable documents without inventing new signals.
 2. Record the formula and starter calculations as test-ready deterministic acceptance examples.
 3. Record the chosen field-ledger UI and the rejected map-first alternative.
 4. Record Vercel as the deployment target and Git integration as the release mechanism.
@@ -305,7 +303,7 @@ Verification commands and expected evidence:
 - `git diff --check` returns clean.
 - focused `rg` checks independently find `fox_001` 7.8, `fox_003` 7.9, `Северная поляна` 3/5 and 60%, and Vercel in their canonical product/decision documents rather than matching this plan alone;
 - local Markdown links resolve to existing paths;
-- [Phase 0 contract audit](../../verification/phase-0-contract-audit.md) maps each normalized assignment-facing requirement to acceptance IDs and canonical artifacts, records the external-source boundary, and captures command results.
+- [Phase 0 contract audit](../../verification/phase-0-contract-audit.md) maps each normalized product requirement to acceptance IDs and canonical artifacts and captures command results.
 
 Estimated effort: 2-3 hours.
 
@@ -361,7 +359,7 @@ Estimated effort: 2-3 hours.
 Completion notes:
 
 - Node `24.17.0`, npm `11.13.0`, exact application dependencies, and `package-lock.json` define the reproducible toolchain; Vercel-compatible `24.x`/`11.x` engines are explicit.
-- The Zod starter adapter rejects malformed data before the application receives it; tests prove the exact five assignment records and four unique fox IDs.
+- The Zod starter adapter rejects malformed data before the application receives it; tests prove the exact five starter records and four unique fox IDs.
 - The responsive field-ledger shell exposes Summary, Observations, and AI Worklog through hash links. Route changes synchronize Russian document language, destination title, `aria-current`, focusable `h1`, and browser history.
 - ESLint restrictions cover domain, application, adapter, UI, app-composition, browser-global, persistence, and shared directions. `npm run check:boundaries` checks production source, one allowed fixture, and thirteen forbidden fixtures.
 - GitHub Actions uses the pinned Node version, `npm ci`, and the same `npm run verify` gate used locally.
@@ -515,7 +513,7 @@ Files and interfaces:
 
 Implementation steps:
 
-1. Validate the six editable assignment fields; keep observation `id` generated and immutable.
+1. Validate the six editable observation fields; keep observation `id` generated and immutable.
 2. Implement add and edit as atomic accepted-state transitions.
 3. Implement delete with one persistent undo action and correct unique-fox recalculation; deleting a fox's final observation removes that fox from the report naturally.
 4. Persist observations and scoring policy in a small v1 envelope and restore only a valid envelope.
@@ -534,7 +532,7 @@ Estimated effort: 3-4 hours.
 
 Completion notes:
 
-- `observation-management.ts` validates the six assignment fields and applies add/edit/delete/undo/reset without mutating the previous set.
+- `observation-management.ts` validates the six observation fields and applies add/edit/delete/undo/reset without mutating the previous set.
 - Production IDs use injected `crypto.randomUUID()` values in `obs_<uuid>` form; generation and collision errors keep the form and dataset intact.
 - The Observations route provides labelled fields, permanent hints, focused error summaries that do not collide with hash routing, sortable column headers, protected editor targeting, row-specific actions, persistent one-step undo with explicit dismissal, starter reset confirmation, and visible browser/memory-only status. Persistence status is also visible from the other destinations.
 - `fox-dispatcher.dashboard` stores only a strict version-1 envelope containing observations, scoring policy, and a UTC timestamp. Missing, valid, corrupt, unsupported, unavailable, and failed-save paths do not crash or silently replace accepted data.
@@ -581,11 +579,11 @@ Completion evidence:
 
 Estimated effort: 3-4 hours.
 
-### Phase 7: Deploy to Vercel and complete the MOX submission gate
+### Phase 7: Deploy to Vercel and complete the public release gate
 
-Status: complete on 2026-07-17
+Status: complete on 2026-07-17; post-release consistency hardening requires a fresh deployment smoke after publication
 
-Target outcome: the approved repository revision is publicly reviewable and all must-have MOX submission artifacts point to the same working product.
+Target outcome: the approved repository revision is publicly reviewable and all must-have release artifacts point to the same working product.
 
 Files and interfaces:
 
@@ -598,29 +596,29 @@ Files and interfaces:
 Implementation steps:
 
 1. Run the complete local gate with the pinned Node/npm versions and inspect the production bundle for secrets, debug artifacts, unintended external resources, and observation egress.
-2. Add and test the minimum deployment headers supported by the real bundle; document any narrow inline-style exception rather than blocking the submission on an idealized CSP.
+2. Add and test the minimum deployment headers supported by the real bundle; document any narrow inline-style exception rather than blocking the release on an idealized CSP.
 3. Connect Vercel with build command `npm run build`, output `dist`, and `main` as the production branch after explicit authorization for external changes.
 4. Smoke-test the deployed Summary, Observations, AI Worklog, parameter recalculation, and any Phase 5 mutation/persistence flow on desktop and mobile.
 5. Put the public URL and GitHub URL in README, finalize Worklog evidence links, and record the deployed revision.
-6. Move this core plan to `docs/exec-plans/completed/` only after every Must acceptance statement has fresh evidence. Any unmet Should item is documented as a limitation; Stretch items do not block submission.
+6. Move this core plan to `docs/exec-plans/completed/` only after every Must acceptance statement has fresh evidence. Any unmet Should item is documented as a limitation; Stretch items do not block release.
 
 Verification commands and expected evidence:
 
 - `npm run verify` passes from the submitted revision.
 - Phase-specific production browser tests pass against the built artifact.
 - Deployed header/request assertions show no external observation egress.
-- A Playwright smoke run against the Vercel URL completes the reviewer journey without console errors at desktop and 320 px.
+- A Playwright smoke run against the Vercel URL completes the reviewer journey without console errors at desktop and 320 px. The accepted run covered the full desktop journey and persisted Summary reflow at 320 px; the post-release consistency hardening extends the script to mobile Observations and Worklog, which still requires a fresh published-revision run.
 - README and Worklog resolve their public URLs and contain no private paths or secrets.
 
 Estimated effort: 2-3 hours.
 
-Result: Vercel built the release candidate and production revision through the GitHub integration. The public product at `https://fox-dispatcher-brown.vercel.app/` passed the deployed scoring, mutation, reload-persistence, Worklog, 320 px, privacy-header, same-origin request, and zero-console-error checks. `docs/verification/release-evidence.md` records the exact revision, commands, results, screenshots, preview-protection boundary, and remaining native-screen-reader limitation.
+Result: Vercel built the release candidate and production revision through the GitHub integration. The public product at `https://fox-dispatcher-brown.vercel.app/` passed the deployed scoring, mutation, reload-persistence, desktop Worklog, 320 px Summary/reflow, privacy-header, request-origin, and zero-console-error checks. `docs/verification/release-evidence.md` records the exact application/evidence/artifact revisions, commands, results, screenshots, protected-preview deviation, mobile coverage boundary, and remaining native-screen-reader limitation.
 
 ### Phase 8 (optional): Add import, export, and advanced recovery
 
-Status: optional stretch; not part of the MOX completion gate
+Status: complete on 2026-07-17; locally verified and outside the original core release gate
 
-Target outcome: after the submission is safe, a separately authorized extension can replace and export the full observation dataset without weakening validated state.
+Target outcome: after the public release is safe, a separately authorized extension can replace and export the full observation dataset without weakening validated state.
 
 Files and interfaces:
 
@@ -644,6 +642,8 @@ Verification commands and expected evidence:
 
 Estimated effort: 3 hours if separately authorized.
 
+Result: the separately authorized [Phase 8 plan](2026-07-17-import-export-recovery.md) implemented an atomic 2 MiB UTF-8/Zod import boundary, preview and confirmed replacement, deterministic full-array export, and exact corrupt/future-version storage recovery. [Phase 8 evidence](../../verification/phase-8-import-export-recovery.md) records focused, full, browser, axe, download, privacy, and 320 px results. Publication to GitHub/Vercel remains a separate action.
+
 ## Integration evidence
 
 Core completion requires one evidence package that ties repository state to deployed behavior:
@@ -661,7 +661,7 @@ Core completion requires one evidence package that ties repository state to depl
 - final README, Vercel production URL, GitHub URL, and deployment revision;
 - deployed header and browser-request results.
 
-Optional Phase 8 evidence adds invalid-import atomicity, full-data export, size limits, and advanced recovery. Those results do not block the MOX completion gate. The core plan is complete only when every Must claim is supported by fresh results; passing unit tests alone is not sufficient for a UI or deployment completion claim.
+Optional Phase 8 evidence adds invalid-import atomicity, full-data export, size limits, and advanced recovery. Those results do not block the core release gate. The core plan is complete only when every Must claim is supported by fresh results; passing unit tests alone is not sufficient for a UI or deployment completion claim.
 
 ## Resulting repository artifacts
 
@@ -678,10 +678,10 @@ When the core Phases 0-7 finish, the repository should contain:
 - real public-safe AI Worklog checkpoints;
 - repository skills only for procedures proven reusable during execution.
 
-Optional Phase 8 may add atomic JSON import/export and advanced recovery after the submitted product is already complete.
+The separately authorized Phase 8 added atomic JSON import/export and advanced recovery after the submitted product was already complete.
 
 ## Execution handoff
 
-Required execution order is Phase 0 through Phase 7. Phase 4 has closed the mandatory Worklog/README gap before the should-have observation-management enhancement in Phase 5. Phase 6 verifies the implemented journey, and Phase 7 deploys and closes the MOX submission. Phase 8 is a separate optional extension, not a release dependency.
+Required execution order is Phase 0 through Phase 7. Phase 4 has closed the mandatory Worklog/README gap before the should-have observation-management enhancement in Phase 5. Phase 6 verifies the implemented journey, and Phase 7 deploys and closes the public release. Phase 8 is a separate optional extension, not a release dependency.
 
-The core Phase 0-7 plan is complete. Optional Phase 8 import/export and advanced recovery remain outside the submission gate and require a separate direct command.
+The core Phase 0-7 plan and separately authorized Phase 8 implementation are complete. Commit, push, and Vercel publication remain separate actions.

@@ -12,7 +12,7 @@ Publication follow-up: the core corrected Phase 1 and verified Phase 2 state was
 
 ## Outcome
 
-The Phase 1 walking-skeleton design is consistent with the implementation plan: the exact assignment fixture crosses adapter, application, domain, and UI boundaries; the three hash destinations render; the pinned build succeeds; and Phase 2 behavior was not part of the reviewed Phase 1 snapshot.
+The Phase 1 walking-skeleton design is consistent with the implementation plan: the exact starter fixture crosses adapter, application, domain, and UI boundaries; the three hash destinations render; the pinned build succeeds; and Phase 2 behavior was not part of the reviewed Phase 1 snapshot.
 
 The audit found and corrected four Phase 1 gaps:
 

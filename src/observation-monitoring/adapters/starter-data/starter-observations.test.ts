@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { starterObservations } from "./starter-observations";
 
 describe("starter observations boundary", () => {
-  it("provides the five unmodified assignment observations", () => {
+  it("provides the five unmodified starter observations", () => {
     expect(starterObservations).toHaveLength(5);
     expect(starterObservations).toEqual([
       {

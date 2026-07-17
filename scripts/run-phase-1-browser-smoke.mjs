@@ -23,6 +23,7 @@ const allowedSmokePrograms = new Set([
   "phase-6-accessibility.js",
   "phase-6-responsive-keyboard.js",
   "phase-7-release-smoke.js",
+  "phase-8-import-recovery.js",
 ]);
 
 if (unexpectedArguments.length > 0) {
@@ -42,6 +43,9 @@ mkdirSync(path.join(repositoryRoot, "output", "playwright", "phase-6"), {
 mkdirSync(path.join(repositoryRoot, "output", "playwright", "phase-7"), {
   recursive: true,
 });
+mkdirSync(path.join(repositoryRoot, "output", "playwright", "phase-8"), {
+  recursive: true,
+});
 const port = 4173;
 const localBaseUrl = `http://127.0.0.1:${port}`;
 const configuredBaseUrl = process.env.FOX_SMOKE_BASE_URL?.trim();
@@ -49,17 +53,34 @@ const baseUrl = configuredBaseUrl
   ? validateExternalBaseUrl(configuredBaseUrl)
   : localBaseUrl;
 const usesExternalBaseUrl = baseUrl !== localBaseUrl;
+const requiresRevision = smokeProgramName === "phase-7-release-smoke.js";
+const expectedRevision =
+  usesExternalBaseUrl && requiresRevision
+    ? validateExpectedRevision(process.env.FOX_SMOKE_EXPECTED_REVISION)
+    : "local";
 const smokeSource = readFileSync(smokeProgram, "utf8").trim().replace(/;$/, "");
 const localBaseUrlDeclaration = `const baseUrl = "${localBaseUrl}";`;
+const localRevisionDeclaration = `const expectedRevision = "local";`;
 if (!smokeSource.includes(localBaseUrlDeclaration)) {
   throw new Error(
     `${smokeProgramName} must declare ${localBaseUrlDeclaration} for deterministic URL injection.`,
   );
 }
-const smokeCode = smokeSource.replace(
+if (requiresRevision && !smokeSource.includes(localRevisionDeclaration)) {
+  throw new Error(
+    `${smokeProgramName} must declare ${localRevisionDeclaration} for deterministic revision injection.`,
+  );
+}
+let smokeCode = smokeSource.replace(
   localBaseUrlDeclaration,
   `const baseUrl = ${JSON.stringify(baseUrl)};`,
 );
+if (requiresRevision) {
+  smokeCode = smokeCode.replace(
+    localRevisionDeclaration,
+    `const expectedRevision = ${JSON.stringify(expectedRevision)};`,
+  );
+}
 const session = `fox-${path.parse(smokeProgramName).name}-${process.pid}`;
 const browserExecutable = findBrowserExecutable();
 const browserConfig = browserExecutable
@@ -118,6 +139,16 @@ function validateExternalBaseUrl(value) {
   return url.origin;
 }
 
+function validateExpectedRevision(value) {
+  const revision = value?.trim();
+  if (!revision || !/^[0-9a-f]{40}$/u.test(revision)) {
+    throw new Error(
+      "FOX_SMOKE_EXPECTED_REVISION must be a 40-character lowercase Git revision when FOX_SMOKE_BASE_URL is external.",
+    );
+  }
+  return revision;
+}
+
 const preview = usesExternalBaseUrl
   ? undefined
   : spawn(
@@ -157,7 +188,7 @@ async function waitForPreview() {
     await new Promise((resolve) => setTimeout(resolve, 100));
   }
 
-  throw new Error(`Vite preview did not become ready at ${baseUrl}.`);
+  throw new Error(`Release target did not become ready at ${baseUrl}.`);
 }
 
 async function runPlaywright(arguments_) {

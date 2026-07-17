@@ -61,7 +61,7 @@ export function createBrowserDashboardStateStore(
       try {
         candidate = JSON.parse(rawValue);
       } catch {
-        return { status: "corrupt" };
+        return { rawValue, status: "corrupt" };
       }
       if (
         typeof candidate === "object" &&
@@ -71,11 +71,15 @@ export function createBrowserDashboardStateStore(
         Number.isInteger(candidate.schemaVersion) &&
         candidate.schemaVersion > 1
       ) {
-        return { status: "unsupported-version" };
+        return {
+          rawValue,
+          schemaVersion: candidate.schemaVersion,
+          status: "unsupported-version",
+        };
       }
 
       const parsed = envelopeSchema.safeParse(candidate);
-      if (!parsed.success) return { status: "corrupt" };
+      if (!parsed.success) return { rawValue, status: "corrupt" };
 
       return {
         state: {

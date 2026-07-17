@@ -6,7 +6,7 @@
 
 Phase 3 is published on `main` in `9834af5`; its consistency hardening was published in `1b2bb24`, and the final focus and runner-guard corrections were published with Phase 4 in `699d457`. One report scope connects filters, ranking, selected-fox evidence, location activity, recent observations, and the read-only observation ledger. Production-browser evidence covers keyboard selection, policy recalculation, every filter type, combined scope, deterministic chip focus, the zero state, cross-route scope, and 320 px reflow.
 
-Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6d`, with consistency hardening in `df434c9`: application commands validate and mutate one authoritative observation set; browser adapters generate secure IDs and persist a strict version-1 envelope; the Observations UI adds editing, deletion, undo, starter reset, status, deterministic sorting, and focus recovery. Phase 6 is complete and published in `579b146`: the ledger switches to sortable mobile field cards, editor and reset flows use native modal dialogs, and focused accessibility/browser gates cover the reviewer journey. Phase 7 publishes and verifies the public Vercel submission; Phase 8 import/export plus advanced recovery remain optional stretch work.
+Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6d`, with consistency hardening in `df434c9`: application commands validate and mutate one authoritative observation set; browser adapters generate secure IDs and persist a strict version-1 envelope; the Observations UI adds editing, deletion, undo, starter reset, status, deterministic sorting, focus recovery, and live feedback. Phase 6 is complete and published in `579b146`: the ledger switches to sortable mobile field cards, editor and reset flows use native modal dialogs, and focused accessibility/browser gates cover the reviewer journey. Phase 7 is complete: application/deployment policy revision `170ee1d` passed the recorded public Vercel reviewer journey; the protected-preview and mobile-coverage boundaries are explicit in the [release evidence](../../docs/verification/release-evidence.md). Phase 8 is complete in the uncommitted working tree: atomic import/export and raw corrupt/future-version recovery passed focused, production-browser, axe, and 320 px checks.
 
 ## Entry points
 
@@ -19,13 +19,15 @@ Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6
 - `application/public-worklog.ts` — public checkpoint and evidence values shared across the adapter/UI boundary.
 - `application/observation-management.ts` — atomic add/edit/delete/undo/reset behavior and the six-field editor contract.
 - `application/dashboard-state-store.ts` — outbound persistence result and state types.
+- `application/observation-transfer.ts` — import preview/result, file boundary, and export port types.
 - `adapters/browser-dashboard-state/browser-dashboard-state.ts` — strict version-1 local-storage envelope and recovery classification.
+- `adapters/json-observation-transfer/json-observation-transfer.ts` — 2 MiB UTF-8 parser, strict Zod preview, deterministic JSON artifact, and browser download adapter.
 - `adapters/observation-id/browser-observation-id-generator.ts` — production `obs_<uuid>` generator.
 - `adapters/public-worklog/public-worklog.ts` — strict 5-7 checkpoint Zod parser and immutable bundled source.
-- `adapters/starter-data/starter-observations.ts` — Zod boundary for the bundled assignment JSON.
+- `adapters/starter-data/starter-observations.ts` — Zod boundary for the bundled starter JSON.
 - `ui/ApplicationShell.tsx` — navigation and destination composition.
 - `ui/summary/SummaryPage.tsx` — scope controls, leader outcome, selectable ranking, contribution ledger, evidence strip, synchronized prey-weight controls, locations, and recent observations.
-- `ui/observations/ObservationsPage.tsx` and `ObservationEditor.tsx` — editable desktop ledger and mobile field cards, validated modal form, delete/undo, reset, persistence status, and focus recovery.
+- `ui/observations/ObservationsPage.tsx`, `ObservationEditor.tsx`, and `ObservationImportDialog.tsx` — editable ledger/cards, validated modal forms, import preview, export actions, delete/undo/reset, storage recovery, status, and focus recovery.
 - `ui/ai-worklog/WorklogPage.tsx` — semantic public timeline separating AI contribution, human decision, result, verification, and evidence.
 
 ## Context links
@@ -37,7 +39,7 @@ Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6
 
 ## Verification map
 
-- Adapter tests prove the bundled fixture contains the exact five assignment records and four fox identities.
+- Adapter tests prove the bundled fixture contains the exact five starter records and four fox identities.
 - Scoring tests prove exact starter arithmetic, policy boundaries, half-up rounding, deterministic tie-breaks, and input-order invariance.
 - Component tests prove the 80/20 result, immediate preview, one committed live announcement, exact input, and reset behavior.
 - Report-scope and component tests prove the North Clearing 3-of-5/2-fox selection, combined filters, explicit fox selection, fallback, zero results, reset behavior, atomic announcements, and deterministic chip-removal focus.
@@ -52,3 +54,5 @@ Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6
 - `npm run test:a11y` scans Summary, desktop/mobile Observations, both dialogs, and AI Worklog against targeted axe WCAG tags; `npm run test:e2e:responsive-keyboard` covers five viewports, keyboard focus, reflow, text spacing, reduced motion, forced colors, and the Chromium accessibility tree.
 - [Phase 6 accessibility evidence](../../docs/verification/accessibility-evidence.md) records the exact results and the native-screen-reader environment limitation.
 - [Phase 7 release evidence](../../docs/verification/release-evidence.md) records the public URL, tested revision, headers, local-only request boundary, persistence journey, and production screenshots.
+- `npm run test:run -- import-export import-recovery recovery` proves the Phase 8 byte/schema boundary, preview/replacement, round-trip export, full-data scope, exact raw storage preservation, focus, and persistence.
+- `npm run test:e2e:import-recovery` proves invalid-input atomicity, accepted import reload, real browser download, future-version recovery, four zero-violation axe scans, no external requests, and 320 px reflow. [Phase 8 evidence](../../docs/verification/phase-8-import-export-recovery.md) records the result and screenshots.

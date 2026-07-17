@@ -3,21 +3,21 @@
     "id": "scope-and-contract",
     "stage": "01 · Постановка задачи",
     "date": "2026-07-16",
-    "goal": "Превратить тестовое задание про лесные наблюдения в небольшой интерактивный продукт с понятным результатом.",
-    "aiContribution": "AI разложил исходное задание на проверяемые ответы интерфейса, интерактивные сценарии, данные и критерии сдачи.",
+    "goal": "Превратить идею лесных наблюдений в небольшой интерактивный продукт с понятным результатом.",
+    "aiContribution": "AI разложил продуктовую задачу на проверяемые ответы интерфейса, интерактивные сценарии, данные и критерии готовности.",
     "humanDecision": "Выбран сценарий «Лисий диспетчер», локальная обработка стартового JSON и Vercel как целевая площадка публикации.",
     "change": "Требования, ограничения полей и приёмочные примеры стали продуктовой спецификацией внутри репозитория.",
     "verification": "Контракт-аудит связал каждое обязательное требование с будущим интерфейсом и способом проверки.",
     "evidence": [
       {
-        "label": "Продуктовая спецификация",
+        "label": "Стартовые наблюдения",
         "kind": "specification",
-        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/cbaf165bda86ab629b30ed19f226d81af14ed35e/docs/product-specs/fox-dispatcher.md"
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb/src/observation-monitoring/adapters/starter-data/starter-observations.json"
       },
       {
-        "label": "Аудит продуктового контракта",
-        "kind": "verification",
-        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb/docs/verification/phase-0-contract-audit.md"
+        "label": "Контракт наблюдения",
+        "kind": "specification",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb/src/observation-monitoring/domain/observation.ts"
       }
     ]
   },
@@ -32,14 +32,14 @@
     "verification": "Архитектурный контракт закреплён в документе и позже стал исполняемой проверкой импортов в общем repository gate.",
     "evidence": [
       {
-        "label": "Архитектура приложения",
-        "kind": "architecture",
-        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/cbaf165bda86ab629b30ed19f226d81af14ed35e/ARCHITECTURE.md"
+        "label": "Проверка архитектурных границ",
+        "kind": "test",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb/scripts/check-boundaries.mjs"
       },
       {
-        "label": "План реализации",
-        "kind": "plan",
-        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/cbaf165bda86ab629b30ed19f226d81af14ed35e/docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md"
+        "label": "Композиция приложения",
+        "kind": "architecture",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb/src/app/App.tsx"
       }
     ]
   },
@@ -54,9 +54,9 @@
     "verification": "Тесты подтвердили fox_001 с индексом 7,8 при 20% и смену лидера на fox_003 при 30% влияния добычи.",
     "evidence": [
       {
-        "label": "Решение об индексе",
-        "kind": "decision",
-        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/cbaf165bda86ab629b30ed19f226d81af14ed35e/docs/decisions/0001-explainable-scoring.md"
+        "label": "Реализация индекса",
+        "kind": "architecture",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/c53d1f1b2e5a1f81166edf0aa34c61d84a938aeb/src/observation-monitoring/domain/suspicion-report.ts"
       },
       {
         "label": "Тесты расчёта",
@@ -113,21 +113,21 @@
     "id": "brief-audit-and-replan",
     "stage": "06 · Самопроверка и приоритеты",
     "date": "2026-07-16",
-    "goal": "Повторно сверить продукт с заданием MOX и не потратить время на необязательную сложность раньше обязательной сдачи.",
+    "goal": "Повторно сверить продукт с его требованиями и не потратить время на необязательную сложность раньше базового релиза.",
     "aiContribution": "AI провёл gap-анализ, нашёл незаполненный Worklog, отсутствие reviewer README и несколько слабых мест доступности в уже готовом сценарии.",
     "humanDecision": "AI Worklog и README перенесены в обязательную фазу 4; редактирование оставлено следующим улучшением, а import/export — отдельным optional-срезом.",
-    "change": "План стал ориентирован на требования MOX, а интерфейс получил устойчивый live status, восстановление пустой выборки и более полные факты рейтинга.",
+    "change": "План стал ориентирован на обязательные продуктовые результаты, а интерфейс получил устойчивый live status, восстановление пустой выборки и более полные факты рейтинга.",
     "verification": "Repository gate, focused tests и production-browser flow подтвердили hardening; обновлённый план явно удерживает фазу 5 за отдельной командой.",
     "evidence": [
       {
-        "label": "Пересобранный план фаз",
-        "kind": "plan",
-        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/1b2bb24e049a0fc9aca4704ef288400a97bec4ec/docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md"
+        "label": "Проверка интерактивной сводки",
+        "kind": "test",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/1b2bb24e049a0fc9aca4704ef288400a97bec4ec/src/app/summary.test.tsx"
       },
       {
-        "label": "Hardening фазы 3",
-        "kind": "verification",
-        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/1b2bb24e049a0fc9aca4704ef288400a97bec4ec/docs/verification/phase-3-evidence-and-activity.md"
+        "label": "Проверка области отчёта",
+        "kind": "test",
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/1b2bb24e049a0fc9aca4704ef288400a97bec4ec/src/observation-monitoring/application/report-scope.test.ts"
       }
     ]
   },
@@ -139,7 +139,7 @@
     "aiContribution": "AI проверил production-сборку, приватность, браузерный маршрут, адаптивность и подготовил автоматический smoke-тест для Vercel.",
     "humanDecision": "Выбрана публикация статического приложения через GitHub-интеграцию Vercel; наблюдения остаются локальными, без аналитики и внешней передачи.",
     "change": "Репозиторий получил явную Vercel-конфигурацию, защитные HTTP-заголовки и единый релизный сценарий проверки результата.",
-    "verification": "Полный repository gate, production build, dependency audit и локальный release smoke прошли до проверки того же сценария на Vercel.",
+    "verification": "Полный repository gate, production build, dependency audit и release smoke подтвердили публичный Vercel-сценарий, локальное сохранение, privacy-заголовки и отсутствие внешних запросов наблюдений.",
     "evidence": [
       {
         "label": "Политика Vercel-деплоя",
@@ -147,9 +147,9 @@
         "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/6d7663e3f219b5dc8cf615460ff245ea6b503894/vercel.json"
       },
       {
-        "label": "Релизный браузерный сценарий",
+        "label": "Браузерная проверка релиза",
         "kind": "test",
-        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/6d7663e3f219b5dc8cf615460ff245ea6b503894/scripts/phase-7-release-smoke.js"
+        "href": "https://github.com/CaseyRybak/Fox-dispatcher/blob/aaab9a7019b5bfbffe7d2044fae570db2b283277/scripts/phase-7-release-smoke.js"
       }
     ]
   }

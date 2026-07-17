@@ -6,7 +6,15 @@ import {
   createSummaryViewModel,
   DEFAULT_PREY_WEIGHT_PERCENT,
 } from "@/observation-monitoring/application/create-summary-view-model";
-import type { PersistedDashboardState } from "@/observation-monitoring/application/dashboard-state-store";
+import type {
+  DashboardStateRecovery,
+  PersistedDashboardState,
+} from "@/observation-monitoring/application/dashboard-state-store";
+import type {
+  ObservationExporter,
+  ObservationImportFile,
+  ObservationImportResult,
+} from "@/observation-monitoring/application/observation-transfer";
 import {
   addObservation,
   deleteObservation,
@@ -24,6 +32,11 @@ import {
 } from "@/observation-monitoring/application/report-scope";
 import { formatFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
 import { createBrowserDashboardStateStore } from "@/observation-monitoring/adapters/browser-dashboard-state/browser-dashboard-state";
+import {
+  createBrowserObservationExporter,
+  createJsonObservationImportParser,
+  readObservationImportFile,
+} from "@/observation-monitoring/adapters/json-observation-transfer/json-observation-transfer";
 import { browserObservationIdGenerator } from "@/observation-monitoring/adapters/observation-id/browser-observation-id-generator";
 import { publicWorklog } from "@/observation-monitoring/adapters/public-worklog/public-worklog";
 import { starterObservations } from "@/observation-monitoring/adapters/starter-data/starter-observations";
@@ -33,6 +46,8 @@ import {
 } from "@/observation-monitoring/ui/ApplicationShell";
 
 const dashboardStateStore = createBrowserDashboardStateStore();
+const observationImportParser = createJsonObservationImportParser();
+const defaultObservationExporter = createBrowserObservationExporter();
 const destinations = new Set<Destination>([
   "summary",
   "observations",
@@ -48,6 +63,11 @@ interface BootstrapState {
   readonly dashboard: PersistedDashboardState;
   readonly persistenceBlocked: boolean;
   readonly persistenceMessage: string;
+  readonly recovery?: DashboardStateRecovery;
+}
+
+interface AppProps {
+  readonly observationExporter?: ObservationExporter;
 }
 
 function readDestination(): Destination {
@@ -84,15 +104,30 @@ function initializeDashboard(): BootstrapState {
         "Хранилище недоступно — изменения останутся до закрытия страницы",
     };
   }
+  if (loaded.status === "unsupported-version") {
+    return {
+      dashboard,
+      persistenceBlocked: true,
+      persistenceMessage: `Сохранение версии ${loaded.schemaVersion} не открыто — автосохранение приостановлено`,
+      recovery: {
+        kind: "unsupported-version",
+        rawValue: loaded.rawValue,
+        schemaVersion: loaded.schemaVersion,
+      },
+    };
+  }
   return {
     dashboard,
     persistenceBlocked: true,
     persistenceMessage:
-      "Сохранённые данные не прочитаны — работа продолжается в памяти",
+      "Сохранённые данные повреждены — автосохранение приостановлено",
+    recovery: { kind: "corrupt", rawValue: loaded.rawValue },
   };
 }
 
-export function App() {
+export function App({
+  observationExporter = defaultObservationExporter,
+}: AppProps = {}) {
   const [bootstrap] = useState(initializeDashboard);
   const [dashboard, setDashboard] = useState(bootstrap.dashboard);
   const initialSummary = useMemo(
@@ -109,6 +144,7 @@ export function App() {
     initialSummary.leader?.foxId,
   );
   const [lastDeletion, setLastDeletion] = useState<ObservationDeletionUndo>();
+  const [recovery, setRecovery] = useState(bootstrap.recovery);
   const [persistenceMessage, setPersistenceMessage] = useState(
     bootstrap.persistenceMessage,
   );
@@ -281,6 +317,7 @@ export function App() {
   function resetStarter() {
     const clearResult = dashboardStateStore.clear();
     persistenceBlockedRef.current = clearResult.status !== "cleared";
+    if (clearResult.status === "cleared") setRecovery(undefined);
     setPersistenceMessage(
       clearResult.status === "cleared"
         ? "Стартовые данные будут сохранены в этом браузере"
@@ -292,15 +329,41 @@ export function App() {
     );
   }
 
+  function validateImport(text: string, measuredBytes?: number) {
+    return observationImportParser.parse(text, measuredBytes);
+  }
+
+  function replaceImportedObservations(
+    observations: Extract<
+      ObservationImportResult,
+      { ok: true }
+    >["observations"],
+  ) {
+    setReportFilters(DEFAULT_REPORT_FILTERS);
+    acceptObservationSet(
+      observations,
+      `Импорт применён: ${observations.length} ${observationCountWord(observations.length)}.`,
+      true,
+      DEFAULT_REPORT_FILTERS,
+    );
+  }
+
+  function exportObservations() {
+    const result = observationExporter.export(dashboard.observations);
+    announce(
+      result.status === "exported"
+        ? `Экспорт подготовлен: ${dashboard.observations.length} ${observationCountWord(dashboard.observations.length)}.`
+        : "Экспорт не удалось подготовить. Данные не изменены — повторите действие.",
+    );
+  }
+
   function acceptObservationSet(
     observations: PersistedDashboardState["observations"],
     message: string,
     clearUndo = true,
+    filters = reportFilters,
   ) {
-    const nextScopedObservations = applyReportFilters(
-      observations,
-      reportFilters,
-    );
+    const nextScopedObservations = applyReportFilters(observations, filters);
     const nextViewModel = createSummaryViewModel(
       nextScopedObservations,
       dashboard.scoringPolicy.preyWeightPercent,
@@ -368,18 +431,39 @@ export function App() {
       onDeleteObservation={removeObservation}
       onDismissUndo={() => setLastDeletion(undefined)}
       onEditObservation={editDraft}
+      onExportObservations={exportObservations}
       onFiltersChange={changeReportFilters}
       onPreyWeightChange={changePreyWeight}
       onPreyWeightCommit={commitPreyWeight}
       onResetStarter={resetStarter}
+      onReadImportFile={(file: ObservationImportFile) =>
+        readObservationImportFile(file)
+      }
+      onReplaceImportedObservations={replaceImportedObservations}
       onSelectFox={selectFox}
       onUndoDelete={undoDelete}
       overview={overview}
       persistenceMessage={persistenceMessage}
+      recovery={recovery}
       summary={summaryViewModel}
       worklog={publicWorklog}
+      onSelectRecoveryRaw={() =>
+        announce(
+          "Сохранённый JSON выделен. Скопируйте его обычной командой браузера.",
+        )
+      }
+      onValidateImport={validateImport}
     />
   );
+}
+
+function observationCountWord(count: number) {
+  const mod100 = count % 100;
+  const mod10 = count % 10;
+  if (mod100 >= 11 && mod100 <= 14) return "наблюдений";
+  if (mod10 === 1) return "наблюдение";
+  if (mod10 >= 2 && mod10 <= 4) return "наблюдения";
+  return "наблюдений";
 }
 
 function createObservationMutationAnnouncement(

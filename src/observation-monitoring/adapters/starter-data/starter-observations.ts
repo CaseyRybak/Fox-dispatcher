@@ -4,7 +4,7 @@ import starterObservationJson from "./starter-observations.json";
 
 const starterObservationSchema = observationArraySchema.refine(
   (observations) => observations.length === 5,
-  "Expected the five assignment observations.",
+  "Expected the five starter observations.",
 );
 
 const parsedStarterObservations = starterObservationSchema.parse(

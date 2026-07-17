@@ -52,13 +52,13 @@ describe("browser dashboard state adapter", () => {
         now: () => timestamp,
         storage: () => corruptStorage,
       }).load(),
-    ).toEqual({ status: "corrupt" });
+    ).toMatchObject({ status: "corrupt" });
     expect(
       createBrowserDashboardStateStore({
         now: () => timestamp,
         storage: () => unsupportedStorage,
       }).load(),
-    ).toEqual({ status: "unsupported-version" });
+    ).toMatchObject({ status: "unsupported-version" });
     expect(corruptStorage.getItem(DASHBOARD_STORAGE_KEY)).toContain(
       "leakedField",
     );
@@ -73,9 +73,11 @@ describe("browser dashboard state adapter", () => {
           }),
       });
 
-    expect(createStore("1").load()).toEqual({ status: "corrupt" });
-    expect(createStore(null).load()).toEqual({ status: "corrupt" });
-    expect(createStore(2).load()).toEqual({ status: "unsupported-version" });
+    expect(createStore("1").load()).toMatchObject({ status: "corrupt" });
+    expect(createStore(null).load()).toMatchObject({ status: "corrupt" });
+    expect(createStore(2).load()).toMatchObject({
+      status: "unsupported-version",
+    });
   });
 
   it.each([
@@ -134,7 +136,7 @@ describe("browser dashboard state adapter", () => {
 
     expect(
       createBrowserDashboardStateStore({ storage: () => storage }).load(),
-    ).toEqual({ status: "corrupt" });
+    ).toMatchObject({ status: "corrupt" });
   });
 
   it("reports unavailable storage and failed saves without throwing", () => {

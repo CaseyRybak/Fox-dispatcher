@@ -8,7 +8,7 @@ Consistency follow-up: [Phase 1 consistency audit](phase-1-consistency-audit.md)
 
 ## Verified outcome
 
-Phase 1 boots as a production-built React application and renders the unmodified assignment fixture through explicit adapter, application, domain, and UI seams. It contains the walking skeleton only: explainable scoring and ranking remain owned by Phase 2.
+Phase 1 boots as a production-built React application and renders the unmodified starter fixture through explicit adapter, application, domain, and UI seams. It contains the walking skeleton only: explainable scoring and ranking remain owned by Phase 2.
 
 | Claim | Evidence | Result |
 |---|---|---|
