@@ -6,12 +6,13 @@ import {
   type ChangeEvent,
 } from "react";
 
-import type {
-  EvidenceObservationViewModel,
-  LocationActivityViewModel,
-  RankedFoxViewModel,
-  SelectedFoxViewModel,
-  SummaryViewModel,
+import {
+  formatObservationCount,
+  type EvidenceObservationViewModel,
+  type LocationActivityViewModel,
+  type RankedFoxViewModel,
+  type SelectedFoxViewModel,
+  type SummaryViewModel,
 } from "@/observation-monitoring/application/create-summary-view-model";
 import {
   formatFoxDisplayName,
@@ -130,7 +131,7 @@ export function SummaryPage({
               >
                 Сводка наблюдений
               </h1>
-              <p className="eyebrow">Лидер текущей выборки</p>
+              <p className="eyebrow">Самая подозрительная сейчас</p>
               <div className="leader-result">
                 <div className="leader-result__identity">
                   <h2 className="leader-result__fox" id="leader-title">
@@ -144,15 +145,29 @@ export function SummaryPage({
                   {leader.scoreLabel} из 10
                 </p>
               </div>
-              <p className="leader-result__explanation">{leader.explanation}</p>
+              <p className="leader-result__explanation">
+                <strong>
+                  Почему {formatFoxDisplayName(leader.foxId)} первая:
+                </strong>{" "}
+                {leader.explanation}
+              </p>
               <p className="leader-result__latest">
                 Последняя запись лидера: <time>{leader.latestTime}</time> ·{" "}
                 {leader.latestLocation}
               </p>
-              <p className="leader-result__scope">
-                Индекс помогает расставить приоритет наблюдения и не является
-                вероятностью опасности.
+              <p className="leader-result__factors">
+                Индекс рассчитывается по всем наблюдениям лисы. Их количество
+                влияет на среднюю оценку и долю записей с добычей, но само по
+                себе не добавляет и не снимает баллы. Цвет, локация и время в
+                формулу не входят.
               </p>
+              <p className="leader-result__scope">
+                Индекс определяет приоритет наблюдения, а не вероятность
+                опасности.
+              </p>
+              <a className="primary-action" href="#observations">
+                Изменить наблюдения
+              </a>
             </div>
 
             <dl className="metric-ledger" aria-label="Состав текущего отчёта">
@@ -509,7 +524,7 @@ function RankingRow({
   return (
     <li className={className}>
       <button
-        aria-label={`Показать доказательства: ${formatFoxDisplayName(assessment.foxId)}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча ${assessment.preyRatioLabel}; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.colorSummaryLabel}; записей ${assessment.observationCount}; идентификатор ${assessment.foxId}`}
+        aria-label={`Показать доказательства: ${formatFoxDisplayName(assessment.foxId)}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.colorSummaryLabel}; наблюдений ${assessment.observationCount}; идентификатор ${assessment.foxId}`}
         aria-pressed={isSelected}
         className="ranking-row__button"
         onClick={() => onSelect(assessment.foxId)}
@@ -539,10 +554,14 @@ function RankingRow({
         </span>
         <span className="ranking-row__basis">
           <span>оценка {assessment.meanSuspicionLabel}</span>
-          <span>добыча {assessment.preyRatioLabel}</span>
+          <span>
+            добыча в {assessment.preyObservationCount} из{" "}
+            {assessment.observationCount}
+          </span>
         </span>
         <span className="ranking-row__evidence">
-          {assessment.observationCount} зап.
+          {assessment.observationCount}{" "}
+          {formatObservationCount(assessment.observationCount)}
         </span>
         <strong className="ranking-row__score">{assessment.scoreLabel}</strong>
       </button>
@@ -570,7 +589,7 @@ function PolicyControl({
         <span>{viewModel.preyWeightPercent}%</span>
       </div>
       <input
-        aria-describedby="prey-weight-help"
+        aria-describedby="prey-weight-help prey-weight-result-hint"
         aria-valuetext={`${viewModel.preyWeightPercent}% — оценка ${viewModel.suspicionWeightPercent}%, добыча ${viewModel.preyWeightPercent}%`}
         id="prey-weight"
         max="100"
@@ -604,6 +623,9 @@ function PolicyControl({
       <p id="prey-weight-help">
         Добыча — настраиваемый сигнал диспетчерского внимания. Остальной вес
         автоматически принадлежит прямой оценке смотрителя.
+      </p>
+      <p className="policy-control__result-hint" id="prey-weight-result-hint">
+        Измените вес добычи — рейтинг, лидер и объяснение пересчитаются сразу.
       </p>
       <button
         className="text-action"

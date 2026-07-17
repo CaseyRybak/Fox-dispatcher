@@ -19,7 +19,7 @@ Fox Dispatcher is an interactive local-first dashboard for a forest observer. Th
 - [Phase 6 evidence](docs/verification/accessibility-evidence.md) records the automated, visual, keyboard, and assistive-technology boundary results.
 - Phase 7 is complete: the public Vercel product renders 7 public-safe Worklog checkpoints, passed the production reviewer journey with no console errors or external observation requests, and serves the tested privacy headers. [Release evidence](docs/verification/release-evidence.md) ties the URL, revision, browser result, and honest limitations together.
 - Phase 8 is complete and was first published and deployed in `89c0f49`: atomic JSON import, deterministic full-data export, and explicit corrupt/future-storage recovery passed focused, full, production-browser, axe, and 320 px checks.
-- The first phase-consistency and mobile-UX hardening is published on `main` and deployed in `675a6aa`; the additional exact-explanation, import-provenance, form-semantics, and compact-result corrections are implemented and verified in the working tree until separately published.
+- The first phase-consistency and mobile-UX hardening is published on `main` and deployed in `675a6aa`; the additional exact-explanation, import-provenance, form-semantics, compact-result, and Summary-clarity corrections are implemented and verified in the current revision.
 - Production: [fox-dispatcher-brown.vercel.app](https://fox-dispatcher-brown.vercel.app/), deployed through the GitHub/Vercel integration from `main`.
 
 ## Start here

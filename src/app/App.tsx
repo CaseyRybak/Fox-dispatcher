@@ -222,7 +222,7 @@ export function App({
     const persistenceWarning = pendingPolicyPersistenceWarningRef.current;
     pendingPolicyPersistenceWarningRef.current = undefined;
     announce(
-      `${createPolicyAnnouncement(committedLeaderRef.current, committedViewModel)}${persistenceWarning ? ` ${persistenceWarning}` : ""}`,
+      `${createPolicyAnnouncement(committedWeightRef.current, committedLeaderRef.current, committedViewModel)}${persistenceWarning ? ` ${persistenceWarning}` : ""}`,
     );
     committedWeightRef.current = nextPreyWeightPercent;
     committedLeaderRef.current = committedViewModel.leader?.foxId;

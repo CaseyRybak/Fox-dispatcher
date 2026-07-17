@@ -2,7 +2,7 @@
 
 Date: 2026-07-17
 
-Status: Phases 0–8 and the corrective changes described below are published through `675a6aa86ade70b8daaafb08d046541e4e4f2ba2`. Additional corrections from the follow-up audit are implemented under the completed audit-corrections plan and remain intentionally uncommitted.
+Status: Phases 0–8 and the corrective changes described below are published on `main`. Follow-up correctness and Summary-clarity corrections are implemented and verified in the current revision.
 
 ## Audit scope
 
@@ -49,6 +49,8 @@ Status: Phases 0–8 and the corrective changes described below are published th
 - The native English file chooser was replaced by a localized `Выбрать JSON-файл` control and readable loading/file state.
 - Evidence and contribution containers now expose valid `group` semantics; the English footer fragment has `lang="en"`.
 - The visual language, typography, data density, focus treatment, mobile cards, dialogs, and Worklog remain consistent with the field-ledger direction. No horizontal overflow or axe violation was found in the accepted browser states.
+- The Summary now names the most suspicious fox directly, explains exact contributions in plain language, distinguishes the two formula signals from contextual fields, and states how observation count affects the averages without becoming a third signal.
+- The formula status uses explicit percentages, the leading-location metric names what is counted, ranking rows use full observation wording, and a direct data-edit action plus persistent post-change result make recalculation discoverable and visible.
 
 ### Verification and documentation
 

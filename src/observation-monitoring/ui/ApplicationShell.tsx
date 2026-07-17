@@ -156,7 +156,8 @@ export function ApplicationShell({
 
           <p className="dataset-status">
             <span className="dataset-status__signal" aria-hidden="true" />
-            Расчёт {summary.suspicionWeightPercent}/{summary.preyWeightPercent}
+            Оценка {summary.suspicionWeightPercent}% · добыча{" "}
+            {summary.preyWeightPercent}%
           </p>
         </div>
       </header>
@@ -171,6 +172,15 @@ export function ApplicationShell({
           <section aria-label="Состояние данных" className="global-data-status">
             <span className="data-management-bar__signal" aria-hidden="true" />
             <p>{persistenceMessage}</p>
+          </section>
+        )}
+        {destination === "summary" && announcement && (
+          <section
+            aria-label="Последнее изменение отчёта"
+            className="global-report-update"
+          >
+            <span className="dataset-status__signal" aria-hidden="true" />
+            <p>{announcement}</p>
           </section>
         )}
         {destination === "summary" && (

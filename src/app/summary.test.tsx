@@ -20,12 +20,31 @@ describe("interactive suspicion summary", () => {
       leader.closest("section")?.compareDocumentPosition(reportScope) ?? 0;
     expect(reportScopePosition & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getAllByText("fox_001").length).toBeGreaterThan(1);
+    expect(screen.getByText("Самая подозрительная сейчас")).toBeInTheDocument();
     expect(screen.getByText("7,8 из 10")).toBeInTheDocument();
     expect(
+      screen.getByText("Почему Лиса 1 первая:").closest("p"),
+    ).toHaveTextContent(
+      "Почему Лиса 1 первая: Средняя оценка по 2 наблюдениям — 8,5; вклад оценки — 6,8. Добыча отмечена в 1 из 2 наблюдений; вклад добычи — 1. Итоговый индекс — 7,8.",
+    );
+    expect(
       screen.getByText(
-        "Средняя оценка 8,5 дала точный вклад 6,8; добыча в 1 из 2 записей дала 1. Точный итог 7,8, отображается как 7,8.",
+        "Индекс рассчитывается по всем наблюдениям лисы. Их количество влияет на среднюю оценку и долю записей с добычей, но само по себе не добавляет и не снимает баллы. Цвет, локация и время в формулу не входят.",
       ),
     ).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        "Индекс определяет приоритет наблюдения, а не вероятность опасности.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Изменить наблюдения" }),
+    ).toHaveAttribute("href", "#observations");
+    expect(screen.getByText("Больше всего наблюдений")).toBeInTheDocument();
+    expect(screen.getByText("Факторы индекса")).toBeInTheDocument();
+    expect(screen.getAllByText("Оценка смотрителя").length).toBeGreaterThan(1);
+    expect(screen.getByText("и добыча")).toBeInTheDocument();
+    expect(screen.getByText("Оценка 80% · добыча 20%")).toBeInTheDocument();
 
     const ranking = screen.getByRole("list", {
       name: "Рейтинг подозрительности",
@@ -40,7 +59,7 @@ describe("interactive suspicion summary", () => {
       expect.stringContaining("Лиса 4"),
     ]);
     expect(rows[0]).toHaveTextContent(
-      "Лиса 1fox_001рыжая · 10:40Северная полянаоценка 8,5добыча 1/2",
+      "Лиса 1fox_001рыжая · 10:40Северная полянаоценка 8,5добыча в 1 из 22 наблюдения",
     );
     expect(rows[0]?.querySelector(".color-swatch")).toHaveAttribute(
       "data-color",
@@ -56,6 +75,11 @@ describe("interactive suspicion summary", () => {
     ).toHaveValue(20);
     expect(screen.getByText("Оценка смотрителя 80%"));
     expect(screen.getByText("Добыча 20%"));
+    expect(
+      screen.getByText(
+        "Измените вес добычи — рейтинг, лидер и объяснение пересчитаются сразу.",
+      ),
+    ).toBeInTheDocument();
   });
 
   it("keeps repeating contributions exact and marks multiple observed colors", () => {
@@ -101,10 +125,10 @@ describe("interactive suspicion summary", () => {
 
     expect(screen.getByText("0,9 из 10")).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Средняя оценка 1/3 дала точный вклад 4/15; добыча в 1 из 3 записей дала 2/3. Точный итог 14/15, отображается как 0,9.",
-      ),
-    ).toBeInTheDocument();
+      screen.getByText("Почему fox_repeat первая:").closest("p"),
+    ).toHaveTextContent(
+      "Почему fox_repeat первая: Средняя оценка по 3 наблюдениям — 1/3; вклад оценки — 4/15. Добыча отмечена в 1 из 3 наблюдений; вклад добычи — 2/3. Точный индекс — 14/15, на экране — 0,9.",
+    );
     expect(screen.getByText("рыжая · 2 цвета · 10:00")).toBeInTheDocument();
     expect(screen.getByText("4/15")).toBeInTheDocument();
     expect(screen.getByText("2/3")).toBeInTheDocument();
@@ -259,7 +283,12 @@ describe("interactive suspicion summary", () => {
     fireEvent.pointerUp(slider);
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Лидер изменился: Лиса 3, идентификатор fox_003, 7,9.",
+      "Вес добычи изменён с 20% до 30%. Новый лидер — Лиса 3, идентификатор fox_003, индекс 7,9.",
+    );
+    expect(
+      screen.getByRole("region", { name: "Последнее изменение отчёта" }),
+    ).toHaveTextContent(
+      "Вес добычи изменён с 20% до 30%. Новый лидер — Лиса 3, идентификатор fox_003, индекс 7,9.",
     );
 
     const exactControl = screen.getByRole("spinbutton", {
@@ -272,7 +301,7 @@ describe("interactive suspicion summary", () => {
     expect(screen.getByText("8,1 из 10"));
     expect(screen.getAllByRole("status")).toHaveLength(1);
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Влияние добычи 35%. Лидер Лиса 3, идентификатор fox_003, индекс 8,1.",
+      "Вес добычи изменён с 30% до 35%. Лидер не изменился: Лиса 3, идентификатор fox_003, индекс 8,1.",
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Вернуть 20%" }));
@@ -280,7 +309,7 @@ describe("interactive suspicion summary", () => {
     expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
     expect(slider).toHaveValue("20");
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Лидер изменился: Лиса 1, идентификатор fox_001, 7,8.",
+      "Вес добычи изменён с 35% до 20%. Новый лидер — Лиса 1, идентификатор fox_001, индекс 7,8.",
     );
   });
 
@@ -298,7 +327,7 @@ describe("interactive suspicion summary", () => {
 
     fireEvent.blur(slider);
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Лидер изменился: Лиса 3, идентификатор fox_003, 7,9.",
+      "Вес добычи изменён с 20% до 30%. Новый лидер — Лиса 3, идентификатор fox_003, индекс 7,9.",
     );
   });
 

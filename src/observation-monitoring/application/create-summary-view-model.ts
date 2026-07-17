@@ -1,8 +1,5 @@
 import type { Observation } from "@/observation-monitoring/domain/observation";
-import {
-  formatFoxDisplayName,
-  formatFoxIdentityLabel,
-} from "@/observation-monitoring/application/fox-display-name";
+import { formatFoxIdentityLabel } from "@/observation-monitoring/application/fox-display-name";
 import {
   createScoringPolicy,
   DEFAULT_SCORING_POLICY,
@@ -153,15 +150,13 @@ export function createSummaryViewModel(
         detail: leadingLocation
           ? `${leadingLocation.observationCount} из ${report.observationCount}`
           : undefined,
-        label: "Ведущая локация",
+        label: "Больше всего наблюдений",
         value: leadingLocation?.location ?? "Нет данных",
       },
       {
-        detail: report.latestObservation
-          ? formatFoxDisplayName(report.latestObservation.fox_id)
-          : undefined,
-        label: "Последнее событие",
-        value: report.latestObservation?.time ?? "Нет данных",
+        detail: "и добыча",
+        label: "Факторы индекса",
+        value: "Оценка смотрителя",
       },
     ],
     preyWeightPercent,
@@ -183,20 +178,22 @@ export function createSummaryViewModel(
 }
 
 export function createPolicyAnnouncement(
+  previousPreyWeightPercent: number,
   previousLeaderFoxId: string | undefined,
   viewModel: SummaryViewModel,
 ): string {
   const leader = viewModel.leader;
+  const weightChange = `Вес добычи изменён с ${previousPreyWeightPercent}% до ${viewModel.preyWeightPercent}%.`;
 
   if (!leader) {
-    return `Влияние добычи ${viewModel.preyWeightPercent}%. В выборке нет наблюдений.`;
+    return `${weightChange} В выборке нет наблюдений.`;
   }
 
   if (previousLeaderFoxId !== leader.foxId) {
-    return `Лидер изменился: ${formatFoxIdentityLabel(leader.foxId)}, ${leader.scoreLabel}.`;
+    return `${weightChange} Новый лидер — ${formatFoxIdentityLabel(leader.foxId)}, индекс ${leader.scoreLabel}.`;
   }
 
-  return `Влияние добычи ${viewModel.preyWeightPercent}%. Лидер ${formatFoxIdentityLabel(leader.foxId)}, индекс ${leader.scoreLabel}.`;
+  return `${weightChange} Лидер не изменился: ${formatFoxIdentityLabel(leader.foxId)}, индекс ${leader.scoreLabel}.`;
 }
 
 function createRankedFoxViewModel(
@@ -222,6 +219,10 @@ function createRankedFoxViewModel(
   );
   const scoreExactLabel = formatExactFraction(assessment.score);
   const scoreLabel = formatTenths(roundFractionToTenths(assessment.score));
+  const scoreExplanation =
+    scoreExactLabel === scoreLabel
+      ? `Итоговый индекс — ${scoreExactLabel}.`
+      : `Точный индекс — ${scoreExactLabel}, на экране — ${scoreLabel}.`;
 
   return {
     color: assessment.latestObservation.color,
@@ -229,7 +230,7 @@ function createRankedFoxViewModel(
       colorCount > 1
         ? `${assessment.latestObservation.color} · ${formatColorCount(colorCount)}`
         : assessment.latestObservation.color,
-    explanation: `Средняя оценка ${meanSuspicionExactLabel} дала точный вклад ${suspicionContributionExactLabel}; добыча в ${assessment.preyObservationCount} из ${assessment.observationCount} ${formatRecordCount(assessment.observationCount)} дала ${preyContributionExactLabel}. Точный итог ${scoreExactLabel}, отображается как ${scoreLabel}.`,
+    explanation: `Средняя оценка по ${assessment.observationCount} ${formatObservationDativeCount(assessment.observationCount)} — ${meanSuspicionExactLabel}; вклад оценки — ${suspicionContributionExactLabel}. Добыча отмечена в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; вклад добычи — ${preyContributionExactLabel}. ${scoreExplanation}`,
     foxId: assessment.foxId,
     latestLocation: assessment.latestObservation.location,
     latestTime: assessment.latestObservation.time,
@@ -464,21 +465,25 @@ function timeToMinutes(time: string): number {
   return hours * 60 + minutes;
 }
 
-function formatRecordCount(count: number): string {
+export function formatObservationCount(count: number): string {
   const remainder100 = count % 100;
   const remainder10 = count % 10;
 
   if (remainder100 >= 11 && remainder100 <= 14) {
-    return "записей";
+    return "наблюдений";
   }
 
   if (remainder10 === 1) {
-    return "записи";
+    return "наблюдение";
   }
 
   if (remainder10 >= 2 && remainder10 <= 4) {
-    return "записей";
+    return "наблюдения";
   }
 
-  return "записей";
+  return "наблюдений";
+}
+
+function formatObservationDativeCount(count: number): string {
+  return count % 10 === 1 && count % 100 !== 11 ? "наблюдению" : "наблюдениям";
 }
