@@ -22,6 +22,7 @@ const allowedSmokePrograms = new Set([
   "phase-5-observation-management.js",
   "phase-6-accessibility.js",
   "phase-6-responsive-keyboard.js",
+  "phase-7-release-smoke.js",
 ]);
 
 if (unexpectedArguments.length > 0) {
@@ -38,9 +39,27 @@ const smokeProgram = path.join(repositoryRoot, "scripts", smokeProgramName);
 mkdirSync(path.join(repositoryRoot, "output", "playwright", "phase-6"), {
   recursive: true,
 });
-const smokeCode = readFileSync(smokeProgram, "utf8").trim().replace(/;$/, "");
+mkdirSync(path.join(repositoryRoot, "output", "playwright", "phase-7"), {
+  recursive: true,
+});
 const port = 4173;
-const baseUrl = `http://127.0.0.1:${port}`;
+const localBaseUrl = `http://127.0.0.1:${port}`;
+const configuredBaseUrl = process.env.FOX_SMOKE_BASE_URL?.trim();
+const baseUrl = configuredBaseUrl
+  ? validateExternalBaseUrl(configuredBaseUrl)
+  : localBaseUrl;
+const usesExternalBaseUrl = baseUrl !== localBaseUrl;
+const smokeSource = readFileSync(smokeProgram, "utf8").trim().replace(/;$/, "");
+const localBaseUrlDeclaration = `const baseUrl = "${localBaseUrl}";`;
+if (!smokeSource.includes(localBaseUrlDeclaration)) {
+  throw new Error(
+    `${smokeProgramName} must declare ${localBaseUrlDeclaration} for deterministic URL injection.`,
+  );
+}
+const smokeCode = smokeSource.replace(
+  localBaseUrlDeclaration,
+  `const baseUrl = ${JSON.stringify(baseUrl)};`,
+);
 const session = `fox-${path.parse(smokeProgramName).name}-${process.pid}`;
 const browserExecutable = findBrowserExecutable();
 const browserConfig = browserExecutable
@@ -82,28 +101,47 @@ function findBrowserExecutable() {
   return undefined;
 }
 
-const preview = spawn(
-  process.execPath,
-  [
-    viteCli,
-    "preview",
-    "--host",
-    "127.0.0.1",
-    "--port",
-    String(port),
-    "--strictPort",
-  ],
-  {
-    cwd: repositoryRoot,
-    stdio: ["ignore", "inherit", "inherit"],
-  },
-);
+function validateExternalBaseUrl(value) {
+  const url = new URL(value);
+  if (
+    url.protocol !== "https:" ||
+    url.username ||
+    url.password ||
+    url.search ||
+    url.hash ||
+    (url.pathname !== "/" && url.pathname !== "")
+  ) {
+    throw new Error(
+      "FOX_SMOKE_BASE_URL must be an HTTPS origin without credentials, path, query, or hash.",
+    );
+  }
+  return url.origin;
+}
+
+const preview = usesExternalBaseUrl
+  ? undefined
+  : spawn(
+      process.execPath,
+      [
+        viteCli,
+        "preview",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        String(port),
+        "--strictPort",
+      ],
+      {
+        cwd: repositoryRoot,
+        stdio: ["ignore", "inherit", "inherit"],
+      },
+    );
 
 async function waitForPreview() {
   const deadline = Date.now() + 15_000;
 
   while (Date.now() < deadline) {
-    if (preview.exitCode !== null) {
+    if (preview?.exitCode !== null && preview?.exitCode !== undefined) {
       throw new Error(`Vite preview exited with code ${preview.exitCode}.`);
     }
 
@@ -147,7 +185,7 @@ async function runPlaywright(arguments_) {
 }
 
 async function stopPreview() {
-  if (preview.exitCode !== null) {
+  if (!preview || preview.exitCode !== null) {
     return;
   }
 

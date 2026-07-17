@@ -17,6 +17,7 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "check:boundaries": "node scripts/check-boundaries.mjs",
+    "check:deployment": "node scripts/check-deployment-policy.mjs",
     "check:public-content": "node scripts/check-public-content.mjs",
     "check:worklog-links": "vitest run src/observation-monitoring/adapters/public-worklog/public-worklog.test.ts && node scripts/check-worklog-links.mjs",
     "typecheck": "tsc -b --pretty false",
@@ -27,8 +28,9 @@
     "test:e2e:manage-observations": "npm run build && node scripts/run-phase-1-browser-smoke.mjs phase-5-observation-management.js",
     "test:a11y": "npm run build && node scripts/run-phase-1-browser-smoke.mjs phase-6-accessibility.js",
     "test:e2e:responsive-keyboard": "npm run build && node scripts/run-phase-1-browser-smoke.mjs phase-6-responsive-keyboard.js",
+    "test:e2e:release": "npm run build && node scripts/run-phase-1-browser-smoke.mjs phase-7-release-smoke.js",
     "test:run": "vitest run",
-    "verify": "run-s format:check lint check:boundaries check:public-content check:worklog-links test:run build"
+    "verify": "run-s format:check lint check:boundaries check:public-content check:worklog-links test:run build check:deployment"
   },
   "dependencies": {
     "@fontsource-variable/onest": "5.2.11",
