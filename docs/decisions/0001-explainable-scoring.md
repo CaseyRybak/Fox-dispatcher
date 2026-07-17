@@ -31,7 +31,7 @@ Default `preyWeight` is 20%, adjustable from 0% through 100% in 5% steps. The ca
 
 The score is an explainable attention index from 0 through 10. The interface presents treating prey as a configurable observer policy. Setting prey influence to 0% yields a ranking based only on the direct suspicion assessments.
 
-Location, color, time, and record count provide context, filters, and evidence volume. They have no score contribution.
+Location, color, and time provide context and filters but have no score contribution. Record count has no independent bonus or penalty; it is the denominator of the mean suspicion and prey-rate aggregates.
 
 Ranking order uses:
 
@@ -93,7 +93,7 @@ The product data provides no domain basis or coefficients for those bonuses. The
 
 ## Consequences
 
-- Every displayed score can show exact arithmetic and source values.
+- Every displayed score can show source values and transparent decimal arithmetic; repeating fractions are marked as rounded while exact rational values remain the comparison source.
 - One control provides a visible, deterministic ranking change.
 - Record frequency remains visible as evidence volume without becoming risk.
 - The word "current" refers to the active observation selection rather than real-time state.

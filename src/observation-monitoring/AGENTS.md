@@ -8,6 +8,8 @@ Phase 3 is published on `main` in `9834af5`; its consistency hardening was publi
 
 Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6d`, with consistency hardening in `df434c9`: application commands validate and mutate one authoritative observation set; browser adapters generate secure IDs and persist a strict version-1 envelope; the Observations UI adds editing, deletion, undo, starter reset, status, deterministic sorting, focus recovery, and live feedback. Phase 6 is complete and published in `579b146`: the ledger switches to sortable mobile field cards, editor and reset flows use native modal dialogs, and focused accessibility/browser gates cover the reviewer journey. Phase 7 is complete: application/deployment policy revision `170ee1d` passed the recorded public Vercel reviewer journey; the protected-preview and mobile-coverage boundaries are explicit in the [release evidence](../../docs/verification/release-evidence.md). Phase 8 was published and deployed in `89c0f49`: atomic import/export and raw corrupt/future-version recovery passed focused, production-browser, axe, and 320 px checks.
 
+Current post-Phase-8 behavior keeps location activity and recent-observation values in the report view model for derivation/tests, but the visible Summary deliberately presents only the leading location. Manual creation resolves a user-entered fox name to an existing identity or the first free `fox_NNN`, assigns the first free `obs_NNN`, stores the name separately, and enforces the fox's original color.
+
 ## Entry points
 
 - `domain/observation.ts` — observation values and pure observation-set counts.
@@ -26,7 +28,7 @@ Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6
 - `adapters/public-worklog/public-worklog.ts` — strict 5-7 checkpoint Zod parser and immutable bundled source.
 - `adapters/starter-data/starter-observations.ts` — Zod boundary for the bundled starter JSON.
 - `ui/ApplicationShell.tsx` — navigation and destination composition.
-- `ui/summary/SummaryPage.tsx` — scope controls, leader outcome, selectable ranking, contribution ledger, synchronized prey-weight controls, locations, and recent observations.
+- `ui/summary/SummaryPage.tsx` — scope controls, leader/co-leader outcome, leading-location context, calculation explanation, selectable ranking, and synchronized prey-weight controls.
 - `ui/observations/ObservationsPage.tsx`, `ObservationEditor.tsx`, and `ObservationImportDialog.tsx` — editable ledger/cards, validated modal forms, import preview, export actions, delete/undo/reset, storage recovery, status, and focus recovery.
 - `ui/ai-worklog/WorklogPage.tsx` — semantic public timeline separating AI contribution, human decision, result, verification, and evidence.
 

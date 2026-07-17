@@ -16,8 +16,9 @@ The durable product contract lives in [docs/product-specs/fox-dispatcher.md](doc
 - Phase 6 targeted responsive/accessibility quality was published in `579b146`, with the repository-map publication update in `6200eb9`.
 - Phase 7 deployed the static product through GitHub/Vercel, verified the public reviewer journey and local-only request boundary, and closed the core release gate. [Release evidence](docs/verification/release-evidence.md) records the tested revision and production result.
 - Phase 8 was published and deployed in `89c0f49`: atomic JSON import, deterministic full-data export, and exact raw-value storage recovery passed focused, production-browser, accessibility, privacy, and 320 px checks. [Phase 8 evidence](docs/verification/phase-8-import-export-recovery.md) records the result.
+- Post-Phase-8 hardening on `main` simplifies the visible Summary, keeps report-wide filters, uses decimal explanations for repeating fractions, and resolves user-entered fox names to deterministic first-free technical IDs while preserving one color per fox.
 
-Sections below use **implemented** for published behavior and verified working-tree follow-ups.
+Sections below describe the implemented behavior on the current `main` branch. Earlier phase evidence remains historical and is not rewritten when later UI simplification supersedes a screen.
 
 ## System context
 
@@ -178,8 +179,8 @@ File and pasted imports are rejected above 2 MiB of UTF-8 before `JSON.parse`, t
 
 React renders application view models and emits commands. The UI has three destinations:
 
-- Summary — calculation scope, leader, ranking, evidence, scoring control, location activity, recent observations;
-- Observations — filters, table/cards, editor, delete/undo, starter recovery, JSON import/preview, and full-data export;
+- Summary — calculation scope, leader or exact co-leaders, leading-location context, ranking, calculation explanation, and scoring control;
+- Parameters (`Observations` route, `Наблюдения` page heading) — filters, table/cards, editor, delete/undo, starter recovery, JSON import/preview, and full-data export;
 - AI Worklog — 5-7 structured public checkpoints with evidence references.
 
 The [interface specification](docs/design-docs/interface.md) owns composition, copy, responsive behavior, and accessibility.

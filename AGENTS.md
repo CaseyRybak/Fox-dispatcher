@@ -1,6 +1,6 @@
 # Fox Dispatcher repository map
 
-Fox Dispatcher is an interactive local-first dashboard for a forest observer. The product turns editable fox observations into an explainable suspicion ranking, location activity summary, and public-safe AI Worklog.
+Fox Dispatcher is an interactive local-first dashboard for a forest observer. The product turns editable fox observations into an explainable suspicion ranking, leading-location context, and public-safe AI Worklog.
 
 ## Current delivery state
 
@@ -19,11 +19,12 @@ Fox Dispatcher is an interactive local-first dashboard for a forest observer. Th
 - [Phase 6 evidence](docs/verification/accessibility-evidence.md) records the automated, visual, keyboard, and assistive-technology boundary results.
 - Phase 7 is complete: the public Vercel product renders 7 public-safe Worklog checkpoints, passed the production reviewer journey with no console errors or external observation requests, and serves the tested privacy headers. [Release evidence](docs/verification/release-evidence.md) ties the URL, revision, browser result, and honest limitations together.
 - Phase 8 is complete and was first published and deployed in `89c0f49`: atomic JSON import, deterministic full-data export, and explicit corrupt/future-storage recovery passed focused, full, production-browser, axe, and 320 px checks.
-- The first phase-consistency and mobile-UX hardening is published on `main` and deployed in `675a6aa`; the additional exact-explanation, import-provenance, form-semantics, compact-result, and Summary-clarity corrections are implemented and verified in the current revision.
+- Post-Phase-8 hardening on `main` adds the compact Summary composition, decimal explanation for repeating fractions, name-based fox identity with deterministic first-free IDs, one-color-per-fox enforcement, clearer observation terminology, and current documentation/screenshots.
 - Production: [fox-dispatcher-brown.vercel.app](https://fox-dispatcher-brown.vercel.app/), deployed through the GitHub/Vercel integration from `main`.
 
 ## Start here
 
+- [Current implementation documentation audit](docs/verification/2026-07-17-current-implementation-documentation-audit.md) — authoritative-document reconciliation, historical-evidence boundary, current screenshot, and fresh verification.
 - [Phase consistency and UI/UX audit](docs/verification/2026-07-17-phase-consistency-ui-audit.md) — current phase matrix, corrected findings, fresh local/public evidence, and remaining boundaries.
 - [Completed Phase 8 plan](docs/exec-plans/completed/2026-07-17-import-export-recovery.md) — import, export, recovery execution and acceptance map.
 - [Completed audit-corrections plan](docs/exec-plans/completed/2026-07-17-audit-corrections.md) — exact explanation, atomic failed-file provenance, forms, empty/mobile context, and fresh verification.
@@ -62,8 +63,8 @@ The source context lives under [`src/observation-monitoring/`](src/observation-m
 - `docs/decisions/` contains contextual decision records.
 - `docs/exec-plans/active/` contains authorized ongoing outcomes; there is no active plan after Phase 8.
 - `docs/exec-plans/completed/` contains finished plans and evidence summaries.
-- `docs/verification/` will contain reproducible browser and release evidence.
-- `docs/ai-worklog/` will contain structured public checkpoints rendered by the product.
+- `docs/verification/` contains reproducible browser, phase, audit, and release evidence.
+- `docs/ai-worklog/` contains structured public checkpoints rendered by the product.
 - `docs/research/` contains supporting research and audited skill selection.
 - `docs/legal/` contains third-party notices.
 
