@@ -68,7 +68,7 @@ async (page) => {
     hash: "#summary",
     heading: "Самая подозрительная лиса",
     link: "Сводка",
-    title: "Сводка — Лисий диспетчер",
+    title: "Сводка - Лисий диспетчер",
   });
   assert(
     (await page.locator("html").getAttribute("lang")) === "ru",
@@ -87,9 +87,9 @@ async (page) => {
   await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await waitForDestination({
     hash: "#observations",
-    heading: "Параметры",
+    heading: "Наблюдения",
     link: "Параметры",
-    title: "Параметры — Лисий диспетчер",
+    title: "Параметры - Лисий диспетчер",
   });
   assert(
     (await page.locator("tbody tr").count()) === 5,
@@ -126,22 +126,22 @@ async (page) => {
     hash: "#worklog",
     heading: "AI Worklog",
     link: "AI Worklog",
-    title: "AI Worklog — Лисий диспетчер",
+    title: "AI Worklog - Лисий диспетчер",
   });
 
   await page.goBack();
   await waitForDestination({
     hash: "#observations",
-    heading: "Параметры",
+    heading: "Наблюдения",
     link: "Параметры",
-    title: "Параметры — Лисий диспетчер",
+    title: "Параметры - Лисий диспетчер",
   });
   await page.goForward();
   await waitForDestination({
     hash: "#worklog",
     heading: "AI Worklog",
     link: "AI Worklog",
-    title: "AI Worklog — Лисий диспетчер",
+    title: "AI Worklog - Лисий диспетчер",
   });
 
   await page.setViewportSize({ width: 320, height: 800 });

@@ -119,7 +119,7 @@ async (page) => {
   await dialog
     .getByRole("button", { name: "Заменить на 2 наблюдения" })
     .click();
-  const reportCaption = page.getByText("Показано лис: 2 из 2", {
+  const reportCaption = page.getByText("Всего наблюдений: 2", {
     exact: true,
   });
   await reportCaption.waitFor();

@@ -176,16 +176,20 @@ async (page) => {
     "The zero-result filter moved focus away from its control.",
   );
   await page.getByRole("link", { name: "Параметры", exact: true }).click();
-  await page.getByRole("heading", { level: 1, name: "Параметры" }).waitFor();
+  await page.getByRole("heading", { level: 1, name: "Наблюдения" }).waitFor();
   await page
     .getByRole("heading", { name: "В этой выборке ничего не найдено" })
     .waitFor();
   await page.getByRole("button", { name: "Сбросить фильтры" }).click();
-  await assertScope("Показано лис: 4 из 4");
+  const restoredCaption = page.getByText("Всего наблюдений: 5", {
+    exact: true,
+    selector: "caption",
+  });
+  await restoredCaption.waitFor();
   assert(
-    await page
-      .locator("caption")
-      .evaluate((element) => element === element.ownerDocument.activeElement),
+    await restoredCaption.evaluate(
+      (element) => element === element.ownerDocument.activeElement,
+    ),
     "Resetting the empty Observations ledger did not focus its restored scope.",
   );
   assert(
@@ -202,9 +206,9 @@ async (page) => {
     .selectOption("Северная поляна");
   await assertScope("Показано лис: 2 из 4");
   await page.getByRole("link", { name: "Параметры", exact: true }).click();
-  await page.getByRole("heading", { level: 1, name: "Параметры" }).waitFor();
+  await page.getByRole("heading", { level: 1, name: "Наблюдения" }).waitFor();
   assert(
-    (await page.locator("caption").textContent()) === "Показано лис: 2 из 4",
+    (await page.locator("caption").textContent()) === "Всего наблюдений: 3",
     "The Observations destination did not preserve report scope.",
   );
   assert(
