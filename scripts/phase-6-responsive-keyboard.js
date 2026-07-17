@@ -1,6 +1,7 @@
 async (page) => {
   const baseUrl = "http://127.0.0.1:4173";
   const browserErrors = [];
+  const controlContrasts = {};
   const viewportResults = [];
   const assert = (condition, message) => {
     if (!condition) throw new Error(message);
@@ -23,6 +24,39 @@ async (page) => {
       `${label} overflows: ${JSON.stringify(widths)}`,
     );
   };
+  const contrastRatio = (foreground, background) => {
+    const luminance = (color) => {
+      const channels = color
+        .match(/[\d.]+/g)
+        .slice(0, 3)
+        .map((channel) => Number(channel) / 255)
+        .map((channel) =>
+          channel <= 0.04045
+            ? channel / 12.92
+            : ((channel + 0.055) / 1.055) ** 2.4,
+        );
+      return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+    };
+    const values = [luminance(foreground), luminance(background)].sort(
+      (left, right) => right - left,
+    );
+    return (values[0] + 0.05) / (values[1] + 0.05);
+  };
+  const recordControlContrast = async (label, locator) => {
+    const colors = await locator.evaluate((element) => {
+      const styles = globalThis.getComputedStyle(element);
+      return {
+        background: styles.backgroundColor,
+        border: styles.borderTopColor,
+      };
+    });
+    const ratio = contrastRatio(colors.border, colors.background);
+    controlContrasts[label] = Number(ratio.toFixed(2));
+    assert(
+      ratio >= 3,
+      `${label} boundary contrast is below 3:1: ${JSON.stringify({ ...colors, ratio })}`,
+    );
+  };
 
   page.on("console", (message) => {
     if (message.type() === "error") {
@@ -30,6 +64,33 @@ async (page) => {
     }
   });
   page.on("pageerror", (error) => browserErrors.push(`page: ${error.message}`));
+
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto(`${baseUrl}/#summary`);
+  await page.evaluate(() => globalThis.localStorage.clear());
+  await page.reload();
+  const desktopPolicy = page.getByRole("slider", { name: "Влияние добычи" });
+  await desktopPolicy.focus();
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowRight");
+  assert(
+    (await desktopPolicy.inputValue()) === "30" &&
+      (await page.getByRole("heading", { level: 2, name: "Лиса 3" }).count()) >
+        0,
+    "The desktop keyboard flow did not recalculate the 30% leader.",
+  );
+  await page.getByRole("link", { name: "AI Worklog", exact: true }).focus();
+  await page.keyboard.press("Enter");
+  const worklogHeading = page.getByRole("heading", { name: "AI Worklog" });
+  const worklogCheckpoints = page
+    .getByRole("region", { name: "Хронология работы с AI" })
+    .locator(".worklog-entry");
+  await worklogHeading.waitFor();
+  await worklogCheckpoints.first().waitFor();
+  assert(
+    (await worklogCheckpoints.count()) === 6,
+    "The keyboard reviewer flow did not reach the six Worklog checkpoints.",
+  );
 
   for (const viewport of [
     { height: 900, name: "desktop", width: 1440 },
@@ -70,6 +131,21 @@ async (page) => {
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`${baseUrl}/#observations`);
+  const mobileSort = page.getByRole("combobox", {
+    name: "Сортировка наблюдений",
+  });
+  await recordControlContrast("mobile sort", mobileSort);
+  await mobileSort.selectOption("color-descending");
+  assert(
+    await page
+      .getByRole("list", { name: "Наблюдения текущей выборки" })
+      .getByRole("listitem")
+      .first()
+      .getByText("obs_002", { exact: true })
+      .isVisible(),
+    "The mobile color sort did not reorder the field cards.",
+  );
+  await mobileSort.selectOption("time-descending");
   const middleEdit = page.getByRole("button", { name: "Изменить obs_003" });
   await middleEdit.scrollIntoViewIfNeeded();
   await middleEdit.focus();
@@ -108,6 +184,10 @@ async (page) => {
       .getByRole("textbox", { name: "Лиса" })
       .evaluate((element) => element === element.ownerDocument.activeElement),
     "The editor did not focus its first field.",
+  );
+  await recordControlContrast(
+    "editor text input",
+    editor.getByRole("textbox", { name: "Лиса" }),
   );
   await page.keyboard.type("черновик");
   await page.goBack();
@@ -200,15 +280,41 @@ async (page) => {
   await assertNoPageOverflow("200% zoom equivalent reflow");
   const cdp = await page.context().newCDPSession(page);
   await cdp.send("Emulation.setPageScaleFactor", { pageScaleFactor: 2 });
+  const zoomScale = await page.evaluate(
+    () => globalThis.visualViewport?.scale ?? 1,
+  );
   assert(
-    await page.getByRole("slider", { name: "Влияние добычи" }).isVisible(),
-    "The primary control was lost at 200% page scale.",
+    zoomScale >= 2 &&
+      (await page.getByRole("slider", { name: "Влияние добычи" }).isVisible()),
+    `The primary control was lost at 200% page scale: ${zoomScale}.`,
+  );
+  const zoomedPolicy = page.getByRole("slider", { name: "Влияние добычи" });
+  await zoomedPolicy.focus();
+  const zoomedPolicyBefore = await zoomedPolicy.inputValue();
+  await page.keyboard.press("ArrowRight");
+  assert(
+    (await zoomedPolicy.inputValue()) !== zoomedPolicyBefore,
+    "The primary policy control was not keyboard-operable at 200% page scale.",
   );
   await page.screenshot({
     fullPage: true,
     path: "output/playwright/phase-6/summary-200-percent-reflow.png",
   });
   await cdp.send("Emulation.setPageScaleFactor", { pageScaleFactor: 1 });
+
+  await page.emulateMedia({ contrast: "more" });
+  const increasedContrast = await page.evaluate(() => ({
+    active: globalThis.matchMedia("(prefers-contrast: more)").matches,
+    shadow: globalThis
+      .getComputedStyle(globalThis.document.documentElement)
+      .getPropertyValue("--surface-shadow")
+      .trim(),
+  }));
+  assert(
+    increasedContrast.active && increasedContrast.shadow === "none",
+    `Increased-contrast styles are not applied: ${JSON.stringify(increasedContrast)}`,
+  );
+  await page.emulateMedia({ contrast: "no-preference" });
 
   await page.emulateMedia({ forcedColors: "active" });
   assert(
@@ -217,7 +323,23 @@ async (page) => {
     ),
     "Forced-colors preference was not active in the browser.",
   );
-  await page.getByRole("link", { name: "Наблюдения", exact: true }).focus();
+  const forcedColorsFocus = page.getByRole("link", {
+    name: "Наблюдения",
+    exact: true,
+  });
+  await forcedColorsFocus.focus();
+  const forcedColorsOutline = await forcedColorsFocus.evaluate((element) => {
+    const styles = globalThis.getComputedStyle(element);
+    return {
+      outlineStyle: styles.outlineStyle,
+      outlineWidth: styles.outlineWidth,
+    };
+  });
+  assert(
+    forcedColorsOutline.outlineStyle !== "none" &&
+      Number.parseFloat(forcedColorsOutline.outlineWidth) >= 3,
+    `Forced colors removed the visible focus outline: ${JSON.stringify(forcedColorsOutline)}`,
+  );
   await page.screenshot({
     path: "output/playwright/phase-6/forced-colors-summary.png",
   });
@@ -238,7 +360,10 @@ async (page) => {
 
   return {
     browserErrors: browserErrors.length,
+    controlContrasts,
+    increasedContrast,
     keyboard: "skip, editor, discard, reset",
+    mobileSort: "all fields/directions; color descending exercised",
     reducedMotion,
     screenReaderProxy: "Chromium accessibility tree",
     viewportResults,

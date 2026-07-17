@@ -30,7 +30,8 @@ describe("targeted accessibility contract", () => {
     ).toHaveAttribute("aria-invalid", "true");
   });
 
-  it("uses a labelled card ledger and explicit sort control on a narrow viewport", () => {
+  it("offers every desktop sort field and direction for the mobile card ledger", async () => {
+    const user = userEvent.setup();
     vi.stubGlobal("matchMedia", (query: string) => ({
       addEventListener: () => undefined,
       addListener: () => undefined,
@@ -49,9 +50,41 @@ describe("targeted accessibility contract", () => {
       name: "Наблюдения текущей выборки",
     });
     expect(within(ledger).getAllByRole("listitem")).toHaveLength(5);
+    const sortControl = screen.getByRole("combobox", {
+      name: "Сортировка наблюдений",
+    });
+    expect(sortControl).toHaveValue("time-descending");
     expect(
-      screen.getByRole("combobox", { name: "Сортировка наблюдений" }),
-    ).toHaveValue("time-descending");
+      within(sortControl)
+        .getAllByRole("option")
+        .map((option) => ({
+          label: option.textContent,
+          value: option.getAttribute("value"),
+        })),
+    ).toEqual([
+      { label: "Время: сначала поздние", value: "time-descending" },
+      { label: "Время: сначала ранние", value: "time-ascending" },
+      { label: "Лиса: от А до Я", value: "foxId-ascending" },
+      { label: "Лиса: от Я до А", value: "foxId-descending" },
+      { label: "Локация: от А до Я", value: "location-ascending" },
+      { label: "Локация: от Я до А", value: "location-descending" },
+      { label: "Цвет: от А до Я", value: "color-ascending" },
+      { label: "Цвет: от Я до А", value: "color-descending" },
+      { label: "Добыча: сначала нет", value: "hasPrey-ascending" },
+      { label: "Добыча: сначала есть", value: "hasPrey-descending" },
+      {
+        label: "Оценка: сначала низкая",
+        value: "suspicionLevel-ascending",
+      },
+      {
+        label: "Оценка: сначала высокая",
+        value: "suspicionLevel-descending",
+      },
+    ]);
+    await user.selectOptions(sortControl, "color-descending");
+    expect(within(ledger).getAllByRole("listitem")[0]).toHaveTextContent(
+      "obs_002",
+    );
     expect(
       within(ledger).getByRole("button", { name: "Изменить obs_005" }),
     ).toBeInTheDocument();
@@ -101,5 +134,53 @@ describe("targeted accessibility contract", () => {
       ).not.toBeInTheDocument();
     });
     expect(window.location.hash).toBe("#observations");
+  });
+
+  it("keeps one editor history marker when the responsive ledger rerenders", async () => {
+    const user = userEvent.setup();
+    let matches = false;
+    const changeListeners = new Set<() => void>();
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      addEventListener: (_type: string, listener: () => void) =>
+        changeListeners.add(listener),
+      addListener: () => undefined,
+      dispatchEvent: () => true,
+      get matches() {
+        return matches;
+      },
+      media: query,
+      onchange: null,
+      removeEventListener: (_type: string, listener: () => void) =>
+        changeListeners.delete(listener),
+      removeListener: () => undefined,
+    }));
+    window.history.replaceState(null, "", "#summary");
+    window.history.pushState(null, "", "#observations");
+    render(<App />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Добавить наблюдение" }),
+    );
+    const editorHistoryLength = window.history.length;
+    matches = true;
+    changeListeners.forEach((listener) => listener());
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole("list", { name: "Наблюдения текущей выборки" }),
+      ).toBeInTheDocument();
+    });
+    expect(window.history.length).toBe(editorHistoryLength);
+
+    await user.click(
+      within(screen.getByRole("dialog")).getByRole("button", {
+        name: "Отменить",
+      }),
+    );
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+    window.history.back();
+    await waitFor(() => expect(window.location.hash).toBe("#summary"));
   });
 });

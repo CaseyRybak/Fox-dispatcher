@@ -12,6 +12,7 @@
   --survey-select: #245e78;
   --moss-muted: #607269;
   --ledger-line: #bdccc4;
+  --control-border: #77887f;
   --surface-shadow: 0 18px 48px rgb(23 39 31 / 8%);
 }
 
@@ -795,7 +796,7 @@ h3 {
 .policy-control__exact > div {
   display: flex;
   align-items: center;
-  border: 1px solid var(--ledger-line);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   background: var(--surface-paper);
 }
@@ -1541,7 +1542,7 @@ tbody tr:last-child td {
   width: 100%;
   min-height: 46px;
   padding: 10px 12px;
-  border: 1px solid var(--ledger-line);
+  border: 1px solid var(--control-border);
   border-radius: 6px;
   color: var(--forest-ink);
   background: #fff;
@@ -1562,7 +1563,7 @@ tbody tr:last-child td {
   align-items: center;
   min-height: 46px;
   padding: 8px 14px;
-  border: 1px solid var(--ledger-line);
+  border: 1px solid var(--control-border);
   border-radius: 6px;
   background: #f4f7f4;
   cursor: pointer;
@@ -1590,6 +1591,12 @@ tbody tr:last-child td {
   font-size: 13px;
 }
 
+.form-error-summary a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+}
+
 .observation-editor__footer {
   grid-column: 1 / -1;
   display: flex;
@@ -1603,7 +1610,7 @@ tbody tr:last-child td {
 .danger-action {
   min-height: 44px;
   padding: 9px 14px;
-  border: 1px solid var(--ledger-line);
+  border: 1px solid var(--control-border);
   border-radius: 7px;
   color: var(--forest-ink);
   background: var(--surface-paper);
@@ -1704,7 +1711,7 @@ dialog.reset-confirmation {
   width: 100%;
   min-height: 44px;
   padding: 9px 36px 9px 12px;
-  border: 1px solid var(--ledger-line);
+  border: 1px solid var(--control-border);
   border-radius: 6px;
   color: var(--forest-ink);
   background: #fff;
@@ -2448,6 +2455,51 @@ dialog.reset-confirmation {
 
   .observation-card__facts > div:first-child {
     grid-column: 1 / -1;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --moss-muted: #43534b;
+    --ledger-line: #68786f;
+    --control-border: #43534b;
+    --surface-shadow: none;
+  }
+
+  .primary-nav__link[aria-current="page"],
+  .ranking-row--selected,
+  .evidence-record--selected {
+    outline: 2px solid var(--forest-ink);
+    outline-offset: -2px;
+  }
+}
+
+@media (forced-colors: active) {
+  :root {
+    --surface-shadow: none;
+  }
+
+  a:focus-visible,
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline-color: Highlight;
+  }
+
+  .dataset-status__signal,
+  .data-management-bar__signal,
+  .scope-toolbar__signal,
+  .color-swatch {
+    border: 1px solid CanvasText;
+  }
+
+  .primary-nav__link[aria-current="page"],
+  .ranking-row--selected,
+  .evidence-record--selected {
+    outline: 2px solid CanvasText;
+    outline-offset: -2px;
   }
 }
 

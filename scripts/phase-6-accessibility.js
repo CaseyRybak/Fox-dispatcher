@@ -19,7 +19,7 @@ async (page) => {
       globalThis.axe.run(globalThis.document, {
         runOnly: {
           type: "tag",
-          values: ["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"],
+          values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"],
         },
       }),
     );
@@ -51,7 +51,33 @@ async (page) => {
   await page.getByRole("button", { name: "Добавить наблюдение" }).click();
   await page.getByRole("dialog", { name: "Новое наблюдение" }).waitFor();
   await scan("observation editor dialog");
+  await page
+    .getByRole("dialog", { name: "Новое наблюдение" })
+    .getByRole("button", { name: "Сохранить наблюдение" })
+    .click();
+  await scan("observation editor validation errors");
+  await page
+    .getByRole("dialog", { name: "Новое наблюдение" })
+    .getByRole("textbox", { name: "Лиса" })
+    .fill("черновик");
   await page.keyboard.press("Escape");
+  await page
+    .getByRole("alertdialog", { name: "Отменить несохранённые изменения?" })
+    .waitFor();
+  await scan("dirty editor discard confirmation");
+  const discardConfirmation = page.getByRole("alertdialog", {
+    name: "Отменить несохранённые изменения?",
+  });
+  await page.keyboard.press("Escape");
+  await discardConfirmation.waitFor({ state: "hidden" });
+  await page
+    .getByRole("dialog", { name: "Новое наблюдение" })
+    .getByRole("button", { name: "Отменить", exact: true })
+    .click();
+  await discardConfirmation.waitFor();
+  await discardConfirmation
+    .getByRole("button", { name: "Отменить изменения" })
+    .click();
 
   await page.getByRole("button", { name: "Вернуть стартовые данные" }).click();
   await page
@@ -69,6 +95,9 @@ async (page) => {
     .getByRole("list", { name: "Наблюдения текущей выборки" })
     .waitFor();
   await scan("observations mobile cards");
+  await page.getByRole("button", { name: "Добавить наблюдение" }).click();
+  await page.getByRole("dialog", { name: "Новое наблюдение" }).waitFor();
+  await scan("observation editor dialog mobile");
 
   assert(
     browserErrors.length === 0,

@@ -12,8 +12,8 @@ The durable product contract lives in [docs/product-specs/fox-dispatcher.md](doc
 - Phase 3 was published on `main` in `9834af5`: application report filtering, selected evidence, location activity, recent observations, deterministic chip focus, and shared Summary/Observations scope passed focused, full, production-browser, and narrow-reflow gates. Its consistency hardening and rebalanced plan were published in `1b2bb24`; the remaining final-audit corrections were published with Phase 4 in `699d457`.
 - [Phase 3 evidence](docs/verification/phase-3-evidence-and-activity.md) is the report-interaction acceptance record.
 - Phase 4 is complete and published in `699d457`: a Zod boundary parses the structured public Worklog, the composition root injects it into the UI, public-content/link checks protect the bundle, and the reviewer README describes the current product honestly.
-- Phase 5 was published in `0021c6d`: atomic observation commands, injected ID generation, delete/undo/reset, and strict browser persistence feed the existing report path from one authoritative state. Current uncommitted audit corrections harden its validation, UI targeting, feedback, and verification without changing those boundaries.
-- The remaining core order is Phase 6 targeted quality and Phase 7 Vercel submission. Phase 8 import/export and advanced recovery are optional extensions.
+- Phase 5 was published in `0021c6d`, and its consistency hardening was published in `df434c9`: atomic observation commands, injected ID generation, delete/undo/reset, and strict browser persistence feed the existing report path from one authoritative state.
+- Phase 6 targeted responsive/accessibility quality was published in `579b146`, with the repository-map publication update in `6200eb9`. The remaining core slice is Phase 7 Vercel submission; Phase 8 import/export and advanced recovery are optional extensions.
 
 Sections below use **implemented** for published behavior and focused-tested working-tree follow-ups, and **planned** for later ports, commands, adapters, public content, and deployment policy.
 

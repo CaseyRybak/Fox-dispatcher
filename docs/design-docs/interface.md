@@ -280,7 +280,7 @@ fox_004                         3 / 10
 
 Desktop: доступный dialog или right-side modal sheet, выбранный по результату проверки реального потока.
 
-Mobile: full-screen dialog.
+Mobile: near-full-screen modal dialog with a small viewport inset so that the modal boundary and underlying context remain perceivable.
 
 Порядок полей:
 
@@ -494,7 +494,7 @@ Bottom navigation не перекрывает focus: основное содер
 | Zoom | Manual 200% pass at desktop width |
 | Contrast | Token pair audit and browser tooling |
 | Automated semantics | axe scan on all three destinations and dialogs |
-| Screen reader | One manual navigation and update pass recorded in release evidence |
+| Screen reader | One manual NVDA/VoiceOver/Orca navigation and update pass; if unavailable locally, keep it as an explicit release-environment check |
 | Hash navigation | `lang`, title, `aria-current`, heading focus, back/forward assertions |
 | Persistent undo | Keyboard flow proves undo is available without an automatic timeout |
 | Sheets and filter draft | Accessible name, initial/return focus, Escape, Back, apply/cancel assertions |

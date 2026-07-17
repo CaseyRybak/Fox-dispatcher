@@ -481,19 +481,14 @@ const mobileSortOptions: readonly {
   readonly value: string;
 }[] = [
   {
-    label: "Сначала новые",
+    label: "Время: сначала поздние",
     sort: { direction: "descending", field: "time" },
     value: "time-descending",
   },
   {
-    label: "Сначала ранние",
+    label: "Время: сначала ранние",
     sort: { direction: "ascending", field: "time" },
     value: "time-ascending",
-  },
-  {
-    label: "Сначала высокая оценка",
-    sort: { direction: "descending", field: "suspicionLevel" },
-    value: "suspicionLevel-descending",
   },
   {
     label: "Лиса: от А до Я",
@@ -501,9 +496,49 @@ const mobileSortOptions: readonly {
     value: "foxId-ascending",
   },
   {
+    label: "Лиса: от Я до А",
+    sort: { direction: "descending", field: "foxId" },
+    value: "foxId-descending",
+  },
+  {
     label: "Локация: от А до Я",
     sort: { direction: "ascending", field: "location" },
     value: "location-ascending",
+  },
+  {
+    label: "Локация: от Я до А",
+    sort: { direction: "descending", field: "location" },
+    value: "location-descending",
+  },
+  {
+    label: "Цвет: от А до Я",
+    sort: { direction: "ascending", field: "color" },
+    value: "color-ascending",
+  },
+  {
+    label: "Цвет: от Я до А",
+    sort: { direction: "descending", field: "color" },
+    value: "color-descending",
+  },
+  {
+    label: "Добыча: сначала нет",
+    sort: { direction: "ascending", field: "hasPrey" },
+    value: "hasPrey-ascending",
+  },
+  {
+    label: "Добыча: сначала есть",
+    sort: { direction: "descending", field: "hasPrey" },
+    value: "hasPrey-descending",
+  },
+  {
+    label: "Оценка: сначала низкая",
+    sort: { direction: "ascending", field: "suspicionLevel" },
+    value: "suspicionLevel-ascending",
+  },
+  {
+    label: "Оценка: сначала высокая",
+    sort: { direction: "descending", field: "suspicionLevel" },
+    value: "suspicionLevel-descending",
   },
 ];
 

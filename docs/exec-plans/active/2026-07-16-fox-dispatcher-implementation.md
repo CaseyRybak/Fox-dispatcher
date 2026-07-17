@@ -273,7 +273,7 @@ Preparing the original plan did not itself authorize Git mutation. Phase 0 was s
 
 ## Execution slices
 
-Phases 0 through 3 and the Phase 3 consistency hardening are complete as of 2026-07-16. Phases 4 through 7 are the remaining MOX delivery path. Phase 8 is an optional extension and starts only after a separate direct user command once the submission essentials are safe.
+Phases 0 through 6 and their recorded consistency follow-ups are complete. Phase 7 is the remaining MOX delivery slice. Phase 8 is an optional extension and starts only after a separate direct user command once the submission essentials are safe.
 
 ### Phase 0: Materialize the approved contract
 
@@ -422,7 +422,7 @@ Files and interfaces:
 - evidence strip and observation list;
 - location aggregation and semantic bars;
 - global filter state, chips, reset, and calculation-scope label;
-- stacked responsive ranking/inspector baseline; final mobile inspector and filter sheets remain owned by Phase 6.
+- stacked responsive ranking/inspector baseline; Phase 6 later confirmed that full-screen inspector and filter sheets were unnecessary for the implemented journey.
 
 Implementation steps:
 
@@ -508,7 +508,7 @@ Target outcome: a reviewer can add, edit, delete, undo, reset, and reload observ
 Files and interfaces:
 
 - application commands/state transition for observation mutations;
-- accessible observation editor, sortable desktop ledger, and reflow-safe table container; the final mobile-card treatment remains Phase 6;
+- accessible observation editor, sortable desktop ledger, and reflow-safe table container; the final mobile-card treatment was delivered in Phase 6;
 - injected `ObservationIdGenerator`;
 - one-step delete undo and starter-data reset;
 - small versioned local-storage port and adapter.
@@ -540,7 +540,7 @@ Completion notes:
 - `fox-dispatcher.dashboard` stores only a strict version-1 envelope containing observations, scoring policy, and a UTC timestamp. Missing, valid, corrupt, unsupported, unavailable, and failed-save paths do not crash or silently replace accepted data.
 - All reports, filter options, evidence, activity, counts, and rankings derive from the accepted observation array. Filters remain unsaved; starter-data reset leaves the scoring policy unchanged.
 - Focused mutation/persistence/component tests cover strict runtime types, schema-valid punctuation/whitespace IDs, sorting, editor isolation, reset/policy reload, save-failure feedback, and the original mutation/reload path. Current focused/full-gate results and the sandbox-blocked browser rerun are recorded honestly in the linked evidence; the published browser artifacts remain the `0021c6d` baseline until a preview server can bind.
-- [Phase 5 evidence](../../verification/phase-5-observation-management.md) records the reproducible commands and visual artifacts. Phase 6 retains the planned mobile-card/table refinement and broader accessibility evidence.
+- [Phase 5 evidence](../../verification/phase-5-observation-management.md) records the reproducible commands and visual artifacts. The later [Phase 6 evidence](../../verification/accessibility-evidence.md) closes the mobile-card/table refinement and records the broader accessibility boundary.
 
 ### Phase 6: Complete targeted responsive and accessibility quality
 
@@ -562,12 +562,12 @@ Implementation steps:
 2. Fix concrete hierarchy, overflow, focus, contrast, or form problems found by evidence.
 3. Convert the observation table/editor to mobile cards or a dialog where required. Keep the current stacked Summary unless testing proves a full-screen inspector or filter sheet is necessary.
 4. Check route title/lang/focus, landmarks, headings, labels, live regions, mutation focus, undo, and error summaries.
-5. Record keyboard, 200% zoom, text spacing, portrait/landscape, reduced-motion, contrast-preference, and one screen-reader pass without claiming unperformed checks.
+5. Record keyboard, 200% zoom, text spacing, portrait/landscape, reduced-motion, contrast-preference, and assistive-technology evidence without claiming unperformed checks. If a native screen reader is unavailable locally, keep that smoke as an explicit Phase 7 release-environment check.
 
 Verification commands and expected evidence:
 
 - `npm run test:a11y` returns no targeted violations for implemented destinations and dialogs.
-- `npm run test:e2e:responsive-keyboard` completes the primary flow at desktop and mobile viewports.
+- `npm run test:e2e:responsive-keyboard` exercises the targeted responsive, keyboard, dialog, and preference flow at desktop and mobile viewports; the Phase 3-5 browser gates retain the complete scoring, Worklog, and mutation journeys.
 - `docs/verification/accessibility-evidence.md` records Q-02 results and limitations.
 - `npm run verify` remains clean.
 
@@ -575,7 +575,7 @@ Completion evidence:
 
 - the desktop table remains semantic while widths through 767 px use a labelled field-card list with a dedicated sort control;
 - native modal editor and reset dialogs expose accessible names, safe initial focus, Escape behavior, confirmation focus containment, and trigger-focus restoration;
-- `npm run test:a11y` reports zero targeted axe violations across six implemented page/dialog states;
+- the published `npm run test:a11y` baseline reports zero targeted axe violations across six implemented page/dialog states; the Phase 6 consistency follow-up expands the gate to validation, dirty-discard, and mobile-editor states;
 - `npm run test:e2e:responsive-keyboard` covers 1440x900, 768x1024, 390x844, 320x800, and 844x390 plus keyboard, focus-obscuring, reflow, text spacing, reduced motion, forced colors, and the Chromium accessibility tree;
 - [Phase 6 evidence](../../verification/accessibility-evidence.md) distinguishes browser accessibility-tree inspection from an unavailable native NVDA/VoiceOver/Orca pass.
 

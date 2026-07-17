@@ -10,7 +10,7 @@ The implemented reviewer journey remains readable and operable across the planne
 
 The visual treatment keeps the established field-ledger direction: exact observation facts, IDs, time, and suspicion stay primary; the orange record edge and score capsule support the content without replacing text.
 
-## Automated evidence
+## Published automated evidence
 
 | Command | Result |
 |---|---|
@@ -66,11 +66,11 @@ Artifacts:
 
 ## Resize, preferences, and text alternatives
 
-- 320 CSS px reflow and a 720 CSS px layout with 200% Chromium page scale retain the primary Summary control and avoid document overflow.
+- The 320 CSS px reflow check has no document overflow. Separately, a 720 CSS px layout at 200% Chromium page scale retains the primary Summary control; the scale screenshot is visual evidence, not a second CSS-overflow measurement.
 - The WCAG text-spacing override (1.5 line height, 0.12 em letter spacing, 0.16 em word spacing, and 2 em paragraph spacing) produces no horizontal document overflow at 390 px.
 - `prefers-reduced-motion: reduce` changes root scrolling to `auto` and reduces transitions to `0.01ms`.
 - `forced-colors: active` is emulated successfully and preserves the focused destination and readable browser-rendered controls.
-- axe includes normal-mode text and non-text contrast rules in every targeted scan; all six states return zero violations.
+- axe includes its automated normal-mode contrast rules in every targeted scan. Because axe-core does not automate WCAG 1.4.11 control-boundary contrast, the responsive browser gate separately computes the mobile sort and editor-input border contrast and requires at least 3:1.
 - Charts and status graphics continue to expose exact text or accessible names; decorative signals remain `aria-hidden`.
 
 ## Assistive-technology boundary
@@ -82,4 +82,12 @@ NVDA and VoiceOver are unavailable in the Linux execution environment, and Orca 
 ## Residual release boundary
 
 - Phase 7 still owns the Vercel production URL, deployed privacy/request assertions, and final public smoke.
-- The Phase 6 implementation and this evidence were published in `579b146`; the repository-map publication update follows in a dedicated documentation commit.
+- The Phase 6 implementation and this evidence were published in `579b146`; the repository-map publication update was published in `6200eb9`.
+
+## 2026-07-17 consistency follow-up
+
+The consistency follow-up aligns the mobile sort control with all six desktop fields and both directions, makes the editor history marker idempotent across responsive rerenders and React Strict Mode effect replay, introduces a control-boundary token above the WCAG 1.4.11 3:1 threshold, and adds explicit increased-contrast and forced-colors styles. The responsive gate now exercises keyboard scoring and Worklog navigation, mobile sorting, focus-driven dock avoidance, control-border contrast, 200% page-scale operation, increased contrast, and forced-colors focus. The axe gate expands from the six-state published baseline to nine states by adding validation errors, dirty-discard confirmation, and the mobile editor, and both Phase 6 browser commands are now CI steps.
+
+Fresh focused component evidence passes 2 files / 23 tests, including the full mobile sort contract and a Summary → Observations → editor-rerender → Summary history regression. The full `npm run verify` gate passes with 13 files / 77 tests plus formatting, lint, boundaries, public-content, Worklog-link, typecheck, and production-build checks; `git diff --check` is clean.
+
+Both expanded Phase 6 browser runners also pass locally when the available Chrome executable is supplied explicitly. `npm run test:a11y` reports zero violations and zero console errors across nine states: Summary, Observations, the editor, validation errors, dirty-discard confirmation, starter reset, AI Worklog, mobile cards, and the mobile editor. `npm run test:e2e:responsive-keyboard` passes at 1440×900, 768×1024, 390×844, 320×800, and 844×390; it records 3.74:1 control-boundary contrast, exercises all mobile sort dimensions, keyboard recalculation and Worklog navigation, verifies 200% page-scale operation, increased contrast, forced-colors focus, reduced motion, text spacing, dialog focus, and the Chromium accessibility tree, with zero console errors. During this fresh run, the validation-summary links were raised to the WCAG 2.2 minimum target height and the browser scenarios were made deterministic around route rendering, dialog transitions, nested Worklog lists, and scroll position.

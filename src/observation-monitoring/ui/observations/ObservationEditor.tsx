@@ -82,6 +82,7 @@ export function ObservationEditor({
   const restoreEditorFocusRef = useRef(false);
   const closingFromEditorRef = useRef(false);
   const dirtyRef = useRef(dirty);
+  const onCancelRef = useRef(onCancel);
   const historyMarkerRef = useRef(`fox-observation-editor-${headingId}`);
 
   useEffect(() => {
@@ -96,9 +97,15 @@ export function ObservationEditor({
   }, [dirty]);
 
   useEffect(() => {
+    onCancelRef.current = onCancel;
+  }, [onCancel]);
+
+  useEffect(() => {
     const marker = historyMarkerRef.current;
     const markerState = { ...globalThis.history.state, foxEditor: marker };
-    globalThis.history.pushState(markerState, "", globalThis.location.href);
+    if (globalThis.history.state?.foxEditor !== marker) {
+      globalThis.history.pushState(markerState, "", globalThis.location.href);
+    }
 
     const handleBack = () => {
       if (closingFromEditorRef.current) return;
@@ -107,12 +114,12 @@ export function ObservationEditor({
         setConfirmDiscard(true);
         return;
       }
-      onCancel();
+      onCancelRef.current();
     };
 
     globalThis.addEventListener("popstate", handleBack);
     return () => globalThis.removeEventListener("popstate", handleBack);
-  }, [onCancel]);
+  }, []);
 
   useEffect(() => {
     if (confirmDiscard) {
