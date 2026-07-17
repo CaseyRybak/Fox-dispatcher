@@ -93,6 +93,7 @@ npm run test:e2e:worklog
 npm run test:e2e:manage-observations
 npm run test:a11y
 npm run test:e2e:responsive-keyboard
+npm run test:e2e:release
 ```
 
 Первые три сценария проверяют рейтинг, Worklog и управление наблюдениями. `test:a11y` выполняет axe-скан реализованных экранов и диалогов. `test:e2e:responsive-keyboard` проверяет 1440, 768, 390, 320 и landscape, клавиатурный маршрут, отсутствие переполнения, 200% масштаб, текстовые интервалы, reduced motion, forced colors и браузерное accessibility tree.
@@ -109,12 +110,13 @@ Codex выступал агентом планирования, реализац
 
 - [Карта репозитория](AGENTS.md)
 - [Архитектура](ARCHITECTURE.md)
-- [Активный план](docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md)
+- [Завершённый план](docs/exec-plans/completed/2026-07-16-fox-dispatcher-implementation.md)
 - [Проверка фазы 3](docs/verification/phase-3-evidence-and-activity.md)
 - [Проверка фазы 4](docs/verification/phase-4-ai-worklog-and-readme.md)
 - [Проверка фазы 5](docs/verification/phase-5-observation-management.md)
 - [Проверка фазы 6](docs/verification/accessibility-evidence.md)
+- [Проверка релиза](docs/verification/release-evidence.md)
 
 ## Статус сдачи
 
-Фазы 0–6 опубликованы на `main`; Phase 6 вошла в `579b146`. Публичный Vercel-деплой выполняется отдельно в фазе 7.
+Фазы 0–7 завершены. Публичный Vercel-релиз проверен на ревизии `170ee1d`: основной сценарий, локальное сохранение, мобильная ширина, Worklog, HTTP-заголовки и отсутствие внешней передачи наблюдений прошли release gate.

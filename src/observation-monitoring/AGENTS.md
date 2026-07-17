@@ -6,7 +6,7 @@
 
 Phase 3 is published on `main` in `9834af5`; its consistency hardening was published in `1b2bb24`, and the final focus and runner-guard corrections were published with Phase 4 in `699d457`. One report scope connects filters, ranking, selected-fox evidence, location activity, recent observations, and the read-only observation ledger. Production-browser evidence covers keyboard selection, policy recalculation, every filter type, combined scope, deterministic chip focus, the zero state, cross-route scope, and 320 px reflow.
 
-Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6d`, with consistency hardening in `df434c9`: application commands validate and mutate one authoritative observation set; browser adapters generate secure IDs and persist a strict version-1 envelope; the Observations UI adds editing, deletion, undo, starter reset, status, deterministic sorting, and focus recovery. Phase 6 is complete and published in `579b146`: the ledger switches to sortable mobile field cards, editor and reset flows use native modal dialogs, and focused accessibility/browser gates cover the reviewer journey. Phase 7 deploys the MOX submission, and Phase 8 import/export plus advanced recovery are optional stretch work.
+Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6d`, with consistency hardening in `df434c9`: application commands validate and mutate one authoritative observation set; browser adapters generate secure IDs and persist a strict version-1 envelope; the Observations UI adds editing, deletion, undo, starter reset, status, deterministic sorting, and focus recovery. Phase 6 is complete and published in `579b146`: the ledger switches to sortable mobile field cards, editor and reset flows use native modal dialogs, and focused accessibility/browser gates cover the reviewer journey. Phase 7 publishes and verifies the public Vercel submission; Phase 8 import/export plus advanced recovery remain optional stretch work.
 
 ## Entry points
 
@@ -33,7 +33,7 @@ Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6
 - [Product contract](../../docs/product-specs/fox-dispatcher.md)
 - [Interface contract](../../docs/design-docs/interface.md)
 - [Architecture](../../ARCHITECTURE.md)
-- [Active execution plan](../../docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md)
+- [Completed execution plan](../../docs/exec-plans/completed/2026-07-16-fox-dispatcher-implementation.md)
 
 ## Verification map
 
@@ -51,3 +51,4 @@ Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6
 - [Phase 5 evidence](../../docs/verification/phase-5-observation-management.md) records Phase 5 acceptance and its original Phase 6 handoff; the mobile-table and dialog work is now closed by the Phase 6 evidence below.
 - `npm run test:a11y` scans Summary, desktop/mobile Observations, both dialogs, and AI Worklog against targeted axe WCAG tags; `npm run test:e2e:responsive-keyboard` covers five viewports, keyboard focus, reflow, text spacing, reduced motion, forced colors, and the Chromium accessibility tree.
 - [Phase 6 accessibility evidence](../../docs/verification/accessibility-evidence.md) records the exact results and the native-screen-reader environment limitation.
+- [Phase 7 release evidence](../../docs/verification/release-evidence.md) records the public URL, tested revision, headers, local-only request boundary, persistence journey, and production screenshots.

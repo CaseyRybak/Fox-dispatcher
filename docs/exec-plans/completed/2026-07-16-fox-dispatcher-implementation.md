@@ -1,10 +1,10 @@
 # Fox Dispatcher: implementation outcome
 
-Status: Phases 0-6 are complete; Phase 7 is the next pending slice
+Status: Phases 0-7 are complete; core MOX submission gate closed
 
 Deployment target: Vercel
 
-Current gate: wait for a direct Phase 7 command before Vercel deployment and submission closure
+Current gate: core plan complete; optional Phase 8 requires a separate direct command
 
 Authority boundary: phases, commits, and pushes wait for separate direct user commands
 
@@ -583,7 +583,7 @@ Estimated effort: 3-4 hours.
 
 ### Phase 7: Deploy to Vercel and complete the MOX submission gate
 
-Status: pending; final required slice
+Status: complete on 2026-07-17
 
 Target outcome: the approved repository revision is publicly reviewable and all must-have MOX submission artifacts point to the same working product.
 
@@ -613,6 +613,8 @@ Verification commands and expected evidence:
 - README and Worklog resolve their public URLs and contain no private paths or secrets.
 
 Estimated effort: 2-3 hours.
+
+Result: Vercel built the release candidate and production revision through the GitHub integration. The public product at `https://fox-dispatcher-brown.vercel.app/` passed the deployed scoring, mutation, reload-persistence, Worklog, 320 px, privacy-header, same-origin request, and zero-console-error checks. `docs/verification/release-evidence.md` records the exact revision, commands, results, screenshots, preview-protection boundary, and remaining native-screen-reader limitation.
 
 ### Phase 8 (optional): Add import, export, and advanced recovery
 
@@ -682,4 +684,4 @@ Optional Phase 8 may add atomic JSON import/export and advanced recovery after t
 
 Required execution order is Phase 0 through Phase 7. Phase 4 has closed the mandatory Worklog/README gap before the should-have observation-management enhancement in Phase 5. Phase 6 verifies the implemented journey, and Phase 7 deploys and closes the MOX submission. Phase 8 is a separate optional extension, not a release dependency.
 
-The next authority gate is **Phase 7: Deploy to Vercel and complete the MOX submission gate**. Phase 6 is published in `579b146`. No Vercel connection or deployment begins without a separate direct command.
+The core Phase 0-7 plan is complete. Optional Phase 8 import/export and advanced recovery remain outside the submission gate and require a separate direct command.

@@ -16,12 +16,14 @@ Fox Dispatcher is an interactive local-first dashboard for a forest observer. Th
 - Phase 5 was published on `main` in `0021c6d`, and its consistency hardening was published in `df434c9`: six-field add/edit, immutable generated IDs, delete/one-step undo, starter reset, report-wide recalculation, strict local version-1 persistence, runtime validation, deterministic sorting, and focus/live-feedback corrections are verified.
 - [Phase 5 evidence](docs/verification/phase-5-observation-management.md) records the mutation, storage, focus, reload, desktop, and 320 px results plus the current consistency follow-up.
 - Phase 6 is complete and published in `579b146`: mobile observation cards and sorting, modal editor/reset behavior, bottom navigation, focus protection, axe scans, keyboard flows, required viewports, zoom/reflow, text spacing, reduced motion, forced colors, and Chromium accessibility-tree evidence are recorded.
-- [Phase 6 evidence](docs/verification/accessibility-evidence.md) records the automated, visual, keyboard, and assistive-technology boundary results. Phase 7 deployment to Vercel is the next pending slice. Phase 8 import/export and advanced recovery are optional stretch work.
-- Deployment target: Vercel through the GitHub repository integration.
+- [Phase 6 evidence](docs/verification/accessibility-evidence.md) records the automated, visual, keyboard, and assistive-technology boundary results.
+- Phase 7 is complete: the public Vercel product renders 7 public-safe Worklog checkpoints, passed the production reviewer journey with no console errors or external observation requests, and serves the tested privacy headers. [Release evidence](docs/verification/release-evidence.md) ties the URL, revision, browser result, and honest limitations together.
+- Phase 8 import/export and advanced recovery remain optional stretch work requiring separate authority.
+- Production: [fox-dispatcher-brown.vercel.app](https://fox-dispatcher-brown.vercel.app/), deployed through the GitHub/Vercel integration from `main`.
 
 ## Start here
 
-- [Active implementation plan](docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md) — execution slices, acceptance evidence, and current gate.
+- [Completed implementation plan](docs/exec-plans/completed/2026-07-16-fox-dispatcher-implementation.md) — execution slices, acceptance evidence, and optional Phase 8 boundary.
 - [Product specification](docs/product-specs/fox-dispatcher.md) — user outcomes, field semantics, scoring contract, states, and examples.
 - [Interface specification](docs/design-docs/interface.md) — information hierarchy, responsive layout, interactions, visual language, and accessibility.
 - [Architecture](ARCHITECTURE.md) — bounded context, layers, dependency direction, ports, and repository structure.
@@ -53,8 +55,8 @@ The source context lives under [`src/observation-monitoring/`](src/observation-m
 - `docs/product-specs/` contains product facts and acceptance examples.
 - `docs/design-docs/` contains interface and interaction decisions.
 - `docs/decisions/` contains contextual decision records.
-- `docs/exec-plans/active/` contains authorized ongoing outcomes.
-- `docs/exec-plans/completed/` will contain finished plans and evidence summaries.
+- `docs/exec-plans/active/` contains authorized ongoing outcomes; there is no active core plan after Phase 7.
+- `docs/exec-plans/completed/` contains finished plans and evidence summaries.
 - `docs/verification/` will contain reproducible browser and release evidence.
 - `docs/ai-worklog/` will contain structured public checkpoints rendered by the product.
 - `docs/research/` contains supporting research and audited skill selection.
@@ -68,4 +70,4 @@ Repository skills capture proven repeatable procedures. Specifications, executio
 
 ## Verification entry points
 
-Phase 1 established the pinned Node/npm toolchain and shared `npm run verify` gate. Phase 2 adds `npm run test -- scoring` and `npm run test -- summary` for exact ranking and interactive policy behavior. Phase 3 adds `npm run test -- report-scope`, the selection/filter cases in `npm run test -- summary`, and `npm run test:e2e` for the production Summary-to-evidence flow. Phase 4 adds `npm run check:public-content`, `npm run check:worklog-links`, `npm run test -- worklog`, and `npm run test:e2e:worklog`. Phase 5 adds `npm run test:run -- manage-observations mutations persistence`, component mutation/reload coverage, and `npm run test:e2e:manage-observations`. Phase 6 adds `npm run test:run -- accessibility`, `npm run test:a11y`, and `npm run test:e2e:responsive-keyboard`. `npm run test -- navigation` focuses hash-route behavior, `npm run test:browser` reproduces the production-preview shell smoke, and `npm run check:boundaries` proves allowed production imports and rejected dependency directions. Browser artifacts live under `output/playwright/`; final release evidence culminates in a smoke run against the Vercel production URL.
+Phase 1 established the pinned Node/npm toolchain and shared `npm run verify` gate. Phase 2 adds `npm run test -- scoring` and `npm run test -- summary` for exact ranking and interactive policy behavior. Phase 3 adds `npm run test -- report-scope`, the selection/filter cases in `npm run test -- summary`, and `npm run test:e2e` for the production Summary-to-evidence flow. Phase 4 adds `npm run check:public-content`, `npm run check:worklog-links`, `npm run test -- worklog`, and `npm run test:e2e:worklog`. Phase 5 adds `npm run test:run -- manage-observations mutations persistence`, component mutation/reload coverage, and `npm run test:e2e:manage-observations`. Phase 6 adds `npm run test:run -- accessibility`, `npm run test:a11y`, and `npm run test:e2e:responsive-keyboard`. Phase 7 adds `npm run check:deployment` to the shared gate and `npm run test:e2e:release` for the deployed reviewer journey. `npm run test -- navigation` focuses hash-route behavior, `npm run test:browser` reproduces the production-preview shell smoke, and `npm run check:boundaries` proves allowed production imports and rejected dependency directions. Browser artifacts live under `output/playwright/`.

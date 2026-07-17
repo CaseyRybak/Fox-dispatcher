@@ -4,7 +4,7 @@
 
 Fox Dispatcher is a static local-first web application that converts editable observation records into an explainable report. Its architecture keeps the small product proportionate while making domain facts, browser boundaries, and UI decisions easy for agents to inspect and verify.
 
-The durable product contract lives in [docs/product-specs/fox-dispatcher.md](docs/product-specs/fox-dispatcher.md). The active delivery sequence lives in [docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md](docs/exec-plans/active/2026-07-16-fox-dispatcher-implementation.md).
+The durable product contract lives in [docs/product-specs/fox-dispatcher.md](docs/product-specs/fox-dispatcher.md). The completed core delivery sequence lives in [docs/exec-plans/completed/2026-07-16-fox-dispatcher-implementation.md](docs/exec-plans/completed/2026-07-16-fox-dispatcher-implementation.md).
 
 ## Delivery status
 
@@ -13,7 +13,8 @@ The durable product contract lives in [docs/product-specs/fox-dispatcher.md](doc
 - [Phase 3 evidence](docs/verification/phase-3-evidence-and-activity.md) is the report-interaction acceptance record.
 - Phase 4 is complete and published in `699d457`: a Zod boundary parses the structured public Worklog, the composition root injects it into the UI, public-content/link checks protect the bundle, and the reviewer README describes the current product honestly.
 - Phase 5 was published in `0021c6d`, and its consistency hardening was published in `df434c9`: atomic observation commands, injected ID generation, delete/undo/reset, and strict browser persistence feed the existing report path from one authoritative state.
-- Phase 6 targeted responsive/accessibility quality was published in `579b146`, with the repository-map publication update in `6200eb9`. The remaining core slice is Phase 7 Vercel submission; Phase 8 import/export and advanced recovery are optional extensions.
+- Phase 6 targeted responsive/accessibility quality was published in `579b146`, with the repository-map publication update in `6200eb9`.
+- Phase 7 deployed the static product through GitHub/Vercel, verified the public reviewer journey and local-only request boundary, and closed the core MOX submission gate. [Release evidence](docs/verification/release-evidence.md) records the tested revision and production result. Phase 8 import/export and advanced recovery remain optional extensions.
 
 Sections below use **implemented** for published behavior and focused-tested working-tree follow-ups, and **planned** for later ports, commands, adapters, public content, and deployment policy.
 
