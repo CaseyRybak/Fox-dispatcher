@@ -18,11 +18,12 @@ Fox Dispatcher is an interactive local-first dashboard for a forest observer. Th
 - Phase 6 is complete and published in `579b146`: mobile observation cards and sorting, modal editor/reset behavior, bottom navigation, focus protection, axe scans, keyboard flows, required viewports, zoom/reflow, text spacing, reduced motion, forced colors, and Chromium accessibility-tree evidence are recorded.
 - [Phase 6 evidence](docs/verification/accessibility-evidence.md) records the automated, visual, keyboard, and assistive-technology boundary results.
 - Phase 7 is complete: the public Vercel product renders 7 public-safe Worklog checkpoints, passed the production reviewer journey with no console errors or external observation requests, and serves the tested privacy headers. [Release evidence](docs/verification/release-evidence.md) ties the URL, revision, browser result, and honest limitations together.
-- Phase 8 is complete in the working tree: atomic JSON import, deterministic full-data export, and explicit corrupt/future-storage recovery passed focused, full, production-browser, axe, and 320 px checks. It is not yet committed, pushed, or deployed.
+- Phase 8 is complete, published on `main`, and deployed in `89c0f49`: atomic JSON import, deterministic full-data export, and explicit corrupt/future-storage recovery passed focused, full, production-browser, axe, and 320 px checks.
 - Production: [fox-dispatcher-brown.vercel.app](https://fox-dispatcher-brown.vercel.app/), deployed through the GitHub/Vercel integration from `main`.
 
 ## Start here
 
+- [Phase consistency and UI/UX audit](docs/verification/2026-07-17-phase-consistency-ui-audit.md) — current phase matrix, corrected findings, fresh local/public evidence, and remaining boundaries.
 - [Completed Phase 8 plan](docs/exec-plans/completed/2026-07-17-import-export-recovery.md) — import, export, recovery execution and acceptance map.
 - [Phase 8 specification](docs/specs/completed/2026-07-17-import-export-recovery.md) — accepted user outcomes, boundaries, states, and evidence.
 - [Completed implementation plan](docs/exec-plans/completed/2026-07-16-fox-dispatcher-implementation.md) — execution slices, acceptance evidence, and optional Phase 8 boundary.

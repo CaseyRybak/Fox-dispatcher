@@ -87,8 +87,27 @@ The 2026-07-17 consistency audit strengthened the working-tree release gate to:
 - prove that saving an observation creates no network request;
 - navigate Summary, Observations/editor, and AI Worklog at 320 px and check every route for horizontal overflow.
 
-These changes are not part of the historical `170ee1d` deployment. Because this audit is explicitly uncommitted and unpublished, the strengthened remote smoke remains a required follow-up after a future authorized commit/deployment. The protected Preview also means Phase 7 did not satisfy the preferred preview/production/release-candidate SHA equality gate; Decision 0003 now records the accepted production-only deviation instead of implying that preview verification occurred.
+These changes are not part of the historical `170ee1d` deployment. They were later published with Phase 8 in `89c0f495de90d25d59542f153560fbe6c911e9ad`. The protected Preview still means the original Phase 7 release did not satisfy the preferred preview/production/release-candidate SHA equality gate; Decision 0003 records the accepted production-only deviation instead of implying that preview verification occurred.
+
+## Current Phase 8 production follow-up
+
+On 2026-07-17 the revision-pinned release smoke was repeated against the mutable production alias with expected revision `89c0f495de90d25d59542f153560fbe6c911e9ad`. It verified HTTP 200, exact build metadata and privacy headers, local persistence after editing, Summary/Observations/Worklog at 320 px, seven Worklog checkpoints, no horizontal overflow, no browser errors, and static GET requests only to the application origin.
+
+```json
+{
+  "browserErrors": 0,
+  "headers": "verified",
+  "mobileRoutes": 3,
+  "persistedLeader": "Лиса 4, 8.0",
+  "releaseRevision": "89c0f495de90d25d59542f153560fbe6c911e9ad",
+  "requestOrigins": ["https://fox-dispatcher-brown.vercel.app"],
+  "viewport": 320,
+  "worklogCheckpoints": 7
+}
+```
+
+A separate public Phase 8 smoke repeated atomic import/reload, deterministic export download, future-version raw recovery, four zero-violation axe scans, and the 320 px import dialog with zero browser errors and no request outside the production origin.
 
 ## Honest boundary
 
-A native screen-reader session was unavailable in the release environment. Phase 6 records axe, keyboard, responsive, zoom, text-spacing, reduced-motion, forced-colors, and Chromium accessibility-tree evidence without presenting those checks as a native screen-reader test. JSON import/export remains an optional Phase 8 extension and is not part of the core release gate.
+A native screen-reader session was unavailable in the release environment. Phase 6 records axe, keyboard, responsive, zoom, text-spacing, reduced-motion, forced-colors, and Chromium accessibility-tree evidence without presenting those checks as a native screen-reader test. JSON import/export was delivered later as the separately authorized Phase 8 extension; it remains outside the historical Phase 7 core gate.

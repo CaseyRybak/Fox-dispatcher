@@ -15,7 +15,7 @@ The durable product contract lives in [docs/product-specs/fox-dispatcher.md](doc
 - Phase 5 was published in `0021c6d`, and its consistency hardening was published in `df434c9`: atomic observation commands, injected ID generation, delete/undo/reset, and strict browser persistence feed the existing report path from one authoritative state.
 - Phase 6 targeted responsive/accessibility quality was published in `579b146`, with the repository-map publication update in `6200eb9`.
 - Phase 7 deployed the static product through GitHub/Vercel, verified the public reviewer journey and local-only request boundary, and closed the core release gate. [Release evidence](docs/verification/release-evidence.md) records the tested revision and production result.
-- Phase 8 is complete in the working tree: atomic JSON import, deterministic full-data export, and exact raw-value storage recovery passed focused, production-preview, accessibility, privacy, and 320 px checks. [Phase 8 evidence](docs/verification/phase-8-import-export-recovery.md) records the result; publication remains a separate action.
+- Phase 8 was published and deployed in `89c0f49`: atomic JSON import, deterministic full-data export, and exact raw-value storage recovery passed focused, production-browser, accessibility, privacy, and 320 px checks. [Phase 8 evidence](docs/verification/phase-8-import-export-recovery.md) records the result.
 
 Sections below use **implemented** for published behavior and verified working-tree follow-ups.
 

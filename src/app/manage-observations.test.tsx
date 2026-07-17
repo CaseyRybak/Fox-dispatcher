@@ -14,6 +14,43 @@ describe("observation management", () => {
     });
   });
 
+  it("keeps secondary data actions compact on a narrow screen", async () => {
+    const user = userEvent.setup();
+    const defaultMatchMedia = window.matchMedia;
+    vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+      ...defaultMatchMedia(query),
+      matches: query === "(max-width: 640px)",
+    }));
+
+    render(<App />);
+
+    expect(
+      screen.queryByRole("button", { name: "Импортировать JSON" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", {
+        name: "Экспортировать все наблюдения",
+      }),
+    ).not.toBeInTheDocument();
+
+    const toggle = screen.getByRole("button", {
+      name: "Показать управление данными",
+    });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    const controlledActions = document.getElementById(
+      toggle.getAttribute("aria-controls") ?? "",
+    );
+    expect(controlledActions).toBeInTheDocument();
+    expect(controlledActions).not.toBeVisible();
+    await user.click(toggle);
+
+    expect(
+      screen.getByRole("button", { name: "Импортировать JSON" }),
+    ).toBeInTheDocument();
+    expect(controlledActions).toBeVisible();
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("edits an observation and recalculates the report from the accepted set", async () => {
     const user = userEvent.setup();
     render(<App />);
@@ -38,7 +75,7 @@ describe("observation management", () => {
       screen.getByRole("button", { name: "Изменить obs_005" }),
     ).toHaveFocus();
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Наблюдение obs_005 сохранено. Теперь лидирует Лиса 4, 8,0.",
+      "Наблюдение obs_005 сохранено. Теперь лидирует Лиса 4, идентификатор fox_004, 8,0.",
     );
 
     await user.click(screen.getByRole("link", { name: "Сводка" }));
@@ -102,7 +139,7 @@ describe("observation management", () => {
       within(
         screen.getByRole("region", { name: "Последние наблюдения" }),
       ).getAllByRole("listitem")[0],
-    ).toHaveTextContent("13:45Лиса 4Речной берег");
+    ).toHaveTextContent("13:45Лиса 4fox_004Речной берег");
 
     await user.click(
       screen.getByRole("button", {
@@ -111,7 +148,7 @@ describe("observation management", () => {
     );
     expect(
       screen.getByRole("complementary", {
-        name: "Расчёт: Лиса 4",
+        name: "Расчёт: Лиса 4, идентификатор fox_004",
       }),
     ).toHaveTextContent("Речной берег");
   });
@@ -155,11 +192,18 @@ describe("observation management", () => {
     );
     const editor = screen.getByRole("dialog", { name: "Новое наблюдение" });
     expect(within(editor).getByRole("textbox", { name: "Лиса" })).toHaveFocus();
+    expect(within(editor).getByRole("radio", { name: "Да" })).not.toBeChecked();
+    expect(
+      within(editor).getByRole("radio", { name: "Нет" }),
+    ).not.toBeChecked();
 
     await user.click(
       within(editor).getByRole("button", { name: "Сохранить наблюдение" }),
     );
     expect(within(editor).getByRole("alert")).toHaveTextContent("Проверьте");
+    expect(within(editor).getByRole("alert")).toHaveTextContent(
+      "Выберите, была ли лиса с добычей.",
+    );
 
     await user.type(
       within(editor).getByRole("textbox", { name: "Лиса" }),
@@ -453,6 +497,36 @@ describe("observation management", () => {
     expect(
       screen.getByRole("button", { name: "Добавить наблюдение" }),
     ).toHaveFocus();
+  });
+
+  it("makes a retained report filter explicit and offers a focused reset", async () => {
+    const user = userEvent.setup();
+    window.history.replaceState(null, "", "#summary");
+    render(<App />);
+
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: "Локация" }),
+      "Северная поляна",
+    );
+    await user.click(screen.getByRole("link", { name: "Наблюдения" }));
+
+    const scope = screen.getByRole("region", {
+      name: "Активная область наблюдений",
+    });
+    expect(scope).toHaveTextContent("Отчёт по 3 из 5 наблюдений");
+    expect(scope).toHaveTextContent("На Сводке включены фильтры");
+
+    await user.click(
+      within(scope).getByRole("button", { name: "Показать все наблюдения" }),
+    );
+
+    const caption = screen.getByText("Отчёт по 5 из 5 наблюдений", {
+      selector: "caption",
+    });
+    expect(caption).toHaveFocus();
+    expect(
+      screen.queryByRole("region", { name: "Активная область наблюдений" }),
+    ).not.toBeInTheDocument();
   });
 
   it("dismisses the persistent undo message without restoring the record", async () => {

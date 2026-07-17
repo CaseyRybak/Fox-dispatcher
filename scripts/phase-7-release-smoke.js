@@ -26,6 +26,16 @@ async (page) => {
       .filter(Boolean)
       .sort()
       .join(";");
+  const originOf = (value) => {
+    const schemeSeparator = value.indexOf("://");
+    const pathStart = value.indexOf("/", schemeSeparator + 3);
+    return pathStart === -1 ? value : value.slice(0, pathStart);
+  };
+  const hasQuery = (value) => {
+    const hashStart = value.indexOf("#");
+    const queryStart = value.indexOf("?");
+    return queryStart !== -1 && (hashStart === -1 || queryStart < hashStart);
+  };
 
   page.on("console", (message) => {
     if (message.type() === "error") {
@@ -56,7 +66,7 @@ async (page) => {
   await page.evaluate(() => globalThis.localStorage.clear());
   await page.reload();
   await page.waitForLoadState("networkidle");
-  const expectedOrigin = new URL(baseUrl).origin;
+  const expectedOrigin = originOf(baseUrl);
   const summary = page.getByRole("region", { name: "Сводка наблюдений" });
   await summary.getByRole("heading", { level: 2, name: "Лиса 1" }).waitFor();
   assert(
@@ -155,12 +165,11 @@ async (page) => {
 
   const unexpectedRequests = networkRequests.filter(
     ({ method, postData, url }) => {
-      const parsedUrl = new URL(url);
       return (
-        parsedUrl.origin !== expectedOrigin ||
+        originOf(url) !== expectedOrigin ||
         method !== "GET" ||
         postData !== null ||
-        parsedUrl.search !== "" ||
+        hasQuery(url) ||
         !staticRequestUrls.has(url)
       );
     },
@@ -199,7 +208,7 @@ async (page) => {
     persistedLeader: "Лиса 4, 8.0",
     releaseRevision: expectedRevision,
     requestOrigins: [
-      ...new Set(networkRequests.map(({ url }) => new URL(url).origin)),
+      ...new Set(networkRequests.map(({ url }) => originOf(url))),
     ],
     viewport: 320,
     worklogCheckpoints: 7,

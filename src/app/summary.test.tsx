@@ -1,18 +1,25 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "./App";
 
 describe("interactive suspicion summary", () => {
   beforeEach(() => {
+    vi.restoreAllMocks();
     window.history.replaceState(null, "", "#summary");
   });
 
   it("shows the exact 80/20 leader, ranking, and calculation", () => {
     render(<App />);
 
-    expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
+    const leader = getLeaderHeading("Лиса 1");
+    expect(leader).toBeInTheDocument();
+    const reportScope = screen.getByRole("region", { name: "Область отчёта" });
+    const reportScopePosition =
+      leader.closest("section")?.compareDocumentPosition(reportScope) ?? 0;
+    expect(reportScopePosition & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.getAllByText("fox_001").length).toBeGreaterThan(1);
     expect(screen.getByText("7,8 из 10")).toBeInTheDocument();
     expect(
       screen.getByText(
@@ -33,7 +40,7 @@ describe("interactive suspicion summary", () => {
       expect.stringContaining("Лиса 4"),
     ]);
     expect(rows[0]).toHaveTextContent(
-      "Лиса 1рыжая · 10:40Северная полянаоценка 8,5добыча 1/2",
+      "Лиса 1fox_001рыжая · 10:40Северная полянаоценка 8,5добыча 1/2",
     );
     expect(rows[0]?.querySelector(".color-swatch")).toHaveAttribute(
       "data-color",
@@ -51,6 +58,78 @@ describe("interactive suspicion summary", () => {
     expect(screen.getByText("Добыча 20%"));
   });
 
+  it("keeps similar canonical fox identifiers distinguishable", () => {
+    window.localStorage.setItem(
+      "fox-dispatcher.dashboard",
+      JSON.stringify({
+        observations: [
+          {
+            color: "рыжая",
+            fox_id: "fox_1",
+            has_prey: false,
+            id: "obs_a",
+            location: "Поляна",
+            suspicion_level: 6,
+            time: "08:00",
+          },
+          {
+            color: "серая",
+            fox_id: "fox_01",
+            has_prey: true,
+            id: "obs_b",
+            location: "Овраг",
+            suspicion_level: 5,
+            time: "09:00",
+          },
+        ],
+        schemaVersion: 1,
+        scoringPolicy: { preyWeightPercent: 20 },
+        updatedAt: "2026-07-17T09:00:00.000Z",
+      }),
+    );
+
+    render(<App />);
+
+    expect(screen.getAllByText("Лиса 1").length).toBeGreaterThan(1);
+    expect(screen.getAllByText("fox_1").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("fox_01").length).toBeGreaterThan(0);
+    expect(
+      screen.getByRole("button", {
+        name: /Показать доказательства: Лиса 1.*fox_01/,
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: /Показать доказательства: Лиса 1.*fox_1/,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("keeps mobile filters compact until the observer asks for them", async () => {
+    const user = userEvent.setup();
+    const defaultMatchMedia = window.matchMedia;
+    vi.spyOn(window, "matchMedia").mockImplementation((query) => ({
+      ...defaultMatchMedia(query),
+      matches: query === "(max-width: 640px)",
+    }));
+
+    render(<App />);
+
+    expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("searchbox", { name: "Найти fox_id" }),
+    ).not.toBeInTheDocument();
+
+    const toggle = screen.getByRole("button", { name: "Показать фильтры" });
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await user.click(toggle);
+
+    expect(
+      screen.getByRole("searchbox", { name: "Найти fox_id" }),
+    ).toBeInTheDocument();
+    expect(toggle).toHaveAttribute("aria-expanded", "true");
+  });
+
   it("previews immediately and announces one committed result", () => {
     render(<App />);
 
@@ -65,7 +144,7 @@ describe("interactive suspicion summary", () => {
     fireEvent.pointerUp(slider);
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Лидер изменился: Лиса 3, 7,9.",
+      "Лидер изменился: Лиса 3, идентификатор fox_003, 7,9.",
     );
 
     const exactControl = screen.getByRole("spinbutton", {
@@ -78,7 +157,7 @@ describe("interactive suspicion summary", () => {
     expect(screen.getByText("8,1 из 10"));
     expect(screen.getAllByRole("status")).toHaveLength(1);
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Влияние добычи 35%. Лидер Лиса 3, индекс 8,1.",
+      "Влияние добычи 35%. Лидер Лиса 3, идентификатор fox_003, индекс 8,1.",
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Вернуть 20%" }));
@@ -86,7 +165,7 @@ describe("interactive suspicion summary", () => {
     expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
     expect(slider).toHaveValue("20");
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Лидер изменился: Лиса 1, 7,8.",
+      "Лидер изменился: Лиса 1, идентификатор fox_001, 7,8.",
     );
   });
 
@@ -101,7 +180,7 @@ describe("interactive suspicion summary", () => {
     );
 
     const inspector = screen.getByRole("complementary", {
-      name: "Расчёт: Лиса 2",
+      name: "Расчёт: Лиса 2, идентификатор fox_002",
     });
 
     expect(within(inspector).getByText("obs_002")).toBeInTheDocument();
@@ -119,7 +198,7 @@ describe("interactive suspicion summary", () => {
     expect(getLeaderHeading("Лиса 3")).toBeInTheDocument();
     expect(
       screen.getByRole("complementary", {
-        name: "Расчёт: Лиса 2",
+        name: "Расчёт: Лиса 2, идентификатор fox_002",
       }),
     ).toBeInTheDocument();
   });
@@ -148,11 +227,11 @@ describe("interactive suspicion summary", () => {
     ).toHaveLength(2);
     expect(
       screen.getByRole("complementary", {
-        name: "Расчёт: Лиса 1",
+        name: "Расчёт: Лиса 1, идентификатор fox_001",
       }),
     ).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Фильтры применены: 3 из 5 наблюдений. Выбрана Лиса 1.",
+      "Фильтры применены: 3 из 5 наблюдений. Выбрана Лиса 1, идентификатор fox_001.",
     );
     expect(
       screen.getByRole("button", {

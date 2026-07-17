@@ -1,6 +1,6 @@
 # Phase 5 observation management verification
 
-Status: accepted and published in `0021c6d`; uncommitted consistency-audit corrections pass focused and repository gates, while a fresh browser rerun is environment-blocked
+Status: accepted and published in `0021c6d`; consistency hardening published in `df434c9`
 
 Evidence date: 2026-07-16
 
@@ -79,7 +79,7 @@ Visual artifacts:
 
 A fresh audit found that the repository status claims had not been updated after `0021c6d` reached both `main` and `origin/main`. It also reproduced two user-impacting defects: error-summary anchors changed the application route, and an open editor could be retargeted while retaining the previous observation draft. The audit additionally confirmed missing strict runtime validation for `has_prey`, unsafe CSS-selector interpolation of schema-valid IDs, incomplete mutation/persistence feedback, missing desktop sorting semantics, and focus gaps after undo and confirmation actions.
 
-The uncommitted follow-up:
+The consistency follow-up later published in `df434c9`:
 
 - validates all six draft fields defensively before acceptance, including runtime string and boolean types;
 - keeps error-summary navigation inside the editor and safely resolves punctuation-heavy observation IDs;

@@ -56,6 +56,10 @@ async (page) => {
     .getByRole("heading", { level: 1, name: "Сводка наблюдений" })
     .waitFor();
   await assertScope("Отчёт по 5 из 5 наблюдений");
+  await page.screenshot({
+    fullPage: true,
+    path: "output/playwright/phase-3/desktop-summary-1440px.png",
+  });
 
   for (const [foxId, score] of [
     ["Лиса 1", "7,8"],
@@ -214,6 +218,10 @@ async (page) => {
   await assertNoPageOverflow();
   await page.getByRole("complementary", { name: "Расчёт: Лиса 1" }).waitFor();
   await page.getByRole("region", { name: "Лента доказательств" }).waitFor();
+  await page.screenshot({
+    fullPage: true,
+    path: "output/playwright/phase-3/mobile-summary-320px.png",
+  });
 
   assert(
     browserErrors.length === 0,

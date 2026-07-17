@@ -1,9 +1,13 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { ObservationExporter } from "@/observation-monitoring/application/observation-transfer";
+import type {
+  ObservationExporter,
+  ObservationImportFileResult,
+} from "@/observation-monitoring/application/observation-transfer";
 import { starterObservations } from "@/observation-monitoring/adapters/starter-data/starter-observations";
+import { ObservationImportDialog } from "@/observation-monitoring/ui/observations/ObservationImportDialog";
 
 import { App } from "./App";
 
@@ -108,7 +112,7 @@ describe("observation import and export", () => {
     ).not.toBeInTheDocument();
     expect(screen.getByText("obs_002", { selector: "td" })).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Импорт применён: 2 наблюдения. Теперь лидирует Лиса 3, 7,9.",
+      "Импорт применён: 2 наблюдения. Теперь лидирует Лиса 3, идентификатор fox_003, 7,9.",
     );
 
     const stored = JSON.parse(
@@ -145,6 +149,61 @@ describe("observation import and export", () => {
       "Экспорт подготовлен: 5 наблюдений.",
     );
   });
+
+  it("keeps a manual draft authoritative when an earlier file read finishes", async () => {
+    const user = userEvent.setup();
+    let resolveRead!: (result: ObservationImportFileResult) => void;
+    const onReadFile = vi.fn(
+      () =>
+        new Promise<ObservationImportFileResult>((resolve) => {
+          resolveRead = resolve;
+        }),
+    );
+
+    render(
+      <ObservationImportDialog
+        onClose={vi.fn()}
+        onReadFile={onReadFile}
+        onReplace={vi.fn()}
+        onValidate={vi.fn(() => ({
+          issues: [],
+          ok: false as const,
+          reason: "empty" as const,
+          sourceBytes: 0,
+          summary: "Добавьте JSON для проверки",
+        }))}
+        open
+      />,
+    );
+
+    const dialog = screen.getByRole("dialog", { name: "Импорт наблюдений" });
+    const source = within(dialog).getByRole("textbox", {
+      name: "JSON наблюдений",
+    });
+    const validate = within(dialog).getByRole("button", {
+      name: "Проверить данные",
+    });
+    const file = new File(["[]"], "observations.json", {
+      type: "application/json",
+    });
+
+    await user.upload(within(dialog).getByLabelText("Выбрать JSON-файл"), file);
+    expect(validate).toBeDisabled();
+
+    fireEvent.change(source, { target: { value: "manual draft" } });
+    await act(async () => {
+      resolveRead({
+        fileName: file.name,
+        ok: true,
+        sourceBytes: 2,
+        text: "[]",
+      });
+      await Promise.resolve();
+    });
+
+    expect(source).toHaveValue("manual draft");
+    expect(validate).toBeEnabled();
+  });
 });
 
 describe("advanced storage recovery", () => {
@@ -168,6 +227,16 @@ describe("advanced storage recovery", () => {
     const recovery = screen.getByRole("region", {
       name: "Восстановление сохранённых данных",
     });
+    expect(
+      screen.queryByRole("button", { name: "Вернуть стартовые данные" }),
+    ).not.toBeInTheDocument();
+    const dataManagement = screen.getByRole("region", {
+      name: "Состояние данных",
+    });
+    expect(
+      recovery.compareDocumentPosition(dataManagement) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     const raw = within(recovery).getByRole("textbox", {
       name: "Сохранённое значение",
     });
@@ -210,7 +279,8 @@ describe("advanced storage recovery", () => {
     expect(screen.getByText("Сохранено в этом браузере")).toBeInTheDocument();
   });
 
-  it("names a future storage version without interpreting its raw content", () => {
+  it("names a future storage version and restores focus without calling it corrupt", async () => {
+    const user = userEvent.setup();
     const rawValue = JSON.stringify({ schemaVersion: 42, observations: [] });
     window.localStorage.setItem("fox-dispatcher.dashboard", rawValue);
     render(<App />);
@@ -223,5 +293,26 @@ describe("advanced storage recovery", () => {
     expect(
       screen.getByRole("textbox", { name: "Сохранённое значение" }),
     ).toHaveValue(rawValue);
+
+    const recovery = screen.getByRole("region", {
+      name: "Восстановление сохранённых данных",
+    });
+    const trigger = within(recovery).getByRole("button", {
+      name: "Удалить сохранение и начать со стартовых данных",
+    });
+    await user.click(trigger);
+    const confirmation = screen.getByRole("alertdialog", {
+      name: "Удалить сохранение версии 42?",
+    });
+    await user.click(
+      within(confirmation).getByRole("button", {
+        name: "Не удалять сохранение",
+      }),
+    );
+
+    expect(trigger).toHaveFocus();
+    expect(window.localStorage.getItem("fox-dispatcher.dashboard")).toBe(
+      rawValue,
+    );
   });
 });

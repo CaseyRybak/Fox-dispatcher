@@ -52,3 +52,6 @@ jobs:
 
       - name: Verify Phase 6 responsive keyboard flow
         run: npm run test:e2e:responsive-keyboard
+
+      - name: Verify Phase 8 import, export, and recovery
+        run: npm run test:e2e:import-recovery

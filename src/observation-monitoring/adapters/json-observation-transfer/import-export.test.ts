@@ -100,6 +100,24 @@ describe("JSON observation import", () => {
     expect("observations" in result).toBe(false);
   });
 
+  it("uses correct Russian error grammar for larger imported sets", () => {
+    const result = parser.parse(
+      JSON.stringify(
+        Array.from({ length: 21 }, (_, index) => ({
+          ...starterObservations[0],
+          extra: true,
+          id: `obs_error_${index}`,
+        })),
+      ),
+    );
+
+    expect(result).toMatchObject({
+      ok: false,
+      reason: "schema",
+      summary: "Проверьте данные: 21 ошибку",
+    });
+  });
+
   it("rejects empty text, malformed JSON, and multibyte text over 2 MiB before parse", () => {
     expect(parser.parse("  ")).toMatchObject({ ok: false, reason: "empty" });
     expect(parser.parse("not json")).toMatchObject({

@@ -44,9 +44,11 @@ export function ObservationImportDialog({
   const [measuredBytes, setMeasuredBytes] = useState<number>();
   const [result, setResult] = useState<ObservationImportResult>();
   const [fileError, setFileError] = useState<FileBoundaryError>();
+  const [isReading, setIsReading] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const sourceRef = useRef<HTMLTextAreaElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
+  const fileReadIdRef = useRef(0);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -67,8 +69,10 @@ export function ObservationImportDialog({
   const preview = result?.ok ? result : undefined;
 
   function changeSource(nextSource: string) {
+    fileReadIdRef.current += 1;
     setSource(nextSource);
     setFileName(undefined);
+    setIsReading(false);
     setMeasuredBytes(undefined);
     setResult(undefined);
     setFileError(undefined);
@@ -76,9 +80,15 @@ export function ObservationImportDialog({
 
   async function chooseFile(file: ObservationImportFile | undefined) {
     if (!file) return;
+    const readId = fileReadIdRef.current + 1;
+    fileReadIdRef.current = readId;
     setFileName(file.name);
+    setFileError(undefined);
+    setIsReading(true);
     setResult(undefined);
     const readResult = await onReadFile(file);
+    if (fileReadIdRef.current !== readId) return;
+    setIsReading(false);
     if (!readResult.ok) {
       setMeasuredBytes(file.size);
       setFileError({
@@ -126,6 +136,10 @@ export function ObservationImportDialog({
           <span>Выбрать JSON-файл</span>
           <input
             accept=".json,application/json"
+            aria-describedby={
+              fileName ? "observation-import-file-status" : undefined
+            }
+            className="import-file-input"
             onChange={(event) => {
               const file = event.currentTarget.files?.[0];
               event.currentTarget.value = "";
@@ -134,7 +148,15 @@ export function ObservationImportDialog({
             type="file"
           />
         </label>
-        {fileName && <p className="import-file-name">Файл: {fileName}</p>}
+        {fileName && (
+          <p
+            aria-live="polite"
+            className="import-file-name"
+            id="observation-import-file-status"
+          >
+            {isReading ? "Чтение файла" : "Файл"}: {fileName}
+          </p>
+        )}
 
         <label
           className="import-source-field"
@@ -236,6 +258,7 @@ export function ObservationImportDialog({
         </button>
         <button
           className="secondary-action"
+          disabled={isReading}
           onClick={() => {
             setFileError(undefined);
             setResult(onValidate(source, measuredBytes));
@@ -253,6 +276,7 @@ export function ObservationImportDialog({
               setFileName(undefined);
               setMeasuredBytes(undefined);
               setResult(undefined);
+              setIsReading(false);
             }}
             type="button"
           >

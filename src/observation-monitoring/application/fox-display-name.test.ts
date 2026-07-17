@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { formatFoxDisplayName } from "./fox-display-name";
+import {
+  formatFoxDisplayName,
+  formatFoxIdentityLabel,
+  hasDistinctFoxDisplayName,
+} from "./fox-display-name";
 
 describe("fox display names", () => {
   it.each([
@@ -13,5 +17,17 @@ describe("fox display names", () => {
 
   it("keeps a custom identifier visible when it has no numeric fox suffix", () => {
     expect(formatFoxDisplayName("fox_special")).toBe("fox_special");
+  });
+
+  it("keeps the canonical identifier in an accessible identity label", () => {
+    expect(formatFoxIdentityLabel("fox_001")).toBe(
+      "Лиса 1, идентификатор fox_001",
+    );
+    expect(formatFoxIdentityLabel("fox_special")).toBe("fox_special");
+  });
+
+  it("only requests a secondary canonical label for friendly names", () => {
+    expect(hasDistinctFoxDisplayName("fox_001")).toBe(true);
+    expect(hasDistinctFoxDisplayName("fox_special")).toBe(false);
   });
 });

@@ -18,9 +18,6 @@ async (page) => {
     );
   };
   const scan = async (name) => {
-    if (!(await page.evaluate(() => Boolean(globalThis.axe)))) {
-      await page.addScriptTag({ path: "node_modules/axe-core/axe.min.js" });
-    }
     const result = await page.evaluate(async () =>
       globalThis.axe.run(globalThis.document, {
         runOnly: {
@@ -48,6 +45,9 @@ async (page) => {
     requestOrigins.add(request.url().split("/").slice(0, 3).join("/"));
   });
 
+  // Init scripts run before the document's own scripts and remain compatible
+  // with the production CSP, unlike injecting an inline script after load.
+  await page.addInitScript({ path: "node_modules/axe-core/axe.min.js" });
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(`${baseUrl}/#observations`);
   await page.evaluate(() => globalThis.localStorage.clear());
@@ -189,7 +189,7 @@ async (page) => {
     })
     .click();
   const reset = page.getByRole("alertdialog", {
-    name: "Удалить повреждённое сохранение?",
+    name: /Удалить (?:повреждённое сохранение|сохранение версии 42)\?/,
   });
   await reset
     .getByRole("button", {
@@ -205,6 +205,15 @@ async (page) => {
   );
 
   await page.setViewportSize({ width: 320, height: 800 });
+  const dataActionsToggle = page.getByRole("button", {
+    name: "Показать управление данными",
+  });
+  try {
+    await dataActionsToggle.waitFor({ timeout: 1_000 });
+    await dataActionsToggle.click();
+  } catch {
+    // The published Phase 8 baseline predates the compact mobile disclosure.
+  }
   await page.getByRole("button", { name: "Импортировать JSON" }).click();
   const mobileDialog = page.getByRole("dialog", { name: "Импорт наблюдений" });
   await mobileDialog.waitFor();

@@ -2,7 +2,7 @@
 
 Date: 2026-07-17
 
-Status: Phase 6 complete and published in `579b146`
+Status: Phase 6 complete and published in `579b146`; final accessibility hardening published in `a08d2d8`
 
 ## Outcome
 

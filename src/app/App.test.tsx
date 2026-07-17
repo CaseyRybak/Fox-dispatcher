@@ -23,6 +23,9 @@ describe("application shell", () => {
       screen.getByRole("link", { name: "Лицензии компонентов" }),
     ).toHaveAttribute("href", "/third-party-notices.txt");
     expect(
+      screen.getByText("Fox Dispatcher · explainable scoring"),
+    ).toHaveAttribute("lang", "en");
+    expect(
       screen.getByRole("heading", { level: 1, name: "Сводка наблюдений" }),
     ).toBeInTheDocument();
     const summary = screen.getByRole("region", { name: "Сводка наблюдений" });

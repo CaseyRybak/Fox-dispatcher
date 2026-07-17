@@ -1,6 +1,6 @@
 # Import, export, and storage recovery
 
-Status: complete on 2026-07-17; verified locally and not yet published to Vercel
+Status: complete on 2026-07-17; published on `main` and deployed in `89c0f49`
 
 ## Intent
 
@@ -60,7 +60,7 @@ Execute the approved [Phase 8 specification](../../specs/completed/2026-07-17-im
 
 ## Integration evidence
 
-[Phase 8 evidence](../../verification/phase-8-import-export-recovery.md) records the focused/full commands, browser result, screenshots, download behavior, recovery behavior, console/request results, and remaining release boundary.
+[Phase 8 evidence](../../verification/phase-8-import-export-recovery.md) records the focused/full commands, browser result, screenshots, download behavior, recovery behavior, console/request results, and publication follow-up.
 
 ## Resulting repository artifacts
 

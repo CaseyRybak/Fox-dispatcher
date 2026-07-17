@@ -292,7 +292,13 @@ function importFailure(
 }
 
 function pluralizeErrors(count: number) {
-  return count === 1 ? "ошибку" : count > 1 && count < 5 ? "ошибки" : "ошибок";
+  const mod100 = count % 100;
+  const mod10 = count % 10;
+
+  if (mod100 >= 11 && mod100 <= 14) return "ошибок";
+  if (mod10 === 1) return "ошибку";
+  if (mod10 >= 2 && mod10 <= 4) return "ошибки";
+  return "ошибок";
 }
 
 function compareText(left: string, right: string) {

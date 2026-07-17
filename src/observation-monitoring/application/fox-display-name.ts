@@ -10,3 +10,15 @@ export function formatFoxDisplayName(foxId: string): string {
 
   return `Лиса ${normalizedSuffix}`;
 }
+
+export function formatFoxIdentityLabel(foxId: string): string {
+  const displayName = formatFoxDisplayName(foxId);
+
+  return displayName === foxId
+    ? foxId
+    : `${displayName}, идентификатор ${foxId}`;
+}
+
+export function hasDistinctFoxDisplayName(foxId: string): boolean {
+  return formatFoxDisplayName(foxId) !== foxId;
+}

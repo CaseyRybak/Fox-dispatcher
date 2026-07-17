@@ -2,7 +2,7 @@
 
 Date: 2026-07-17
 
-Scope: the separately authorized optional Phase 8 in the local working tree. This record does not claim that the current GitHub branch or Vercel production deployment contains Phase 8.
+Scope: the separately authorized optional Phase 8, published on `main` and deployed in `89c0f495de90d25d59542f153560fbe6c911e9ad`.
 
 ## Accepted behavior
 
@@ -73,6 +73,12 @@ The screenshots were inspected after the browser run. One first-pass mobile grid
 
 `npm run verify` passed after the final implementation and documentation pass. It covered formatting, lint, dependency boundaries, public-content safety, revision-pinned Worklog links, all 93 tests, type checking, production build, and deployment policy.
 
+## Publication follow-up
+
+The completed slice was committed, pushed, and deployed through the GitHub/Vercel integration in `89c0f49`. On 2026-07-17 a fresh external run of `test:e2e:import-recovery` against the public alias repeated the two-record import and reload, deterministic download, future-version recovery, four axe scans, and 320 px dialog check. It reported zero axe violations, zero browser errors, and requests only to `https://fox-dispatcher-brown.vercel.app`.
+
+The same audit corrected the browser evidence runner so Playwright CLI `### Error` output cannot be accepted with exit code zero, and moved axe to a CSP-compatible init script. These are local follow-up changes until separately published.
+
 ## Honest boundary
 
-Phase 8 is locally implemented and verified. It has not been committed, pushed, or deployed because those actions require a separate direct user command. The public URL therefore continues to represent the Phase 7 release until a later publication and external smoke run.
+Phase 8 is published and verified on the public URL. A native screen-reader session remains outside the available environment; the recorded accessibility evidence consists of axe, keyboard, focus, responsive/reflow, forced-color, motion, and Chromium accessibility-tree checks. The consistency/UI corrections made after `89c0f49` are intentionally uncommitted and are not yet present in production.

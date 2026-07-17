@@ -30,7 +30,7 @@ import {
   DEFAULT_REPORT_FILTERS,
   type ReportFilters,
 } from "@/observation-monitoring/application/report-scope";
-import { formatFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
+import { formatFoxIdentityLabel } from "@/observation-monitoring/application/fox-display-name";
 import { createBrowserDashboardStateStore } from "@/observation-monitoring/adapters/browser-dashboard-state/browser-dashboard-state";
 import {
   createBrowserObservationExporter,
@@ -409,7 +409,7 @@ export function App({
 
   function selectFox(foxId: string) {
     setSelectedFoxId(foxId);
-    announce(`Показаны доказательства ${formatFoxDisplayName(foxId)}.`);
+    announce(`Показаны доказательства: ${formatFoxIdentityLabel(foxId)}.`);
   }
 
   function announce(message: string) {
@@ -473,14 +473,14 @@ function createObservationMutationAnnouncement(
   persistenceWarning: string | undefined,
 ) {
   const leaderResult = viewModel.leader
-    ? `Теперь лидирует ${formatFoxDisplayName(viewModel.leader.foxId)}, ${viewModel.leader.scoreLabel}.`
+    ? `Теперь лидирует ${formatFoxIdentityLabel(viewModel.leader.foxId)}, ${viewModel.leader.scoreLabel}.`
     : "В текущей выборке нет лидера.";
   const nextSelectedFoxId = viewModel.selectedFox?.foxId;
   const selectionResult =
     previousSelectedFoxId !== nextSelectedFoxId && nextSelectedFoxId
-      ? ` Выбрана ${formatFoxDisplayName(nextSelectedFoxId)}.`
+      ? ` Выбрана ${formatFoxIdentityLabel(nextSelectedFoxId)}.`
       : previousSelectedFoxId && !nextSelectedFoxId
-        ? ` ${formatFoxDisplayName(previousSelectedFoxId)} больше не входит в выборку.`
+        ? ` ${formatFoxIdentityLabel(previousSelectedFoxId)} больше не входит в выборку.`
         : "";
 
   return `${message} ${leaderResult}${selectionResult}${persistenceWarning ? ` ${persistenceWarning}` : ""}`;
@@ -494,9 +494,10 @@ function createFilterAnnouncement(
 ): string {
   const scope = `Фильтры применены: ${filteredObservationCount} из ${totalObservationCount} наблюдений.`;
   if (previousFoxId === nextFoxId) return scope;
-  if (nextFoxId) return `${scope} Выбрана ${formatFoxDisplayName(nextFoxId)}.`;
+  if (nextFoxId)
+    return `${scope} Выбрана ${formatFoxIdentityLabel(nextFoxId)}.`;
   if (previousFoxId) {
-    return `${scope} ${formatFoxDisplayName(previousFoxId)} исключена; в области нет наблюдений.`;
+    return `${scope} ${formatFoxIdentityLabel(previousFoxId)} исключена; в области нет наблюдений.`;
   }
   return scope;
 }

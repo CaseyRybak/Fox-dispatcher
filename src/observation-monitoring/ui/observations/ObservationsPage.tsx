@@ -15,9 +15,13 @@ import type {
   ObservationDraft,
   ObservationMutationResult,
 } from "@/observation-monitoring/application/observation-management";
-import { formatFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
+import {
+  formatFoxDisplayName,
+  hasDistinctFoxDisplayName,
+} from "@/observation-monitoring/application/fox-display-name";
 import { ObservationEditor } from "@/observation-monitoring/ui/observations/ObservationEditor";
 import { ObservationImportDialog } from "@/observation-monitoring/ui/observations/ObservationImportDialog";
+import { useMediaQuery } from "@/observation-monitoring/ui/useMediaQuery";
 
 interface ObservationsPageProps {
   readonly hasActiveFilters: boolean;
@@ -97,15 +101,18 @@ export function ObservationsPage({
     field: "time",
   });
   const isMobileLedger = useMediaQuery("(max-width: 767px)");
+  const hasCompactDataActions = useMediaQuery("(max-width: 640px)");
+  const [dataActionsOpen, setDataActionsOpen] = useState(false);
   const scopeLabelRef = useRef<HTMLElement>(null);
   const addButtonRef = useRef<HTMLButtonElement>(null);
-  const resetButtonRef = useRef<HTMLButtonElement>(null);
+  const resetTriggerRef = useRef<HTMLButtonElement>(null);
   const resetCancelRef = useRef<HTMLButtonElement>(null);
   const resetDialogRef = useRef<HTMLDialogElement>(null);
   const importButtonRef = useRef<HTMLButtonElement>(null);
   const recoveryRawRef = useRef<HTMLTextAreaElement>(null);
   const restoreResetFocusRef = useRef(false);
   const restoreFocusAfterResetRef = useRef(false);
+  const restoreFocusAfterFilterResetRef = useRef(false);
   const restoreImportFocusRef = useRef(false);
   const focusAfterRenderRef = useRef<PendingFocus | undefined>(undefined);
 
@@ -133,6 +140,12 @@ export function ObservationsPage({
     restoreFocusAfterResetRef.current = false;
     (scopeLabelRef.current ?? addButtonRef.current)?.focus();
   }, [overview.observationCount, overview.observations]);
+
+  useEffect(() => {
+    if (hasActiveFilters || !restoreFocusAfterFilterResetRef.current) return;
+    restoreFocusAfterFilterResetRef.current = false;
+    scopeLabelRef.current?.focus();
+  }, [hasActiveFilters]);
 
   useEffect(() => {
     const target = focusAfterRenderRef.current;
@@ -163,7 +176,7 @@ export function ObservationsPage({
     }
     if (restoreResetFocusRef.current) {
       restoreResetFocusRef.current = false;
-      resetButtonRef.current?.focus();
+      resetTriggerRef.current?.focus();
     }
   }, [confirmReset]);
 
@@ -218,6 +231,14 @@ export function ObservationsPage({
     }));
   }
 
+  function openResetConfirmation(
+    mode: "normal" | "recovery",
+    trigger: HTMLButtonElement,
+  ) {
+    resetTriggerRef.current = trigger;
+    setConfirmReset(mode);
+  }
+
   function focusEditorOrLedger() {
     const editorFirstField = document.getElementById("observation-foxId");
     if (editorFirstField instanceof HTMLElement) {
@@ -248,35 +269,6 @@ export function ObservationsPage({
           Добавить наблюдение
         </button>
       </header>
-
-      <section aria-label="Состояние данных" className="data-management-bar">
-        <p>
-          <span className="data-management-bar__signal" aria-hidden="true" />
-          {persistenceMessage}
-        </p>
-        <div className="data-management-actions">
-          <button
-            className="secondary-action"
-            disabled={Boolean(editor)}
-            onClick={() => setImportOpen(true)}
-            ref={importButtonRef}
-            type="button"
-          >
-            Импортировать JSON
-          </button>
-          <button className="secondary-action" onClick={onExport} type="button">
-            Экспортировать все наблюдения
-          </button>
-          <button
-            className="text-action"
-            onClick={() => setConfirmReset("normal")}
-            ref={resetButtonRef}
-            type="button"
-          >
-            Вернуть стартовые данные
-          </button>
-        </div>
-      </section>
 
       {recovery && (
         <section
@@ -317,13 +309,64 @@ export function ObservationsPage({
           </details>
           <button
             className="danger-action"
-            onClick={() => setConfirmReset("recovery")}
+            onClick={(event) =>
+              openResetConfirmation("recovery", event.currentTarget)
+            }
             type="button"
           >
             Удалить сохранение и начать со стартовых данных
           </button>
         </section>
       )}
+
+      <section aria-label="Состояние данных" className="data-management-bar">
+        <p>
+          <span className="data-management-bar__signal" aria-hidden="true" />
+          {persistenceMessage}
+        </p>
+        {hasCompactDataActions && (
+          <button
+            aria-controls="observation-data-actions"
+            aria-expanded={dataActionsOpen}
+            className="secondary-action data-management-toggle"
+            onClick={() => setDataActionsOpen((current) => !current)}
+            type="button"
+          >
+            {dataActionsOpen
+              ? "Скрыть управление данными"
+              : "Показать управление данными"}
+          </button>
+        )}
+        <div
+          className="data-management-actions"
+          hidden={hasCompactDataActions && !dataActionsOpen}
+          id="observation-data-actions"
+        >
+          <button
+            className="secondary-action"
+            disabled={Boolean(editor)}
+            onClick={() => setImportOpen(true)}
+            ref={importButtonRef}
+            type="button"
+          >
+            Импортировать JSON
+          </button>
+          <button className="secondary-action" onClick={onExport} type="button">
+            Экспортировать все наблюдения
+          </button>
+          {!recovery && (
+            <button
+              className="text-action"
+              onClick={(event) =>
+                openResetConfirmation("normal", event.currentTarget)
+              }
+              type="button"
+            >
+              Вернуть стартовые данные
+            </button>
+          )}
+        </div>
+      </section>
 
       <ObservationImportDialog
         onClose={() => {
@@ -356,7 +399,9 @@ export function ObservationsPage({
           <div>
             <strong id="reset-starter-title">
               {confirmReset === "recovery"
-                ? "Удалить повреждённое сохранение?"
+                ? recovery?.kind === "unsupported-version"
+                  ? `Удалить сохранение версии ${recovery.schemaVersion}?`
+                  : "Удалить повреждённое сохранение?"
                 : "Вернуть стартовые данные?"}
             </strong>
             <p>
@@ -375,7 +420,9 @@ export function ObservationsPage({
               ref={resetCancelRef}
               type="button"
             >
-              Оставить текущие данные
+              {confirmReset === "recovery"
+                ? "Не удалять сохранение"
+                : "Оставить текущие данные"}
             </button>
             <button
               className="danger-action"
@@ -438,6 +485,32 @@ export function ObservationsPage({
           onDelete={deleteRecord}
           onSave={saveEditor}
         />
+      )}
+
+      {hasActiveFilters && overview.observationCount > 0 && (
+        <section
+          aria-labelledby="observation-scope-title"
+          className="observation-scope-notice"
+        >
+          <div>
+            <p className="eyebrow">Область из Сводки</p>
+            <h2 id="observation-scope-title">Активная область наблюдений</h2>
+            <p>
+              {scopeLabel}. На Сводке включены фильтры, поэтому журнал показан
+              не полностью.
+            </p>
+          </div>
+          <button
+            className="secondary-action"
+            onClick={() => {
+              restoreFocusAfterFilterResetRef.current = true;
+              onResetFilters();
+            }}
+            type="button"
+          >
+            Показать все наблюдения
+          </button>
+        </section>
       )}
 
       {hasActiveFilters && overview.observationCount === 0 ? (
@@ -537,7 +610,14 @@ export function ObservationsPage({
                     <time dateTime={observation.time}>{observation.time}</time>
                   </td>
                   <td className="data-id">{observation.id}</td>
-                  <td>{formatFoxDisplayName(observation.foxId)}</td>
+                  <td>
+                    <span className="fox-cell-identity">
+                      <strong>{formatFoxDisplayName(observation.foxId)}</strong>
+                      {hasDistinctFoxDisplayName(observation.foxId) && (
+                        <span className="data-id">{observation.foxId}</span>
+                      )}
+                    </span>
+                  </td>
                   <td>{observation.location}</td>
                   <td>{observation.color}</td>
                   <td>{observation.hasPrey ? "Есть" : "Нет"}</td>
@@ -727,7 +807,12 @@ function MobileObservationLedger({
             <div className="observation-card__heading">
               <div>
                 <time dateTime={observation.time}>{observation.time}</time>
-                <strong>{formatFoxDisplayName(observation.foxId)}</strong>
+                <span className="fox-cell-identity">
+                  <strong>{formatFoxDisplayName(observation.foxId)}</strong>
+                  {hasDistinctFoxDisplayName(observation.foxId) && (
+                    <span className="data-id">{observation.foxId}</span>
+                  )}
+                </span>
               </div>
               <span className="observation-card__score">
                 {observation.suspicionLevel} / 10
@@ -774,22 +859,6 @@ function MobileObservationLedger({
       </ol>
     </section>
   );
-}
-
-function useMediaQuery(query: string) {
-  const [matches, setMatches] = useState(
-    () => window.matchMedia(query).matches,
-  );
-
-  useEffect(() => {
-    const media = window.matchMedia(query);
-    const update = () => setMatches(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, [query]);
-
-  return matches;
 }
 
 function compareRows(

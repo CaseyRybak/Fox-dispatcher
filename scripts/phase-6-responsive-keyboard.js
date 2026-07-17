@@ -226,6 +226,9 @@ async (page) => {
     "Closing the editor did not restore trigger focus.",
   );
 
+  await page
+    .getByRole("button", { name: "Показать управление данными" })
+    .click();
   await page.getByRole("button", { name: "Вернуть стартовые данные" }).click();
   const reset = page.getByRole("alertdialog", {
     name: "Вернуть стартовые данные?",

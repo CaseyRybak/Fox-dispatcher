@@ -14,7 +14,11 @@ import type {
   SelectedFoxViewModel,
   SummaryViewModel,
 } from "@/observation-monitoring/application/create-summary-view-model";
-import { formatFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
+import {
+  formatFoxDisplayName,
+  formatFoxIdentityLabel,
+  hasDistinctFoxDisplayName,
+} from "@/observation-monitoring/application/fox-display-name";
 import {
   DEFAULT_REPORT_FILTERS,
   hasActiveReportFilters,
@@ -22,6 +26,7 @@ import {
   type ReportFilterOptions,
   type ReportFilters,
 } from "@/observation-monitoring/application/report-scope";
+import { useMediaQuery } from "@/observation-monitoring/ui/useMediaQuery";
 
 interface SummaryPageProps {
   readonly filterOptions: ReportFilterOptions;
@@ -69,37 +74,42 @@ export function SummaryPage({
     setEvidenceSelection({ foxId: selectedFox.foxId, observationId });
   };
 
+  const scopeToolbar = (
+    <ScopeToolbar
+      filterOptions={filterOptions}
+      filters={filters}
+      hasFilters={hasFilters}
+      onFiltersChange={onFiltersChange}
+      scopeLabel={viewModel.scope.label}
+    />
+  );
+
   return (
     <div className="page page--summary">
-      <ScopeToolbar
-        filterOptions={filterOptions}
-        filters={filters}
-        hasFilters={hasFilters}
-        onFiltersChange={onFiltersChange}
-        scopeLabel={viewModel.scope.label}
-      />
-
       {!leader || !selectedFox ? (
-        <section className="empty-report" aria-labelledby="empty-title">
-          <p className="eyebrow">Текущая область</p>
-          <h1 className="summary-empty-title" tabIndex={-1}>
-            Сводка наблюдений
-          </h1>
-          <h2 id="empty-title">В этой выборке ничего не найдено</h2>
-          <p>
-            Измените или сбросьте фильтры — исходный набор остаётся без
-            изменений.
-          </p>
-          {hasFilters && (
-            <button
-              className="primary-action"
-              onClick={() => onFiltersChange(DEFAULT_REPORT_FILTERS)}
-              type="button"
-            >
-              Сбросить фильтры
-            </button>
-          )}
-        </section>
+        <>
+          <section className="empty-report" aria-labelledby="empty-title">
+            <p className="eyebrow">Текущая область</p>
+            <h1 className="summary-empty-title" tabIndex={-1}>
+              Сводка наблюдений
+            </h1>
+            <h2 id="empty-title">В этой выборке ничего не найдено</h2>
+            <p>
+              Измените или сбросьте фильтры — исходный набор остаётся без
+              изменений.
+            </p>
+            {hasFilters && (
+              <button
+                className="primary-action"
+                onClick={() => onFiltersChange(DEFAULT_REPORT_FILTERS)}
+                type="button"
+              >
+                Сбросить фильтры
+              </button>
+            )}
+          </section>
+          {scopeToolbar}
+        </>
       ) : (
         <>
           <section className="outcome-docket" aria-labelledby="summary-title">
@@ -113,9 +123,14 @@ export function SummaryPage({
               </h1>
               <p className="eyebrow">Лидер текущей выборки</p>
               <div className="leader-result">
-                <h2 className="leader-result__fox" id="leader-title">
-                  {formatFoxDisplayName(leader.foxId)}
-                </h2>
+                <div className="leader-result__identity">
+                  <h2 className="leader-result__fox" id="leader-title">
+                    {formatFoxDisplayName(leader.foxId)}
+                  </h2>
+                  {hasDistinctFoxDisplayName(leader.foxId) && (
+                    <p className="data-id">{leader.foxId}</p>
+                  )}
+                </div>
                 <p className="leader-result__score">
                   {leader.scoreLabel} из 10
                 </p>
@@ -144,6 +159,8 @@ export function SummaryPage({
             </dl>
           </section>
 
+          {scopeToolbar}
+
           <div className="assessment-workbench">
             <section className="ranking-panel" aria-labelledby="ranking-title">
               <header className="panel-heading">
@@ -171,20 +188,27 @@ export function SummaryPage({
             </section>
 
             <aside
-              aria-label={`Расчёт: ${formatFoxDisplayName(selectedFox.foxId)}`}
+              aria-label={`Расчёт: ${formatFoxIdentityLabel(selectedFox.foxId)}`}
               className="calculation-panel"
             >
               <div className="calculation-panel__heading">
                 <div>
                   <p className="eyebrow">Расчёт выбранной лисы</p>
                   <h2>{formatFoxDisplayName(selectedFox.foxId)}</h2>
+                  {hasDistinctFoxDisplayName(selectedFox.foxId) && (
+                    <p className="data-id">{selectedFox.foxId}</p>
+                  )}
                 </div>
                 <p>
                   Индекс <strong>{selectedFox.scoreLabel}</strong>
                 </p>
               </div>
 
-              <div className="contribution-ledger" aria-label="Вклады в индекс">
+              <div
+                aria-label="Вклады в индекс"
+                className="contribution-ledger"
+                role="group"
+              >
                 <ContributionRow
                   detail={`${selectedFox.meanSuspicionLabel} × ${viewModel.suspicionWeightPercent}%`}
                   label="Оценка смотрителя"
@@ -247,6 +271,8 @@ function ScopeToolbar({
   readonly onFiltersChange: (filters: ReportFilters) => void;
   readonly scopeLabel: string;
 }) {
+  const isCompact = useMediaQuery("(max-width: 640px)");
+  const [filtersExpanded, setFiltersExpanded] = useState(false);
   const toolbarRef = useRef<HTMLElement>(null);
   const scopeLabelRef = useRef<HTMLElement>(null);
   const pendingChipFocusIndexRef = useRef<number | undefined>(undefined);
@@ -320,9 +346,24 @@ function ScopeToolbar({
           {scopeLabel}
         </strong>
         <span>Все показатели используют одну область.</span>
+        {isCompact && (
+          <button
+            aria-controls="scope-toolbar-controls"
+            aria-expanded={filtersExpanded}
+            className="secondary-action scope-toolbar__toggle"
+            onClick={() => setFiltersExpanded((current) => !current)}
+            type="button"
+          >
+            {filtersExpanded ? "Скрыть фильтры" : "Показать фильтры"}
+          </button>
+        )}
       </div>
 
-      <div className="scope-toolbar__controls">
+      <div
+        className="scope-toolbar__controls"
+        hidden={isCompact && !filtersExpanded}
+        id="scope-toolbar-controls"
+      >
         <label className="filter-field filter-field--search">
           <span>Найти fox_id</span>
           <input
@@ -459,7 +500,7 @@ function RankingRow({
   return (
     <li className={className}>
       <button
-        aria-label={`Показать доказательства: ${formatFoxDisplayName(assessment.foxId)}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча ${assessment.preyRatioLabel}; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.color}; записей ${assessment.observationCount}`}
+        aria-label={`Показать доказательства: ${formatFoxDisplayName(assessment.foxId)}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча ${assessment.preyRatioLabel}; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.color}; записей ${assessment.observationCount}; идентификатор ${assessment.foxId}`}
         aria-pressed={isSelected}
         className="ranking-row__button"
         onClick={() => onSelect(assessment.foxId)}
@@ -469,7 +510,12 @@ function RankingRow({
           {String(assessment.rank).padStart(2, "0")}
         </span>
         <span className="ranking-row__identity">
-          <strong>{formatFoxDisplayName(assessment.foxId)}</strong>
+          <span className="ranking-row__name">
+            <strong>{formatFoxDisplayName(assessment.foxId)}</strong>
+            {hasDistinctFoxDisplayName(assessment.foxId) && (
+              <span className="data-id">{assessment.foxId}</span>
+            )}
+          </span>
           <span className="ranking-row__latest">
             <span
               aria-hidden="true"
@@ -591,8 +637,9 @@ function EvidenceInspector({
       </p>
 
       <div
-        aria-label={`Наблюдения: ${formatFoxDisplayName(selectedFox.foxId)}, по времени и оценке`}
+        aria-label={`Наблюдения: ${formatFoxIdentityLabel(selectedFox.foxId)}, по времени и оценке`}
         className="evidence-strip"
+        role="group"
       >
         <span aria-hidden="true" className="evidence-strip__axis" />
         {selectedFox.evidence.map((observation) => (
@@ -606,7 +653,7 @@ function EvidenceInspector({
       </div>
 
       <ol
-        aria-label={`Исходные наблюдения: ${formatFoxDisplayName(selectedFox.foxId)}`}
+        aria-label={`Исходные наблюдения: ${formatFoxIdentityLabel(selectedFox.foxId)}`}
         className="evidence-records"
       >
         {selectedFox.observations.map((observation) => {
@@ -766,6 +813,9 @@ function RecentObservations({
             <time>{observation.time}</time>
             <span>
               <strong>{formatFoxDisplayName(observation.foxId)}</strong>
+              {hasDistinctFoxDisplayName(observation.foxId) && (
+                <span className="data-id">{observation.foxId}</span>
+              )}
               <span>{observation.location}</span>
             </span>
             <span>
@@ -826,7 +876,18 @@ function getSelectedObservationId(
 }
 
 function formatPositionCount(count: number): string {
-  return count === 1 ? "1 позиция" : `${count} позиции`;
+  const mod100 = count % 100;
+  const mod10 = count % 10;
+  const word =
+    mod100 >= 11 && mod100 <= 14
+      ? "позиций"
+      : mod10 === 1
+        ? "позиция"
+        : mod10 >= 2 && mod10 <= 4
+          ? "позиции"
+          : "позиций";
+
+  return `${count} ${word}`;
 }
 
 function handleWeightChange(

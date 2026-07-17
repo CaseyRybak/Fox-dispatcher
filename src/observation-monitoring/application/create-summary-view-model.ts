@@ -1,5 +1,8 @@
 import type { Observation } from "@/observation-monitoring/domain/observation";
-import { formatFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
+import {
+  formatFoxDisplayName,
+  formatFoxIdentityLabel,
+} from "@/observation-monitoring/application/fox-display-name";
 import {
   createScoringPolicy,
   DEFAULT_SCORING_POLICY,
@@ -180,10 +183,10 @@ export function createPolicyAnnouncement(
   }
 
   if (previousLeaderFoxId !== leader.foxId) {
-    return `Лидер изменился: ${formatFoxDisplayName(leader.foxId)}, ${leader.scoreLabel}.`;
+    return `Лидер изменился: ${formatFoxIdentityLabel(leader.foxId)}, ${leader.scoreLabel}.`;
   }
 
-  return `Влияние добычи ${viewModel.preyWeightPercent}%. Лидер ${formatFoxDisplayName(leader.foxId)}, индекс ${leader.scoreLabel}.`;
+  return `Влияние добычи ${viewModel.preyWeightPercent}%. Лидер ${formatFoxIdentityLabel(leader.foxId)}, индекс ${leader.scoreLabel}.`;
 }
 
 function createRankedFoxViewModel(

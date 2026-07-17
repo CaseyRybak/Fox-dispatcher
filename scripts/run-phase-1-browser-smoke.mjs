@@ -193,22 +193,33 @@ async function waitForPreview() {
 
 async function runPlaywright(arguments_) {
   await new Promise((resolve, reject) => {
+    let output = "";
     const command = spawn(process.execPath, [playwrightCli, ...arguments_], {
       cwd: repositoryRoot,
       env: playwrightEnvironment,
-      stdio: "inherit",
+      stdio: ["ignore", "pipe", "pipe"],
     });
 
+    const forwardOutput = (chunk, destination) => {
+      const text = chunk.toString();
+      output += text;
+      destination.write(text);
+    };
+    command.stdout.on("data", (chunk) => forwardOutput(chunk, process.stdout));
+    command.stderr.on("data", (chunk) => forwardOutput(chunk, process.stderr));
+
     command.once("error", reject);
-    command.once("exit", (code, signal) => {
-      if (code === 0) {
+    command.once("close", (code, signal) => {
+      if (code === 0 && !output.includes("### Error")) {
         resolve();
         return;
       }
 
       reject(
         new Error(
-          `playwright-cli exited with ${signal ? `signal ${signal}` : `code ${code}`}.`,
+          output.includes("### Error")
+            ? "playwright-cli reported an execution error."
+            : `playwright-cli exited with ${signal ? `signal ${signal}` : `code ${code}`}.`,
         ),
       );
     });

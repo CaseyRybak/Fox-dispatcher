@@ -221,7 +221,7 @@ export function ApplicationShell({
       </p>
 
       <footer className="site-footer">
-        <p>Fox Dispatcher · explainable scoring</p>
+        <p lang="en">Fox Dispatcher · explainable scoring</p>
         <p>Индекс рассчитывается локально из оценки и признака добычи.</p>
         <p>
           <a href="/third-party-notices.txt">Лицензии компонентов</a>

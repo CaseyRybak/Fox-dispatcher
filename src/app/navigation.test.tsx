@@ -114,7 +114,9 @@ describe("hash navigation", () => {
     );
     const status = screen.getByRole("status");
 
-    expect(status).toHaveTextContent("Показаны доказательства Лиса 2.");
+    expect(status).toHaveTextContent(
+      "Показаны доказательства: Лиса 2, идентификатор fox_002.",
+    );
 
     await user.click(screen.getByRole("link", { name: "Наблюдения" }));
 

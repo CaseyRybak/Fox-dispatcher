@@ -29,7 +29,7 @@ interface ObservationEditorProps {
 interface EditorValues {
   readonly color: string;
   readonly foxId: string;
-  readonly hasPrey: boolean;
+  readonly hasPrey: boolean | undefined;
   readonly location: string;
   readonly suspicionLevel: string;
   readonly time: string;
@@ -38,7 +38,7 @@ interface EditorValues {
 const emptyValues: EditorValues = {
   color: "",
   foxId: "",
-  hasPrey: false,
+  hasPrey: undefined,
   location: "",
   suspicionLevel: "",
   time: "",
@@ -358,7 +358,7 @@ export function ObservationEditor({
             <div className="editor-radio-group">
               <label>
                 <input
-                  checked={values.hasPrey}
+                  checked={values.hasPrey === true}
                   name="hasPrey"
                   onChange={() =>
                     setValues((current) => ({ ...current, hasPrey: true }))
@@ -369,7 +369,7 @@ export function ObservationEditor({
               </label>
               <label>
                 <input
-                  checked={!values.hasPrey}
+                  checked={values.hasPrey === false}
                   name="hasPrey"
                   onChange={() =>
                     setValues((current) => ({ ...current, hasPrey: false }))

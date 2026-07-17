@@ -4,7 +4,7 @@ Status: Phases 0-7 are complete; core release gate closed
 
 Deployment target: Vercel
 
-Current gate: core plan and separately authorized Phase 8 complete; Phase 8 publication remains separate
+Current gate: core plan and separately authorized Phase 8 complete and published
 
 Authority boundary: phases, commits, and pushes wait for separate direct user commands
 
@@ -85,7 +85,7 @@ Phase 5 was published on `main` in `0021c6d8bc55b55734ac503676f0e36a30d392ee`, a
 
 Phase 6 is complete and published in `579b146`. It converts the narrow observation ledger to explicit field cards and mobile sorting, moves editor/reset surfaces to native modal dialogs, adds bottom navigation and focus-obscuring protection, and establishes axe plus responsive-keyboard browser gates. [Accessibility evidence](../../verification/accessibility-evidence.md) records five viewport/orientation checks, zero targeted axe violations across six states, keyboard/dialog focus, 200% scale/reflow, text spacing, reduced motion, forced colors, and the explicit native-screen-reader limitation.
 
-Phase 7 application and deployment policy were verified at `170ee1d63908d6c1e8a5ecb938190474b4707e58`; the release record and original production artifacts were published in `aaab9a7019b5bfbffe7d2044fae570db2b283277`, and the final 320 px screenshot was refreshed in `334ec8ad8267fd496ad5628b670a0cd62defa65c`. No runtime or deployment-policy source changed between `170ee1d` and that documentation-only head. The public product is available through the Vercel production alias. [Phase 7 release evidence](../../verification/release-evidence.md) records the tested revision, immutable deployment, repository gate, desktop reviewer journey, 320 px Summary/reflow result, headers, request boundary, artifacts, protected-preview deviation, and remaining native-screen-reader limitation.
+Phase 7 application and deployment policy were verified at `170ee1d63908d6c1e8a5ecb938190474b4707e58`; the release record and original production artifacts were published in `aaab9a7019b5bfbffe7d2044fae570db2b283277`, and the final 320 px screenshot was refreshed in `334ec8ad8267fd496ad5628b670a0cd62defa65c`. Phase 8 was later published on `main` and deployed in `89c0f495de90d25d59542f153560fbe6c911e9ad`. The public product is available through the Vercel production alias. [Phase 7 release evidence](../../verification/release-evidence.md) preserves the historical release result and records the fresh Phase 8 production identity check.
 
 After a direct user review of the product brief, the sequence was rebalanced on 2026-07-16. Mandatory Worklog/README work moved from Phase 7 to Phase 4, observation management became a proportionate should-have Phase 5, targeted quality remained Phase 6, the Vercel release moved to Phase 7, and import/export plus advanced recovery became optional Phase 8. Phases 0-7 closed the core release; Phase 8 was later separately authorized and completed through its own plan and evidence.
 
@@ -271,7 +271,7 @@ Preparing the original plan did not itself authorize Git mutation. Phase 0 was s
 
 ## Execution slices
 
-The Phase 0-7 core slices are complete. Phase 7 post-release consistency hardening is implemented locally but still requires a fresh published-revision smoke; it does not invalidate the recorded core release. Phase 8 is governed by separate authority after the core release became safe.
+The Phase 0-7 core slices and the separately authorized Phase 8 are complete. Phase 7 post-release consistency hardening and Phase 8 were published in `89c0f49`; the public alias passed a fresh revision-pinned release smoke on 2026-07-17.
 
 ### Phase 0: Materialize the approved contract
 
@@ -642,7 +642,7 @@ Verification commands and expected evidence:
 
 Estimated effort: 3 hours if separately authorized.
 
-Result: the separately authorized [Phase 8 plan](2026-07-17-import-export-recovery.md) implemented an atomic 2 MiB UTF-8/Zod import boundary, preview and confirmed replacement, deterministic full-array export, and exact corrupt/future-version storage recovery. [Phase 8 evidence](../../verification/phase-8-import-export-recovery.md) records focused, full, browser, axe, download, privacy, and 320 px results. Publication to GitHub/Vercel remains a separate action.
+Result: the separately authorized [Phase 8 plan](2026-07-17-import-export-recovery.md) implemented an atomic 2 MiB UTF-8/Zod import boundary, preview and confirmed replacement, deterministic full-array export, and exact corrupt/future-version storage recovery. [Phase 8 evidence](../../verification/phase-8-import-export-recovery.md) records focused, full, browser, axe, download, privacy, and 320 px results. The slice was published and deployed in `89c0f49`.
 
 ## Integration evidence
 
@@ -684,4 +684,4 @@ The separately authorized Phase 8 added atomic JSON import/export and advanced r
 
 Required execution order is Phase 0 through Phase 7. Phase 4 has closed the mandatory Worklog/README gap before the should-have observation-management enhancement in Phase 5. Phase 6 verifies the implemented journey, and Phase 7 deploys and closes the public release. Phase 8 is a separate optional extension, not a release dependency.
 
-The core Phase 0-7 plan and separately authorized Phase 8 implementation are complete. Commit, push, and Vercel publication remain separate actions.
+The core Phase 0-7 plan and separately authorized Phase 8 implementation are complete and published through `89c0f49`. Future changes still require separate authority for commit, push, and deployment.

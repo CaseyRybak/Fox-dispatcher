@@ -7,11 +7,15 @@ const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
 export interface ObservationDraft {
   readonly color: string;
   readonly foxId: string;
-  readonly hasPrey: boolean;
+  readonly hasPrey: boolean | undefined;
   readonly location: string;
   readonly suspicionLevel: number;
   readonly time: string;
 }
+
+type ValidatedObservationDraft = Omit<ObservationDraft, "hasPrey"> & {
+  readonly hasPrey: boolean;
+};
 
 export type ObservationDraftField = keyof ObservationDraft;
 export type ObservationDraftErrors = Partial<
@@ -158,7 +162,7 @@ export function observationToDraft(observation: Observation): ObservationDraft {
 }
 
 function validateObservationDraft(draft: ObservationDraft):
-  | { readonly ok: true; readonly draft: ObservationDraft }
+  | { readonly ok: true; readonly draft: ValidatedObservationDraft }
   | {
       readonly ok: false;
       readonly fieldErrors: ObservationDraftErrors;
@@ -212,9 +216,15 @@ function validateObservationDraft(draft: ObservationDraft):
     fieldErrors.time = "Введите время в 24-часовом формате ЧЧ:ММ.";
   }
 
-  return Object.keys(fieldErrors).length > 0
-    ? { fieldErrors, ok: false }
-    : { draft: normalized, ok: true };
+  if (Object.keys(fieldErrors).length > 0) {
+    return { fieldErrors, ok: false };
+  }
+
+  if (typeof normalized.hasPrey !== "boolean") {
+    throw new Error("Validated observation draft is missing hasPrey.");
+  }
+
+  return { draft: { ...normalized, hasPrey: normalized.hasPrey }, ok: true };
 }
 
 function validateRequiredText(
@@ -230,7 +240,10 @@ function normalizeString(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";
 }
 
-function toObservation(id: string, draft: ObservationDraft): Observation {
+function toObservation(
+  id: string,
+  draft: ValidatedObservationDraft,
+): Observation {
   return {
     color: draft.color,
     fox_id: draft.foxId,
