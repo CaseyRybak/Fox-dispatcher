@@ -19,7 +19,7 @@ describe("hash navigation", () => {
 
     expect(window.location.hash).toBe("#observations");
     expect(
-      await screen.findByRole("heading", { level: 1, name: "Параметры" }),
+      await screen.findByRole("heading", { level: 1, name: "Наблюдения" }),
     ).toBeInTheDocument();
   });
 
@@ -44,7 +44,7 @@ describe("hash navigation", () => {
 
     const observationsHeading = await screen.findByRole("heading", {
       level: 1,
-      name: "Параметры",
+      name: "Наблюдения",
     });
     await waitFor(() => expect(observationsHeading).toHaveFocus());
     expect(document.title).toBe("Параметры - Лисий диспетчер");
@@ -69,7 +69,7 @@ describe("hash navigation", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("heading", { level: 1, name: "Параметры" }),
+        screen.getByRole("heading", { level: 1, name: "Наблюдения" }),
       ).toHaveFocus();
     });
     expect(document.title).toBe("Параметры - Лисий диспетчер");
@@ -98,7 +98,7 @@ describe("hash navigation", () => {
     render(<App />);
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Параметры" }),
+      screen.getByRole("heading", { level: 1, name: "Наблюдения" }),
     ).not.toHaveFocus();
 
     await user.click(
@@ -108,7 +108,7 @@ describe("hash navigation", () => {
     expect(window.location.hash).toBe("#observations");
     expect(screen.getByRole("main")).toHaveFocus();
     expect(
-      screen.getByRole("heading", { level: 1, name: "Параметры" }),
+      screen.getByRole("heading", { level: 1, name: "Наблюдения" }),
     ).toBeInTheDocument();
     expect(document.title).toBe("Параметры - Лисий диспетчер");
   });

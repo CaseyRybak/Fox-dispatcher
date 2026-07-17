@@ -131,7 +131,7 @@ describe("interactive suspicion summary", () => {
       expect.stringContaining("Лиса 4"),
     ]);
     expect(rows[0]).toHaveTextContent(
-      "Лиса 1fox_001рыжая · 10:40Северная полянаоценка 8,5добыча в 1 из 22 наблюдения",
+      "Лиса 1fox_001рыжая · 10:40Северная полянаподозрительность 8,5добыча в 1 из 22 наблюдения",
     );
     expect(rows[0]?.querySelector(".color-swatch")).toHaveAttribute(
       "data-color",
@@ -167,7 +167,7 @@ describe("interactive suspicion summary", () => {
     ).toBeDisabled();
   });
 
-  it("keeps repeating contributions exact and marks multiple observed colors", () => {
+  it("keeps repeating contributions readable and marks multiple observed colors", () => {
     window.localStorage.setItem(
       "fox-dispatcher.dashboard",
       JSON.stringify({
@@ -212,20 +212,85 @@ describe("interactive suspicion summary", () => {
     expect(
       screen.getByRole("region", { name: "Почему Лиса «fox_repeat»" }),
     ).toHaveTextContent(
-      "Средняя подозрительность по всем наблюдениям1/3 · 3 наблюденияВ индексе 4/15Наличие добычиВ 1 из 3 наблюденийВ индексе 2/3",
+      "Средняя подозрительность по всем наблюдениям0,3 · 3 наблюденияВ индексе 0,3Наличие добычиВ 1 из 3 наблюденийВ индексе 0,7",
     );
     expect(
       screen.getByRole("region", { name: "Расчет индекса подозрительности" }),
-    ).toHaveTextContent("Точный результат - 14/15. На экране - 0,9 из 10.");
+    ).toHaveTextContent("Значения округлены до десятых.");
     expect(screen.getByText("рыжая · 2 цвета · 10:00")).toBeInTheDocument();
-    expect(screen.getAllByText("4/15")).toHaveLength(2);
-    expect(screen.getAllByText("2/3")).toHaveLength(2);
+    expect(screen.queryByText("4/15")).not.toBeInTheDocument();
+    expect(screen.queryByText("2/3")).not.toBeInTheDocument();
     expect(
       screen.getByRole("figure", {
         name: "Состав индекса Лисы «fox_repeat»",
       }),
     ).toHaveTextContent("Итоговый индекс - 0,9");
-    expect(screen.getByText("1/3 × 80%")).toBeInTheDocument();
+    expect(screen.getByText("0,3 × 80%")).toBeInTheDocument();
+  });
+
+  it("shows decimal contributions after a third observation is added to a fox", () => {
+    window.localStorage.setItem(
+      "fox-dispatcher.dashboard",
+      JSON.stringify({
+        observations: [
+          {
+            color: "рыжая",
+            fox_id: "fox_001",
+            fox_name: "Лиса 1",
+            has_prey: true,
+            id: "obs_001",
+            location: "Северная поляна",
+            suspicion_level: 8,
+            time: "08:20",
+          },
+          {
+            color: "рыжая",
+            fox_id: "fox_001",
+            fox_name: "Лиса 1",
+            has_prey: false,
+            id: "obs_003",
+            location: "Северная поляна",
+            suspicion_level: 9,
+            time: "10:40",
+          },
+          {
+            color: "серебристая",
+            fox_id: "fox_001",
+            fox_name: "Лиса 1",
+            has_prey: false,
+            id: "obs_006",
+            location: "Туманная тропа",
+            suspicion_level: 5,
+            time: "11:11",
+          },
+        ],
+        schemaVersion: 1,
+        scoringPolicy: { preyWeightPercent: 20 },
+        updatedAt: "2026-07-17T09:00:00.000Z",
+      }),
+    );
+
+    render(<App />);
+
+    const selectedCalculation = screen.getByRole("complementary", {
+      name: "Расчёт: Лиса 1, идентификатор fox_001",
+    });
+    const suspicionContribution = within(selectedCalculation)
+      .getByText("Средняя подозрительность по всем наблюдениям")
+      .closest(".contribution-row");
+    const preyContribution = within(selectedCalculation)
+      .getByText("Наличие добычи")
+      .closest(".contribution-row");
+    expect(suspicionContribution).toHaveTextContent("7,3 × 80%");
+    expect(suspicionContribution).toHaveTextContent("5,9");
+    expect(preyContribution).toHaveTextContent("1/3 × 10 × 20%");
+    expect(preyContribution).toHaveTextContent("0,7");
+    expect(selectedCalculation).not.toHaveTextContent("88/15");
+    expect(selectedCalculation).not.toHaveTextContent("2/3");
+    expect(screen.getByText("6,5 из 10")).toBeInTheDocument();
+    expect(
+      screen.getByText("Итог без промежуточного округления ≈ 6,5 из 10"),
+    ).toBeInTheDocument();
   });
 
   it("shows every fox sharing the exact highest index", () => {
@@ -741,7 +806,9 @@ describe("interactive suspicion summary", () => {
 
     await user.click(screen.getByRole("button", { name: "Сбросить фильтры" }));
 
-    expect(screen.getByText("Показано лис: 4 из 4")).toHaveFocus();
+    expect(
+      screen.getByText("Всего наблюдений: 5", { selector: "caption" }),
+    ).toHaveFocus();
     await user.click(screen.getByRole("link", { name: "Сводка" }));
     expect(
       screen.queryByRole("region", { name: "Активность по локациям" }),

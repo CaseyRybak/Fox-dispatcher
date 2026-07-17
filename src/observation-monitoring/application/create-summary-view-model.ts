@@ -1,7 +1,8 @@
 import type { Observation } from "@/observation-monitoring/domain/observation";
 import {
+  formatFoxDisplayName,
+  formatFoxIdentityEntries,
   formatFoxIdentityLabel,
-  formatFoxIdentityList,
 } from "@/observation-monitoring/application/fox-display-name";
 import {
   createScoringPolicy,
@@ -15,23 +16,23 @@ import {
 } from "@/observation-monitoring/domain/suspicion-report";
 
 export interface RankedFoxViewModel {
+  readonly calculationIsRounded: boolean;
   readonly color: string;
   readonly colorSummaryLabel: string;
   readonly explanation: string;
   readonly foxId: string;
+  readonly foxName: string;
   readonly latestLocation: string;
   readonly latestTime: string;
   readonly meanSuspicionLabel: string;
-  readonly meanSuspicionExactLabel: string;
   readonly observationCount: number;
-  readonly preyContributionExactLabel: string;
+  readonly preyContributionLabel: string;
   readonly preyObservationCount: number;
   readonly preyRatioLabel: string;
   readonly rank: number;
-  readonly scoreExactLabel: string;
   readonly scoreLabel: string;
   readonly scoreTenths: number;
-  readonly suspicionContributionExactLabel: string;
+  readonly suspicionContributionLabel: string;
   readonly suspicionContributionPercent: number;
   readonly preyContributionPercent: number;
 }
@@ -179,14 +180,14 @@ export function createPolicyAnnouncement(
     previousLeaderFoxIds.every((foxId, index) => foxId === leaderFoxIds[index]);
 
   if (leaderFoxIds.length > 1) {
-    return `${weightChange} ${leadersAreUnchanged ? "Лидеры не изменились:" : "Новые лидеры -"} ${formatFoxIdentityList(leaderFoxIds)}, индекс ${leader.scoreLabel}.`;
+    return `${weightChange} ${leadersAreUnchanged ? "Лидеры не изменились:" : "Новые лидеры -"} ${formatFoxIdentityEntries(viewModel.leaders)}, индекс ${leader.scoreLabel}.`;
   }
 
   if (!leadersAreUnchanged) {
-    return `${weightChange} Новый лидер - ${formatFoxIdentityLabel(leader.foxId)}, индекс ${leader.scoreLabel}.`;
+    return `${weightChange} Новый лидер - ${formatFoxIdentityLabel(leader.foxId, leader.foxName)}, индекс ${leader.scoreLabel}.`;
   }
 
-  return `${weightChange} Лидер не изменился: ${formatFoxIdentityLabel(leader.foxId)}, индекс ${leader.scoreLabel}.`;
+  return `${weightChange} Лидер не изменился: ${formatFoxIdentityLabel(leader.foxId, leader.foxName)}, индекс ${leader.scoreLabel}.`;
 }
 
 function createRankedFoxViewModel(
@@ -203,44 +204,49 @@ function createRankedFoxViewModel(
   const preyContributionTenths = roundFractionToTenths(
     assessment.preyContribution,
   );
-  const meanSuspicionExactLabel = formatExactFraction(assessment.meanSuspicion);
-  const suspicionContributionExactLabel = formatExactFraction(
-    assessment.suspicionContribution,
-  );
-  const preyContributionExactLabel = formatExactFraction(
-    assessment.preyContribution,
-  );
-  const scoreExactLabel = formatExactFraction(assessment.score);
   const scoreLabel = formatTenths(roundFractionToTenths(assessment.score));
-  const scoreExplanation =
-    scoreExactLabel === scoreLabel
-      ? `Итоговый индекс - ${scoreExactLabel}.`
-      : `Точный индекс - ${scoreExactLabel}, на экране - ${scoreLabel}.`;
+  const suspicionContributionLabel = formatCompactTenths(
+    suspicionContributionTenths,
+  );
+  const preyContributionLabel = formatCompactTenths(preyContributionTenths);
+  const calculationIsRounded = [
+    assessment.meanSuspicion,
+    assessment.suspicionContribution,
+    assessment.preyContribution,
+    assessment.score,
+  ].some((fraction) => !isExactAtTenths(fraction));
 
   return {
+    calculationIsRounded,
     color: assessment.latestObservation.color,
     colorSummaryLabel:
       colorCount > 1
         ? `${assessment.latestObservation.color} · ${formatColorCount(colorCount)}`
         : assessment.latestObservation.color,
-    explanation: `Средняя оценка по ${assessment.observationCount} ${formatObservationDativeCount(assessment.observationCount)} - ${meanSuspicionExactLabel}; вклад оценки - ${suspicionContributionExactLabel}. Добыча отмечена в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; вклад добычи - ${preyContributionExactLabel}. ${scoreExplanation}`,
+    explanation: `Средняя оценка по ${assessment.observationCount} ${formatObservationDativeCount(assessment.observationCount)} - ${meanSuspicionLabel}; вклад оценки - ${suspicionContributionLabel}. Добыча отмечена в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; вклад добычи - ${preyContributionLabel}. Итоговый индекс - ${scoreLabel}.`,
     foxId: assessment.foxId,
+    foxName: formatFoxDisplayName(assessment.foxId, assessment.foxName),
     latestLocation: assessment.latestObservation.location,
     latestTime: assessment.latestObservation.time,
     meanSuspicionLabel,
-    meanSuspicionExactLabel,
     observationCount: assessment.observationCount,
-    preyContributionExactLabel,
+    preyContributionLabel,
     preyContributionPercent: preyContributionTenths,
     preyObservationCount: assessment.preyObservationCount,
     preyRatioLabel: `${assessment.preyObservationCount}/${assessment.observationCount}`,
     rank: index + 1,
-    scoreExactLabel,
     scoreLabel,
     scoreTenths: roundFractionToTenths(assessment.score),
-    suspicionContributionExactLabel,
+    suspicionContributionLabel,
     suspicionContributionPercent: suspicionContributionTenths,
   };
+}
+
+function isExactAtTenths(fraction: ExactFraction): boolean {
+  return (
+    roundFractionToTenths(fraction) * fraction.denominator ===
+    fraction.numerator * 10
+  );
 }
 
 function collectColorsByFox(
@@ -255,55 +261,6 @@ function collectColorsByFox(
   }
 
   return colorsByFox;
-}
-
-function formatExactFraction(fraction: ExactFraction): string {
-  const divisor = greatestCommonDivisor(
-    Math.abs(fraction.numerator),
-    fraction.denominator,
-  );
-  const numerator = fraction.numerator / divisor;
-  const denominator = fraction.denominator / divisor;
-  let finiteDenominator = denominator;
-  let powersOfTwo = 0;
-  let powersOfFive = 0;
-
-  while (finiteDenominator % 2 === 0) {
-    finiteDenominator /= 2;
-    powersOfTwo += 1;
-  }
-  while (finiteDenominator % 5 === 0) {
-    finiteDenominator /= 5;
-    powersOfFive += 1;
-  }
-
-  if (finiteDenominator !== 1) {
-    return `${numerator}/${denominator}`;
-  }
-
-  const decimalPlaces = Math.max(powersOfTwo, powersOfFive);
-  const scale = 10 ** decimalPlaces;
-  const scaledValue = (numerator * scale) / denominator;
-
-  if (decimalPlaces === 0) {
-    return String(scaledValue);
-  }
-
-  const integerPart = Math.floor(scaledValue / scale);
-  const decimalPart = String(scaledValue % scale).padStart(decimalPlaces, "0");
-
-  return `${integerPart},${decimalPart}`;
-}
-
-function greatestCommonDivisor(left: number, right: number): number {
-  let currentLeft = left;
-  let currentRight = right;
-
-  while (currentRight !== 0) {
-    [currentLeft, currentRight] = [currentRight, currentLeft % currentRight];
-  }
-
-  return currentLeft || 1;
 }
 
 function formatColorCount(count: number): string {
@@ -323,6 +280,10 @@ function formatColorCount(count: number): string {
 
 function formatTenths(tenths: number): string {
   return `${Math.floor(tenths / 10)},${tenths % 10}`;
+}
+
+function formatCompactTenths(tenths: number): string {
+  return tenths % 10 === 0 ? String(tenths / 10) : formatTenths(tenths);
 }
 
 function createRecentObservationViewModel(

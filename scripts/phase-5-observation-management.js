@@ -97,6 +97,114 @@ async (page) => {
   );
   await editor.getByRole("button", { name: "Отменить" }).click();
 
+  const addObservation = async ({
+    expectedExistingColor,
+    foxName,
+    suspicion = "6",
+    time,
+  }) => {
+    await page.getByRole("button", { name: "Добавить наблюдение" }).click();
+    const addEditor = page.getByRole("dialog", { name: "Новое наблюдение" });
+    await addEditor.getByRole("combobox", { name: "Имя лисы" }).fill(foxName);
+    await addEditor
+      .getByRole("combobox", { name: "Локация" })
+      .fill("Речной берег");
+    const colorField = addEditor.getByRole("combobox", { name: "Цвет" });
+    if (expectedExistingColor) {
+      assert(
+        (await colorField.inputValue()) === expectedExistingColor &&
+          (await colorField.getAttribute("readonly")) !== null,
+        `Existing ${foxName} did not lock color ${expectedExistingColor}.`,
+      );
+      await addEditor
+        .getByRole("status")
+        .getByText(`Для данной лисы уже задан цвет ${expectedExistingColor}`)
+        .waitFor();
+    } else {
+      await colorField.fill("белая");
+    }
+    await addEditor.getByRole("radio", { name: "Нет" }).check();
+    await addEditor
+      .getByRole("spinbutton", { name: "Оценка подозрительности" })
+      .fill(suspicion);
+    await addEditor.getByLabel("Время").fill(time);
+    await addEditor
+      .getByRole("button", { name: "Сохранить наблюдение" })
+      .click();
+  };
+
+  await addObservation({ foxName: "Лиса 5", time: "13:45" });
+  const firstGeneratedRow = page
+    .getByRole("row")
+    .filter({ hasText: "obs_006" });
+  await firstGeneratedRow.waitFor();
+  assert(
+    (await firstGeneratedRow.innerText()).includes("Лиса 5") &&
+      (await firstGeneratedRow.innerText()).includes("fox_005"),
+    "A new fox name did not receive fox_005 and obs_006.",
+  );
+
+  await addObservation({
+    expectedExistingColor: "белая",
+    foxName: "лиса 5",
+    time: "14:00",
+  });
+  const secondGeneratedRow = page
+    .getByRole("row")
+    .filter({ hasText: "obs_007" });
+  await secondGeneratedRow.waitFor();
+  assert(
+    (await secondGeneratedRow.innerText()).includes("Лиса 5") &&
+      (await secondGeneratedRow.innerText()).includes("fox_005"),
+    "An existing fox name did not reuse fox_005 for obs_007.",
+  );
+
+  const persistedGeneratedObservations = await page.evaluate(() => {
+    const raw = globalThis.localStorage.getItem("fox-dispatcher.dashboard");
+    if (!raw) return [];
+    return JSON.parse(raw).observations.filter(({ id }) =>
+      ["obs_006", "obs_007"].includes(id),
+    );
+  });
+  assert(
+    persistedGeneratedObservations.length === 2 &&
+      persistedGeneratedObservations.every(
+        ({ color, fox_id: foxId, fox_name: foxName }) =>
+          color === "белая" && foxId === "fox_005" && foxName === "Лиса 5",
+      ),
+    "Generated observation ids and the reused fox identity were not persisted.",
+  );
+
+  await addObservation({
+    expectedExistingColor: "рыжая",
+    foxName: "Лиса 1",
+    suspicion: "5",
+    time: "11:11",
+  });
+  const thirdFoxOneRow = page.getByRole("row").filter({ hasText: "obs_008" });
+  await thirdFoxOneRow.waitFor();
+  assert(
+    (await thirdFoxOneRow.innerText()).includes("fox_001") &&
+      (await thirdFoxOneRow.innerText()).includes("рыжая"),
+    "A new observation for Лиса 1 did not reuse fox_001 and its original color.",
+  );
+
+  await page.getByRole("link", { name: "Сводка", exact: true }).click();
+  await page.getByRole("button", { name: /Показать расчёт: Лиса 1,/ }).click();
+  const foxOneCalculation = page.getByRole("complementary", {
+    name: "Расчёт: Лиса 1, идентификатор fox_001",
+  });
+  const foxOneCalculationText = await foxOneCalculation.innerText();
+  assert(
+    foxOneCalculationText.includes("5,9") &&
+      foxOneCalculationText.includes("0,7") &&
+      !foxOneCalculationText.includes("88/15") &&
+      !foxOneCalculationText.includes("2/3"),
+    `Repeating contributions leaked raw fractions: ${foxOneCalculationText}`,
+  );
+
+  await page.getByRole("link", { name: "Параметры", exact: true }).click();
+
   await page.screenshot({
     path: "output/playwright/phase-5/observation-management-1440px.png",
   });
@@ -122,6 +230,8 @@ async (page) => {
   return {
     consoleErrors: browserErrors.length,
     leader: "fox_004",
+    generatedFox: "fox_005",
+    generatedObservations: ["obs_006", "obs_007", "obs_008"],
     persistedSuspicion: 10,
     score: "8.0",
     viewport: 320,

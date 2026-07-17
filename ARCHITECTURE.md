@@ -142,16 +142,13 @@ DashboardStateStore
   load(): Missing | ValidState | InvalidState | Unavailable
   save(state): SaveResult
   clear(): ClearResult
-
-ObservationIdGenerator
-  create(): ObservationId
 ```
 
 Phase 8 implements `ObservationImportParser` and `ObservationExporter` ports plus explicit corrupt/future-version storage-recovery results.
 
 JSON parsing and starter-data validation are boundary adapters that produce domain-ready observations or structured validation failures.
 
-The production ID adapter creates `obs_<uuid>` values through the secure browser `crypto.randomUUID()` API. The application validates the generated value against the normal 64-character ID boundary and the active dataset before accepting an add command; tests inject deterministic IDs. Generation or collision failure leaves state unchanged and returns a form-level error.
+The observation-management application service resolves the entered fox name against the active dataset. An existing normalized name reuses its `fox_id` and the color from that fox's first active observation; a new name receives the first free `fox_NNN` and its entered color. Every added record receives the first free `obs_NNN`. The name is persisted separately as optional `fox_name`, so a stable user-facing name is not derived from or overwritten by a reused numeric gap.
 
 ### Adapters
 
@@ -213,6 +210,7 @@ The executable contract includes:
 
 - observation IDs are unique within the active dataset;
 - `fox_id`, `location`, and `color` are trimmed non-empty strings;
+- optional `fox_name` is a trimmed non-empty string and manual creation always supplies it;
 - `has_prey` is boolean;
 - `suspicion_level` is an integer from 0 through 10;
 - `time` is a real 24-hour `HH:mm` value;

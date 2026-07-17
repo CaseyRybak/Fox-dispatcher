@@ -1,12 +1,11 @@
 import type { Observation } from "@/observation-monitoring/domain/observation";
+import { formatFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
 
-const generatedObservationIdPattern =
-  /^obs_[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
 
 export interface ObservationDraft {
   readonly color: string;
-  readonly foxId: string;
+  readonly foxName: string;
   readonly hasPrey: boolean | undefined;
   readonly location: string;
   readonly suspicionLevel: number;
@@ -21,10 +20,6 @@ export type ObservationDraftField = keyof ObservationDraft;
 export type ObservationDraftErrors = Partial<
   Readonly<Record<ObservationDraftField, string>>
 >;
-
-export interface ObservationIdGenerator {
-  create(): string;
-}
 
 export type ObservationMutationResult =
   | {
@@ -54,7 +49,6 @@ export type ObservationDeletionResult =
 export function addObservation(
   observations: readonly Observation[],
   draft: ObservationDraft,
-  idGenerator: ObservationIdGenerator,
 ): ObservationMutationResult {
   const validation = validateObservationDraft(draft);
   if (!validation.ok) return validation;
@@ -67,25 +61,20 @@ export function addObservation(
     };
   }
 
-  let id: string;
-  try {
-    id = idGenerator.create();
-  } catch {
-    return createIdError();
-  }
-
-  if (
-    !generatedObservationIdPattern.test(id) ||
-    id.length > 64 ||
-    observations.some((observation) => observation.id === id)
-  ) {
-    return createIdError();
-  }
+  const id = createNearestFreeId(
+    "obs",
+    observations.map(({ id: observationId }) => observationId),
+  );
+  const fox = resolveFoxIdentity(observations, validation.draft.foxName);
+  const color = fox.color ?? validation.draft.color;
 
   return {
     ok: true,
     observationId: id,
-    observations: [...observations, toObservation(id, validation.draft)],
+    observations: [
+      ...observations,
+      toObservation(id, fox.foxId, fox.foxName, color, validation.draft),
+    ],
   };
 }
 
@@ -104,13 +93,21 @@ export function editObservation(
       ok: false,
     };
   }
+  const fox = resolveFoxIdentity(observations, validation.draft.foxName);
+  const color = fox.color ?? validation.draft.color;
 
   return {
     ok: true,
     observationId,
     observations: observations.map((observation, observationIndex) =>
       observationIndex === index
-        ? toObservation(observationId, validation.draft)
+        ? toObservation(
+            observationId,
+            fox.foxId,
+            fox.foxName,
+            color,
+            validation.draft,
+          )
         : observation,
     ),
   };
@@ -153,7 +150,7 @@ export function resetObservations(
 export function observationToDraft(observation: Observation): ObservationDraft {
   return {
     color: observation.color,
-    foxId: observation.fox_id,
+    foxName: observation.fox_name ?? formatFoxDisplayName(observation.fox_id),
     hasPrey: observation.has_prey,
     location: observation.location,
     suspicionLevel: observation.suspicion_level,
@@ -170,18 +167,18 @@ function validateObservationDraft(draft: ObservationDraft):
   const normalized: ObservationDraft = {
     ...draft,
     color: normalizeString(draft.color),
-    foxId: normalizeString(draft.foxId),
+    foxName: normalizeString(draft.foxName),
     location: normalizeString(draft.location),
     time: normalizeString(draft.time),
   };
   const fieldErrors: Partial<Record<ObservationDraftField, string>> = {};
 
   validateRequiredText(
-    normalized.foxId,
+    normalized.foxName,
     64,
-    "Укажите лису (до 64 символов).",
+    "Укажите имя лисы (до 64 символов).",
     (message) => {
-      fieldErrors.foxId = message;
+      fieldErrors.foxName = message;
     },
   );
 
@@ -242,11 +239,15 @@ function normalizeString(value: unknown): string {
 
 function toObservation(
   id: string,
+  foxId: string,
+  foxName: string,
+  color: string,
   draft: ValidatedObservationDraft,
 ): Observation {
   return {
-    color: draft.color,
-    fox_id: draft.foxId,
+    color,
+    fox_id: foxId,
+    fox_name: foxName,
     has_prey: draft.hasPrey,
     id,
     location: draft.location,
@@ -255,10 +256,56 @@ function toObservation(
   };
 }
 
-function createIdError(): ObservationMutationResult {
+function resolveFoxIdentity(
+  observations: readonly Observation[],
+  requestedName: string,
+): {
+  readonly color?: string;
+  readonly foxId: string;
+  readonly foxName: string;
+} {
+  const normalizedRequestedName = normalizeFoxNameForComparison(requestedName);
+
+  for (const observation of observations) {
+    const existingName =
+      observation.fox_name ?? formatFoxDisplayName(observation.fox_id);
+    if (
+      normalizeFoxNameForComparison(existingName) === normalizedRequestedName
+    ) {
+      const originalColor = observations.find(
+        ({ fox_id: foxId }) => foxId === observation.fox_id,
+      )?.color;
+      return {
+        color: originalColor,
+        foxId: observation.fox_id,
+        foxName: existingName,
+      };
+    }
+  }
+
   return {
-    fieldErrors: {},
-    formError: "Не удалось создать ID наблюдения. Повторите сохранение.",
-    ok: false,
+    foxId: createNearestFreeId(
+      "fox",
+      observations.map(({ fox_id: foxId }) => foxId),
+    ),
+    foxName: requestedName,
   };
+}
+
+function normalizeFoxNameForComparison(value: string): string {
+  return value.replace(/\s+/gu, " ").trim().toLocaleLowerCase("ru-RU");
+}
+
+function createNearestFreeId(
+  prefix: "fox" | "obs",
+  existingIds: readonly string[],
+): string {
+  const occupied = new Set(existingIds);
+
+  for (let suffix = 1; suffix <= 1001; suffix += 1) {
+    const candidate = `${prefix}_${String(suffix).padStart(3, "0")}`;
+    if (!occupied.has(candidate)) return candidate;
+  }
+
+  throw new Error(`No free ${prefix} id is available.`);
 }

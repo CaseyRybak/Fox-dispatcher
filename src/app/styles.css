@@ -1457,6 +1457,12 @@ tbody tr:last-child td {
   max-width: 820px;
 }
 
+.observation-page-heading h1 {
+  font-size: clamp(2rem, 3.5vw, 3.25rem);
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
 .observation-page-heading .primary-action,
 .observation-editor__footer .primary-action {
   flex: 0 0 auto;
@@ -1953,7 +1959,8 @@ tbody tr:last-child td {
 }
 
 .field-hint,
-.field-error {
+.field-error,
+.field-warning {
   margin: 0;
   font-size: 12px;
   line-height: 1.45;
@@ -1966,6 +1973,21 @@ tbody tr:last-child td {
 .field-error {
   color: #8d2f1c;
   font-weight: 650;
+}
+
+.field-warning {
+  margin: 1px 0 0;
+  padding: 8px 10px;
+  border-left: 3px solid var(--fox-signal);
+  color: var(--forest-ink);
+  background: #fff5ee;
+  font-weight: 650;
+}
+
+.editor-field > input[readonly] {
+  color: var(--forest-ink);
+  background: var(--canvas-mist);
+  cursor: not-allowed;
 }
 
 .editor-field > input {

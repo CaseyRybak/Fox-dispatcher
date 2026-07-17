@@ -1,6 +1,7 @@
 export interface Observation {
   readonly id: string;
   readonly fox_id: string;
+  readonly fox_name?: string;
   readonly location: string;
   readonly color: string;
   readonly has_prey: boolean;

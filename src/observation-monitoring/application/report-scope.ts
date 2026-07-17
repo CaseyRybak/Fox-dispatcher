@@ -32,7 +32,7 @@ export function applyReportFilters(
   return observations.filter((observation) => {
     if (
       normalizedFoxQuery !== "" &&
-      !matchesFoxQuery(observation.fox_id, normalizedFoxQuery, exactFoxIds)
+      !matchesFoxQuery(observation, normalizedFoxQuery, exactFoxIds)
     ) {
       return false;
     }
@@ -73,24 +73,30 @@ function collectExactFoxIds(
 
   return new Set(
     observations
-      .map(({ fox_id }) => fox_id)
       .filter(
-        (foxId) =>
-          formatFoxDisplayName(foxId).toLowerCase() === normalizedQuery,
-      ),
+        (observation) =>
+          formatFoxDisplayName(
+            observation.fox_id,
+            observation.fox_name,
+          ).toLowerCase() === normalizedQuery,
+      )
+      .map(({ fox_id }) => fox_id),
   );
 }
 
 function matchesFoxQuery(
-  foxId: string,
+  observation: Observation,
   normalizedQuery: string,
   exactFoxIds: ReadonlySet<string>,
 ): boolean {
+  const foxId = observation.fox_id;
   if (exactFoxIds.size > 0) return exactFoxIds.has(foxId);
 
   return (
     foxId.toLowerCase().includes(normalizedQuery) ||
-    formatFoxDisplayName(foxId).toLowerCase().includes(normalizedQuery)
+    formatFoxDisplayName(foxId, observation.fox_name)
+      .toLowerCase()
+      .includes(normalizedQuery)
   );
 }
 

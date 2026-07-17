@@ -181,13 +181,13 @@ async (page) => {
   });
   assert(
     await editor
-      .getByRole("textbox", { name: "Лиса" })
+      .getByRole("combobox", { name: "Имя лисы" })
       .evaluate((element) => element === element.ownerDocument.activeElement),
     "The editor did not focus its first field.",
   );
   await recordControlContrast(
     "editor text input",
-    editor.getByRole("textbox", { name: "Лиса" }),
+    editor.getByRole("combobox", { name: "Имя лисы" }),
   );
   await page.keyboard.type("черновик");
   await page.goBack();
@@ -213,7 +213,7 @@ async (page) => {
   await page.keyboard.press("Escape");
   assert(
     await editor
-      .getByRole("textbox", { name: "Лиса" })
+      .getByRole("combobox", { name: "Имя лисы" })
       .evaluate((element) => element === element.ownerDocument.activeElement),
     "Escape did not return from confirmation to the editor.",
   );

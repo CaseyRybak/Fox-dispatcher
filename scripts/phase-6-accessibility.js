@@ -51,6 +51,15 @@ async (page) => {
   await page.getByRole("button", { name: "Добавить наблюдение" }).click();
   await page.getByRole("dialog", { name: "Новое наблюдение" }).waitFor();
   await scan("observation editor dialog");
+  const addEditor = page.getByRole("dialog", { name: "Новое наблюдение" });
+  await addEditor.getByRole("combobox", { name: "Имя лисы" }).fill("Лиса 1");
+  assert(
+    (await addEditor.getByRole("combobox", { name: "Цвет" }).inputValue()) ===
+      "рыжая",
+    "Existing fox color was not exposed to assistive technology.",
+  );
+  await scan("existing fox color warning");
+  await addEditor.getByRole("combobox", { name: "Имя лисы" }).fill("");
   await page
     .getByRole("dialog", { name: "Новое наблюдение" })
     .getByRole("button", { name: "Сохранить наблюдение" })
@@ -58,7 +67,7 @@ async (page) => {
   await scan("observation editor validation errors");
   await page
     .getByRole("dialog", { name: "Новое наблюдение" })
-    .getByRole("textbox", { name: "Лиса" })
+    .getByRole("combobox", { name: "Имя лисы" })
     .fill("черновик");
   await page.keyboard.press("Escape");
   await page

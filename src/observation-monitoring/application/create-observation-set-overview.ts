@@ -2,10 +2,12 @@ import {
   summarizeObservationSet,
   type Observation,
 } from "@/observation-monitoring/domain/observation";
+import { formatFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
 
 export interface ObservationListItem {
   readonly color: string;
   readonly foxId: string;
+  readonly foxName: string;
   readonly hasPrey: boolean;
   readonly id: string;
   readonly location: string;
@@ -29,6 +31,7 @@ export function createObservationSetOverview(
     observations: observations.map((observation) => ({
       color: observation.color,
       foxId: observation.fox_id,
+      foxName: observation.fox_name ?? formatFoxDisplayName(observation.fox_id),
       hasPrey: observation.has_prey,
       id: observation.id,
       location: observation.location,

@@ -15,11 +15,9 @@ import type {
   ObservationDraft,
   ObservationMutationResult,
 } from "@/observation-monitoring/application/observation-management";
-import {
-  formatFoxDisplayName,
-  hasDistinctFoxDisplayName,
-} from "@/observation-monitoring/application/fox-display-name";
+import { hasDistinctFoxDisplayName } from "@/observation-monitoring/application/fox-display-name";
 import { ObservationEditor } from "@/observation-monitoring/ui/observations/ObservationEditor";
+import type { FoxColorProfile } from "@/observation-monitoring/ui/observations/ObservationEditor";
 import { ObservationImportDialog } from "@/observation-monitoring/ui/observations/ObservationImportDialog";
 import { useMediaQuery } from "@/observation-monitoring/ui/useMediaQuery";
 
@@ -62,7 +60,7 @@ type EditorState =
   | { readonly mode: "edit"; readonly observation: ObservationListItem };
 
 type ObservationSortField =
-  "color" | "foxId" | "hasPrey" | "location" | "suspicionLevel" | "time";
+  "color" | "foxName" | "hasPrey" | "location" | "suspicionLevel" | "time";
 
 interface ObservationSort {
   readonly direction: "ascending" | "descending";
@@ -127,6 +125,17 @@ export function ObservationsPage({
     () => [...new Set(overview.observations.map(({ color }) => color))].sort(),
     [overview.observations],
   );
+  const foxColorProfiles = useMemo(
+    () =>
+      overview.observations.reduce<FoxColorProfile[]>((profiles, item) => {
+        if (profiles.some(({ foxId }) => foxId === item.foxId)) return profiles;
+        return [
+          ...profiles,
+          { color: item.color, foxId: item.foxId, foxName: item.foxName },
+        ];
+      }, []),
+    [overview.observations],
+  );
   const sortedObservations = useMemo(
     () =>
       [...overview.observations].sort((left, right) =>
@@ -134,6 +143,7 @@ export function ObservationsPage({
       ),
     [overview.observations, sort],
   );
+  const observationCountLabel = `Всего наблюдений: ${overview.observationCount}`;
 
   useEffect(() => {
     if (!restoreFocusAfterResetRef.current) return;
@@ -240,7 +250,7 @@ export function ObservationsPage({
   }
 
   function focusEditorOrLedger() {
-    const editorFirstField = document.getElementById("observation-foxId");
+    const editorFirstField = document.getElementById("observation-foxName");
     if (editorFirstField instanceof HTMLElement) {
       editorFirstField.focus();
       return;
@@ -253,10 +263,10 @@ export function ObservationsPage({
       <header className="page-heading observation-page-heading">
         <div>
           <p className="eyebrow">Редактируемый полевой журнал</p>
-          <h1 tabIndex={-1}>Параметры</h1>
+          <h1 tabIndex={-1}>Наблюдения</h1>
           <p>
             Добавляйте и уточняйте записи - сводка, рейтинг и расчёты
-            пересчитываются из одного набора.
+            пересчитываются из таблицы наблюдений в режиме онлайн.
           </p>
         </div>
         <button
@@ -476,6 +486,7 @@ export function ObservationsPage({
       {editor && (
         <ObservationEditor
           colorSuggestions={colorSuggestions}
+          foxColorProfiles={foxColorProfiles}
           initialObservation={
             editor.mode === "edit" ? editor.observation : undefined
           }
@@ -544,7 +555,7 @@ export function ObservationsPage({
           onDelete={deleteRecord}
           onEdit={(observation) => setEditor({ mode: "edit", observation })}
           onSortChange={setSort}
-          scopeLabel={scopeLabel}
+          observationCountLabel={observationCountLabel}
           setScopeLabelElement={(element) => {
             scopeLabelRef.current = element;
           }}
@@ -559,7 +570,7 @@ export function ObservationsPage({
               }}
               tabIndex={-1}
             >
-              {scopeLabel}
+              {observationCountLabel}
             </caption>
             <thead>
               <tr>
@@ -571,7 +582,7 @@ export function ObservationsPage({
                 />
                 <th scope="col">Запись</th>
                 <SortableHeader
-                  field="foxId"
+                  field="foxName"
                   label="Лиса"
                   onChange={changeSort}
                   sort={sort}
@@ -596,7 +607,7 @@ export function ObservationsPage({
                 />
                 <SortableHeader
                   field="suspicionLevel"
-                  label="Оценка"
+                  label="Подозрительность"
                   onChange={changeSort}
                   sort={sort}
                 />
@@ -612,7 +623,7 @@ export function ObservationsPage({
                   <td className="data-id">{observation.id}</td>
                   <td>
                     <span className="fox-cell-identity">
-                      <strong>{formatFoxDisplayName(observation.foxId)}</strong>
+                      <strong>{observation.foxName}</strong>
                       {hasDistinctFoxDisplayName(observation.foxId) && (
                         <span className="data-id">{observation.foxId}</span>
                       )}
@@ -698,13 +709,13 @@ const mobileSortOptions: readonly {
   },
   {
     label: "Лиса: от А до Я",
-    sort: { direction: "ascending", field: "foxId" },
-    value: "foxId-ascending",
+    sort: { direction: "ascending", field: "foxName" },
+    value: "foxName-ascending",
   },
   {
     label: "Лиса: от Я до А",
-    sort: { direction: "descending", field: "foxId" },
-    value: "foxId-descending",
+    sort: { direction: "descending", field: "foxName" },
+    value: "foxName-descending",
   },
   {
     label: "Локация: от А до Я",
@@ -754,7 +765,7 @@ function MobileObservationLedger({
   onDelete,
   onEdit,
   onSortChange,
-  scopeLabel,
+  observationCountLabel,
   setScopeLabelElement,
   sort,
 }: {
@@ -763,7 +774,7 @@ function MobileObservationLedger({
   readonly onDelete: (observationId: string) => void;
   readonly onEdit: (observation: ObservationListItem) => void;
   readonly onSortChange: (sort: ObservationSort) => void;
-  readonly scopeLabel: string;
+  readonly observationCountLabel: string;
   readonly setScopeLabelElement: (element: HTMLElement | null) => void;
   readonly sort: ObservationSort;
 }) {
@@ -776,7 +787,7 @@ function MobileObservationLedger({
     >
       <div className="mobile-observation-ledger__toolbar">
         <p id="mobile-ledger-scope" ref={setScopeLabelElement} tabIndex={-1}>
-          {scopeLabel}
+          {observationCountLabel}
         </p>
         <label>
           <span>Сортировка наблюдений</span>
@@ -808,7 +819,7 @@ function MobileObservationLedger({
               <div>
                 <time dateTime={observation.time}>{observation.time}</time>
                 <span className="fox-cell-identity">
-                  <strong>{formatFoxDisplayName(observation.foxId)}</strong>
+                  <strong>{observation.foxName}</strong>
                   {hasDistinctFoxDisplayName(observation.foxId) && (
                     <span className="data-id">{observation.foxId}</span>
                   )}

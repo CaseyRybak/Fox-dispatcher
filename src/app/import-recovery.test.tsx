@@ -105,7 +105,7 @@ describe("observation import and export", () => {
       screen.queryByRole("dialog", { name: "Импорт наблюдений" }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByText("Показано лис: 2 из 2", { selector: "caption" }),
+      screen.getByText("Всего наблюдений: 2", { selector: "caption" }),
     ).toHaveFocus();
     expect(
       screen.queryByText("obs_001", { selector: "td" }),
@@ -138,7 +138,9 @@ describe("observation import and export", () => {
       "Северная поляна",
     );
     await user.click(screen.getByRole("link", { name: "Параметры" }));
-    expect(screen.getByText("Показано лис: 2 из 4")).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "Активная область наблюдений" }),
+    ).toHaveTextContent("Показано лис: 2 из 4");
 
     await user.click(
       screen.getByRole("button", { name: "Экспортировать все наблюдения" }),

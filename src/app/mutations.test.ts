@@ -10,10 +10,9 @@ import {
   type ObservationDraft,
 } from "@/observation-monitoring/application/observation-management";
 
-const fixedId = "obs_123e4567-e89b-12d3-a456-426614174000";
 const draft: ObservationDraft = {
   color: " белая ",
-  foxId: " fox_005 ",
+  foxName: " Лиса 5 ",
   hasPrey: false,
   location: " Речной берег ",
   suspicionLevel: 6,
@@ -21,10 +20,8 @@ const draft: ObservationDraft = {
 };
 
 describe("observation management", () => {
-  it("adds one normalized observation with an injected unique id", () => {
-    const result = addObservation(starterObservations, draft, {
-      create: () => fixedId,
-    });
+  it("adds a new named fox with the nearest free sequential ids", () => {
+    const result = addObservation(starterObservations, draft);
 
     expect(result).toEqual({
       ok: true,
@@ -33,55 +30,73 @@ describe("observation management", () => {
         {
           color: "белая",
           fox_id: "fox_005",
+          fox_name: "Лиса 5",
           has_prey: false,
-          id: fixedId,
+          id: "obs_006",
           location: "Речной берег",
           suspicion_level: 6,
           time: "13:45",
         },
       ],
-      observationId: fixedId,
+      observationId: "obs_006",
     });
     expect(starterObservations).toHaveLength(5);
   });
 
-  it("rejects invalid input and id generation without changing the set", () => {
-    const invalid = addObservation(
-      starterObservations,
-      {
-        ...draft,
-        foxId: " ",
-        hasPrey: "yes" as unknown as boolean,
-        suspicionLevel: 11,
-        time: "25:10",
-      },
-      { create: () => fixedId },
-    );
-    const collision = addObservation(starterObservations, draft, {
-      create: () => "obs_001",
+  it("reuses the id of an existing fox when its name is entered", () => {
+    const result = addObservation(starterObservations, {
+      ...draft,
+      color: "серебристая",
+      foxName: "  лиса 1  ",
     });
-    const unavailable = addObservation(starterObservations, draft, {
-      create: () => {
-        throw new Error("crypto unavailable");
-      },
+
+    expect(result).toMatchObject({ ok: true, observationId: "obs_006" });
+    if (!result.ok) throw new Error("Expected add to succeed");
+    expect(result.observations.at(-1)).toMatchObject({
+      color: "рыжая",
+      fox_id: "fox_001",
+      fox_name: "Лиса 1",
+    });
+  });
+
+  it("fills the nearest free fox and observation id gaps without losing the entered name", () => {
+    const observationsWithGaps = starterObservations
+      .filter(({ id }) => id !== "obs_002")
+      .map((observation) =>
+        observation.fox_id === "fox_002"
+          ? { ...observation, fox_id: "fox_006" }
+          : observation,
+      );
+    const result = addObservation(observationsWithGaps, {
+      ...draft,
+      foxName: "Лиса 12",
+    });
+
+    expect(result).toMatchObject({ ok: true, observationId: "obs_002" });
+    if (!result.ok) throw new Error("Expected add to succeed");
+    expect(result.observations.at(-1)).toMatchObject({
+      fox_id: "fox_002",
+      fox_name: "Лиса 12",
+    });
+  });
+
+  it("rejects invalid input without changing the set", () => {
+    const invalid = addObservation(starterObservations, {
+      ...draft,
+      foxName: " ",
+      hasPrey: "yes" as unknown as boolean,
+      suspicionLevel: 11,
+      time: "25:10",
     });
 
     expect(invalid).toMatchObject({
       ok: false,
       fieldErrors: {
-        foxId: expect.any(String),
+        foxName: expect.any(String),
         hasPrey: expect.any(String),
         suspicionLevel: expect.any(String),
         time: expect.any(String),
       },
-    });
-    expect(collision).toMatchObject({
-      ok: false,
-      formError: expect.any(String),
-    });
-    expect(unavailable).toMatchObject({
-      ok: false,
-      formError: "Не удалось создать ID наблюдения. Повторите сохранение.",
     });
   });
 
@@ -91,9 +106,7 @@ describe("observation management", () => {
       id: `obs_existing_${index}`,
     }));
 
-    expect(
-      addObservation(fullSet, draft, { create: () => fixedId }),
-    ).toMatchObject({
+    expect(addObservation(fullSet, draft)).toMatchObject({
       ok: false,
       formError:
         "В журнале уже 1000 наблюдений. Удалите запись перед добавлением.",
@@ -104,23 +117,17 @@ describe("observation management", () => {
     const invalidDraft = {
       ...draft,
       color: null,
-      foxId: 42,
+      foxName: 42,
       location: undefined,
     } as unknown as ObservationDraft;
 
     expect(() =>
-      addObservation(starterObservations, invalidDraft, {
-        create: () => fixedId,
-      }),
+      addObservation(starterObservations, invalidDraft),
     ).not.toThrow();
-    expect(
-      addObservation(starterObservations, invalidDraft, {
-        create: () => fixedId,
-      }),
-    ).toMatchObject({
+    expect(addObservation(starterObservations, invalidDraft)).toMatchObject({
       fieldErrors: {
         color: expect.any(String),
-        foxId: expect.any(String),
+        foxName: expect.any(String),
         location: expect.any(String),
       },
       ok: false,
@@ -129,8 +136,8 @@ describe("observation management", () => {
 
   it("edits atomically while preserving the technical id", () => {
     const result = editObservation(starterObservations, "obs_005", {
-      color: "рыжая",
-      foxId: "fox_004",
+      color: "серебристая",
+      foxName: "Лиса 4",
       hasPrey: false,
       location: "Северная поляна",
       suspicionLevel: 10,
@@ -141,6 +148,8 @@ describe("observation management", () => {
     if (!result.ok) throw new Error("Expected edit to succeed");
     expect(result.observations[4]).toEqual({
       ...starterObservations[4],
+      color: "рыжая",
+      fox_name: "Лиса 4",
       suspicion_level: 10,
     });
     expect(starterObservations[4]?.suspicion_level).toBe(3);

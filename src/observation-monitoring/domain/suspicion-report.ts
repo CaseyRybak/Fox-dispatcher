@@ -8,6 +8,7 @@ export interface ExactFraction {
 
 export interface FoxAssessment {
   readonly foxId: string;
+  readonly foxName?: string;
   readonly latestObservation: Observation;
   readonly meanSuspicion: ExactFraction;
   readonly observationCount: number;
@@ -115,6 +116,9 @@ function createFoxAssessment(
   const suspicionNumerator = sumSuspicion * (100 - policy.preyWeightPercent);
   const preyNumerator = preyObservationCount * 10 * policy.preyWeightPercent;
   const [latestObservation] = [...observations].sort(compareObservationRecency);
+  const foxName = observations.find(
+    ({ fox_name: observationFoxName }) => observationFoxName !== undefined,
+  )?.fox_name;
 
   if (!latestObservation) {
     throw new Error("A fox assessment requires at least one observation.");
@@ -122,6 +126,7 @@ function createFoxAssessment(
 
   return {
     foxId,
+    foxName,
     latestObservation,
     meanSuspicion: {
       denominator: observationCount,

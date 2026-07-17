@@ -19,9 +19,11 @@ describe("targeted accessibility contract", () => {
     const editor = screen.getByRole("dialog", { name: "Новое наблюдение" });
     expect(editor).toHaveAttribute("aria-modal", "true");
     expect(editor).toHaveTextContent("Все поля обязательны.");
-    expect(within(editor).getByRole("textbox", { name: "Лиса" })).toHaveFocus();
     expect(
-      within(editor).getByRole("textbox", { name: "Лиса" }),
+      within(editor).getByRole("combobox", { name: "Имя лисы" }),
+    ).toHaveFocus();
+    expect(
+      within(editor).getByRole("combobox", { name: "Имя лисы" }),
     ).toBeRequired();
     expect(
       within(editor).getByRole("combobox", { name: "Локация" }),
@@ -43,7 +45,7 @@ describe("targeted accessibility contract", () => {
     const summary = within(editor).getByRole("alert");
     expect(summary).toHaveFocus();
     expect(
-      within(editor).getByRole("textbox", { name: "Лиса" }),
+      within(editor).getByRole("combobox", { name: "Имя лисы" }),
     ).toHaveAttribute("aria-invalid", "true");
   });
 
@@ -81,8 +83,8 @@ describe("targeted accessibility contract", () => {
     ).toEqual([
       { label: "Время: сначала поздние", value: "time-descending" },
       { label: "Время: сначала ранние", value: "time-ascending" },
-      { label: "Лиса: от А до Я", value: "foxId-ascending" },
-      { label: "Лиса: от Я до А", value: "foxId-descending" },
+      { label: "Лиса: от А до Я", value: "foxName-ascending" },
+      { label: "Лиса: от Я до А", value: "foxName-descending" },
       { label: "Локация: от А до Я", value: "location-ascending" },
       { label: "Локация: от Я до А", value: "location-descending" },
       { label: "Цвет: от А до Я", value: "color-ascending" },
@@ -132,7 +134,10 @@ describe("targeted accessibility contract", () => {
     await user.click(
       screen.getByRole("button", { name: "Добавить наблюдение" }),
     );
-    await user.type(screen.getByRole("textbox", { name: "Лиса" }), "черновик");
+    await user.type(
+      screen.getByRole("combobox", { name: "Имя лисы" }),
+      "черновик",
+    );
     window.history.back();
 
     const confirmation = await screen.findByRole("alertdialog", {

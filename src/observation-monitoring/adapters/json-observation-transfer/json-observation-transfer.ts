@@ -224,6 +224,7 @@ function toImportIssue(issue: z.core.$ZodIssue): ObservationImportIssue {
   const messages: Readonly<Record<string, string>> = {
     color: "ожидается непустая строка до 80 символов",
     fox_id: "ожидается непустая строка до 64 символов",
+    fox_name: "ожидается непустая строка до 64 символов",
     has_prey: "ожидается true или false",
     id: "ожидается непустая строка до 64 символов",
     location: "ожидается непустая строка до 80 символов",

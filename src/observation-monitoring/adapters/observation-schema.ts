@@ -5,6 +5,7 @@ const timePattern = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
 export const observationSchema = z.strictObject({
   id: z.string().trim().min(1).max(64),
   fox_id: z.string().trim().min(1).max(64),
+  fox_name: z.string().trim().min(1).max(64).optional(),
   location: z.string().trim().min(1).max(80),
   color: z.string().trim().min(1).max(80),
   has_prey: z.boolean(),

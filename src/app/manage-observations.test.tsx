@@ -9,9 +9,6 @@ describe("observation management", () => {
     vi.restoreAllMocks();
     window.localStorage.clear();
     window.history.replaceState(null, "", "#observations");
-    vi.stubGlobal("crypto", {
-      randomUUID: () => "123e4567-e89b-12d3-a456-426614174000",
-    });
   });
 
   it("keeps secondary data actions compact on a narrow screen", async () => {
@@ -112,7 +109,9 @@ describe("observation management", () => {
       within(editor).getByRole("button", { name: "Сохранить наблюдение" }),
     );
 
-    expect(screen.getByText("Показано лис: 1 из 4")).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "Активная область наблюдений" }),
+    ).toHaveTextContent("Показано лис: 1 из 4");
     expect(
       screen.queryByText("obs_005", { selector: "td" }),
     ).not.toBeInTheDocument();
@@ -182,7 +181,9 @@ describe("observation management", () => {
       screen.getByRole("button", { name: "Добавить наблюдение" }),
     );
     const editor = screen.getByRole("dialog", { name: "Новое наблюдение" });
-    expect(within(editor).getByRole("textbox", { name: "Лиса" })).toHaveFocus();
+    expect(
+      within(editor).getByRole("combobox", { name: "Имя лисы" }),
+    ).toHaveFocus();
     expect(within(editor).getByRole("radio", { name: "Да" })).not.toBeChecked();
     expect(
       within(editor).getByRole("radio", { name: "Нет" }),
@@ -197,8 +198,8 @@ describe("observation management", () => {
     );
 
     await user.type(
-      within(editor).getByRole("textbox", { name: "Лиса" }),
-      "fox_005",
+      within(editor).getByRole("combobox", { name: "Имя лисы" }),
+      "Лиса 5",
     );
     await user.type(
       within(editor).getByRole("combobox", { name: "Локация" }),
@@ -222,10 +223,27 @@ describe("observation management", () => {
       within(editor).getByRole("button", { name: "Сохранить наблюдение" }),
     );
 
-    const generatedId = "obs_123e4567-e89b-12d3-a456-426614174000";
+    const generatedId = "obs_006";
     expect(
       screen.getByText(generatedId, { selector: "td" }),
     ).toBeInTheDocument();
+    const generatedRow = screen
+      .getByText(generatedId, { selector: "td" })
+      .closest("tr");
+    expect(generatedRow).not.toBeNull();
+    expect(generatedRow).toHaveTextContent("Лиса 5");
+    expect(generatedRow).toHaveTextContent("fox_005");
+
+    const storedDashboard = JSON.parse(
+      window.localStorage.getItem("fox-dispatcher.dashboard") ?? "null",
+    ) as { observations: Record<string, unknown>[] };
+    expect(storedDashboard.observations).toContainEqual(
+      expect.objectContaining({
+        fox_id: "fox_005",
+        fox_name: "Лиса 5",
+        id: generatedId,
+      }),
+    );
 
     firstRender.unmount();
     render(<App />);
@@ -233,6 +251,54 @@ describe("observation management", () => {
       screen.getByText(generatedId, { selector: "td" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Сохранено в этом браузере")).toBeInTheDocument();
+  });
+
+  it("locks an existing fox to its original color and shows a non-blocking warning", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Добавить наблюдение" }),
+    );
+    const editor = screen.getByRole("dialog", { name: "Новое наблюдение" });
+    const foxName = within(editor).getByRole("combobox", {
+      name: "Имя лисы",
+    });
+    const color = within(editor).getByRole("combobox", { name: "Цвет" });
+
+    await user.type(color, "серебристая");
+    await user.type(foxName, "Лиса 1");
+
+    const warning = within(editor).getByRole("status");
+    expect(warning).toHaveTextContent("Для данной лисы уже задан цвет рыжая");
+    expect(color).toHaveValue("рыжая");
+    expect(color).toHaveAttribute("readonly");
+    expect(color.getAttribute("aria-describedby")).toContain(warning.id);
+    expect(within(editor).queryByRole("alert")).not.toBeInTheDocument();
+
+    await user.type(
+      within(editor).getByRole("combobox", { name: "Локация" }),
+      "Моховой овраг",
+    );
+    await user.click(within(editor).getByRole("radio", { name: "Нет" }));
+    await user.type(
+      within(editor).getByRole("spinbutton", {
+        name: "Оценка подозрительности",
+      }),
+      "5",
+    );
+    fireEvent.change(within(editor).getByLabelText("Время"), {
+      target: { value: "11:11" },
+    });
+    await user.click(
+      within(editor).getByRole("button", { name: "Сохранить наблюдение" }),
+    );
+
+    const addedRow = screen
+      .getByText("obs_006", { selector: "td" })
+      .closest("tr");
+    expect(addedRow).toHaveTextContent("Лиса 1");
+    expect(addedRow).toHaveTextContent("рыжая");
   });
 
   it("keeps field-error links inside the observations route", async () => {
@@ -248,12 +314,14 @@ describe("observation management", () => {
     );
     await user.click(
       within(editor).getByRole("link", {
-        name: "Укажите лису (до 64 символов).",
+        name: "Укажите имя лисы (до 64 символов).",
       }),
     );
 
     expect(window.location.hash).toBe("#observations");
-    expect(within(editor).getByRole("textbox", { name: "Лиса" })).toHaveFocus();
+    expect(
+      within(editor).getByRole("combobox", { name: "Имя лисы" }),
+    ).toHaveFocus();
     expect(
       screen.getByRole("dialog", { name: "Новое наблюдение" }),
     ).toBeInTheDocument();
@@ -288,7 +356,7 @@ describe("observation management", () => {
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Изменить obs_005" }));
-    const foxField = screen.getByRole("textbox", { name: "Лиса" });
+    const foxField = screen.getByRole("combobox", { name: "Имя лисы" });
     await user.type(foxField, "-draft");
     await user.click(screen.getByRole("button", { name: "Отменить" }));
     const continueEditing = screen.getByRole("button", {
@@ -511,7 +579,7 @@ describe("observation management", () => {
       within(scope).getByRole("button", { name: "Показать все наблюдения" }),
     );
 
-    const caption = screen.getByText("Показано лис: 4 из 4", {
+    const caption = screen.getByText("Всего наблюдений: 5", {
       selector: "caption",
     });
     expect(caption).toHaveFocus();
@@ -552,7 +620,7 @@ describe("observation management", () => {
       await user.click(
         screen.getByRole("button", { name: "Добавить наблюдение" }),
       );
-      const foxField = screen.getByRole("textbox", { name: "Лиса" });
+      const foxField = screen.getByRole("combobox", { name: "Имя лисы" });
       await user.click(screen.getByRole("button", { name: actionName }));
 
       expect(foxField).toHaveFocus();

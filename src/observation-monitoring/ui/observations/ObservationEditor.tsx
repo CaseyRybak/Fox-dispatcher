@@ -19,6 +19,7 @@ import type {
 
 interface ObservationEditorProps {
   readonly colorSuggestions: readonly string[];
+  readonly foxColorProfiles: readonly FoxColorProfile[];
   readonly initialObservation?: ObservationListItem;
   readonly locationSuggestions: readonly string[];
   readonly onCancel: () => void;
@@ -26,9 +27,15 @@ interface ObservationEditorProps {
   readonly onSave: (draft: ObservationDraft) => ObservationMutationResult;
 }
 
-interface EditorValues {
+export interface FoxColorProfile {
   readonly color: string;
   readonly foxId: string;
+  readonly foxName: string;
+}
+
+interface EditorValues {
+  readonly color: string;
+  readonly foxName: string;
   readonly hasPrey: boolean | undefined;
   readonly location: string;
   readonly suspicionLevel: string;
@@ -37,7 +44,7 @@ interface EditorValues {
 
 const emptyValues: EditorValues = {
   color: "",
-  foxId: "",
+  foxName: "",
   hasPrey: undefined,
   location: "",
   suspicionLevel: "",
@@ -46,6 +53,7 @@ const emptyValues: EditorValues = {
 
 export function ObservationEditor({
   colorSuggestions,
+  foxColorProfiles,
   initialObservation,
   locationSuggestions,
   onCancel,
@@ -57,7 +65,7 @@ export function ObservationEditor({
       initialObservation
         ? {
             color: initialObservation.color,
-            foxId: initialObservation.foxId,
+            foxName: initialObservation.foxName,
             hasPrey: initialObservation.hasPrey,
             location: initialObservation.location,
             suspicionLevel: String(initialObservation.suspicionLevel),
@@ -74,6 +82,13 @@ export function ObservationEditor({
   const title = initialObservation
     ? `Изменить наблюдение ${initialObservation.id}`
     : "Новое наблюдение";
+  const existingFoxProfile = findFoxColorProfile(
+    foxColorProfiles,
+    values.foxName,
+  );
+  const colorWarning = existingFoxProfile
+    ? `Для данной лисы уже задан цвет ${existingFoxProfile.color}`
+    : undefined;
   const dirty = JSON.stringify(values) !== JSON.stringify(initialValues);
   const firstFieldRef = useRef<HTMLInputElement>(null);
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -142,7 +157,7 @@ export function ObservationEditor({
     event.preventDefault();
     const result = onSave({
       color: values.color,
-      foxId: values.foxId,
+      foxName: values.foxName,
       hasPrey: values.hasPrey,
       location: values.location,
       suspicionLevel:
@@ -270,26 +285,45 @@ export function ObservationEditor({
 
         <form className="observation-form" noValidate onSubmit={submit}>
           <EditorField
-            error={fieldErrors.foxId}
-            hint="Идентификатор лисы, до 64 символов."
-            id="foxId"
-            label="Лиса"
+            error={fieldErrors.foxName}
+            hint="Введите имя, например «Лиса 5». Существующее имя объединит наблюдения одной лисы."
+            id="foxName"
+            label="Имя лисы"
           >
             <input
-              aria-describedby={describedBy("foxId", fieldErrors.foxId)}
-              aria-invalid={Boolean(fieldErrors.foxId)}
-              id="observation-foxId"
+              aria-describedby={describedBy("foxName", fieldErrors.foxName)}
+              aria-invalid={Boolean(fieldErrors.foxName)}
+              id="observation-foxName"
+              list="observation-fox-name-suggestions"
               maxLength={64}
-              onChange={(event) =>
-                setValues((current) => ({
-                  ...current,
-                  foxId: event.target.value,
-                }))
-              }
+              onChange={(event) => {
+                const foxName = event.target.value;
+                setValues((current) => {
+                  const previousProfile = findFoxColorProfile(
+                    foxColorProfiles,
+                    current.foxName,
+                  );
+                  const nextProfile = findFoxColorProfile(
+                    foxColorProfiles,
+                    foxName,
+                  );
+                  return {
+                    ...current,
+                    color:
+                      nextProfile?.color ??
+                      (previousProfile ? "" : current.color),
+                    foxName,
+                  };
+                });
+              }}
               ref={firstFieldRef}
               required
               type="text"
-              value={values.foxId}
+              value={values.foxName}
+            />
+            <SuggestionList
+              id="observation-fox-name-suggestions"
+              values={foxColorProfiles.map(({ foxName }) => foxName)}
             />
           </EditorField>
 
@@ -328,7 +362,11 @@ export function ObservationEditor({
             label="Цвет"
           >
             <input
-              aria-describedby={describedBy("color", fieldErrors.color)}
+              aria-describedby={describedBy(
+                "color",
+                fieldErrors.color,
+                colorWarning ? "observation-color-warning" : undefined,
+              )}
               aria-invalid={Boolean(fieldErrors.color)}
               id="observation-color"
               list="observation-color-suggestions"
@@ -340,6 +378,7 @@ export function ObservationEditor({
                 }))
               }
               required
+              readOnly={Boolean(existingFoxProfile)}
               type="text"
               value={values.color}
             />
@@ -347,6 +386,16 @@ export function ObservationEditor({
               id="observation-color-suggestions"
               values={colorSuggestions}
             />
+            {colorWarning && (
+              <p
+                aria-live="polite"
+                className="field-warning"
+                id="observation-color-warning"
+                role="status"
+              >
+                {colorWarning}
+              </p>
+            )}
           </EditorField>
 
           <fieldset
@@ -558,8 +607,24 @@ function SuggestionList({
   );
 }
 
-function describedBy(field: string, error?: string) {
-  return `observation-${field}-hint${error ? ` observation-${field}-error` : ""}`;
+function describedBy(field: string, error?: string, extraId?: string) {
+  return `observation-${field}-hint${extraId ? ` ${extraId}` : ""}${error ? ` observation-${field}-error` : ""}`;
+}
+
+function findFoxColorProfile(
+  profiles: readonly FoxColorProfile[],
+  foxName: string,
+): FoxColorProfile | undefined {
+  const normalizedName = normalizeFoxName(foxName);
+  if (!normalizedName) return undefined;
+  return profiles.find(
+    ({ foxName: existingName }) =>
+      normalizeFoxName(existingName) === normalizedName,
+  );
+}
+
+function normalizeFoxName(value: string): string {
+  return value.replace(/\s+/gu, " ").trim().toLocaleLowerCase("ru-RU");
 }
 
 function pluralizeFields(count: number) {

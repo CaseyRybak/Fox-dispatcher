@@ -22,7 +22,7 @@ Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6
 - `application/observation-transfer.ts` — import preview/result, file boundary, and export port types.
 - `adapters/browser-dashboard-state/browser-dashboard-state.ts` — strict version-1 local-storage envelope and recovery classification.
 - `adapters/json-observation-transfer/json-observation-transfer.ts` — 2 MiB UTF-8 parser, strict Zod preview, deterministic JSON artifact, and browser download adapter.
-- `adapters/observation-id/browser-observation-id-generator.ts` — production `obs_<uuid>` generator.
+- `application/observation-management.ts` — name-to-fox resolution plus deterministic first-free `fox_NNN` and `obs_NNN` allocation.
 - `adapters/public-worklog/public-worklog.ts` — strict 5-7 checkpoint Zod parser and immutable bundled source.
 - `adapters/starter-data/starter-observations.ts` — Zod boundary for the bundled starter JSON.
 - `ui/ApplicationShell.tsx` — navigation and destination composition.

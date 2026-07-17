@@ -31,8 +31,8 @@ import {
   type ReportFilters,
 } from "@/observation-monitoring/application/report-scope";
 import {
+  formatFoxIdentityEntries,
   formatFoxIdentityLabel,
-  formatFoxIdentityList,
 } from "@/observation-monitoring/application/fox-display-name";
 import { createBrowserDashboardStateStore } from "@/observation-monitoring/adapters/browser-dashboard-state/browser-dashboard-state";
 import {
@@ -40,7 +40,6 @@ import {
   createJsonObservationImportParser,
   readObservationImportFile,
 } from "@/observation-monitoring/adapters/json-observation-transfer/json-observation-transfer";
-import { browserObservationIdGenerator } from "@/observation-monitoring/adapters/observation-id/browser-observation-id-generator";
 import { publicWorklog } from "@/observation-monitoring/adapters/public-worklog/public-worklog";
 import { starterObservations } from "@/observation-monitoring/adapters/starter-data/starter-observations";
 import {
@@ -276,11 +275,7 @@ export function App({
   }
 
   function addDraft(draft: ObservationDraft) {
-    const result = addObservation(
-      dashboard.observations,
-      draft,
-      browserObservationIdGenerator,
-    );
+    const result = addObservation(dashboard.observations, draft);
     if (result.ok) {
       acceptObservationSet(
         result.observations,
@@ -432,7 +427,12 @@ export function App({
 
   function selectFox(foxId: string) {
     setSelectedFoxId(foxId);
-    announce(`Показаны доказательства: ${formatFoxIdentityLabel(foxId)}.`);
+    const foxName = summaryViewModel.ranking.find(
+      (assessment) => assessment.foxId === foxId,
+    )?.foxName;
+    announce(
+      `Показаны доказательства: ${formatFoxIdentityLabel(foxId, foxName)}.`,
+    );
   }
 
   function announce(message: string) {
@@ -504,13 +504,16 @@ function createObservationMutationAnnouncement(
 ) {
   const leaderResult = viewModel.leader
     ? viewModel.leaders.length > 1
-      ? `Теперь лидируют ${formatFoxIdentityList(viewModel.leaders.map(({ foxId }) => foxId))}, ${viewModel.leader.scoreLabel}.`
-      : `Теперь лидирует ${formatFoxIdentityLabel(viewModel.leader.foxId)}, ${viewModel.leader.scoreLabel}.`
+      ? `Теперь лидируют ${formatFoxIdentityEntries(viewModel.leaders)}, ${viewModel.leader.scoreLabel}.`
+      : `Теперь лидирует ${formatFoxIdentityLabel(viewModel.leader.foxId, viewModel.leader.foxName)}, ${viewModel.leader.scoreLabel}.`
     : "В текущей выборке нет лидера.";
   const nextSelectedFoxId = viewModel.selectedFox?.foxId;
   const selectionResult =
     previousSelectedFoxId !== nextSelectedFoxId && nextSelectedFoxId
-      ? ` Выбрана ${formatFoxIdentityLabel(nextSelectedFoxId)}.`
+      ? ` Выбрана ${formatFoxIdentityLabel(
+          nextSelectedFoxId,
+          viewModel.selectedFox?.foxName,
+        )}.`
       : previousSelectedFoxId && !nextSelectedFoxId
         ? ` ${formatFoxIdentityLabel(previousSelectedFoxId)} больше не входит в выборку.`
         : "";

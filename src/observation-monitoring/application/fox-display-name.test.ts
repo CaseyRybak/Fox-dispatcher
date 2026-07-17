@@ -22,7 +22,7 @@ describe("fox display names", () => {
 
   it("never gives distinct identifiers the same display name", () => {
     const foxIds = ["fox_1", "fox_01", "fox_001", "fox_012", "fox_special"];
-    const displayNames = foxIds.map(formatFoxDisplayName);
+    const displayNames = foxIds.map((foxId) => formatFoxDisplayName(foxId));
 
     expect(new Set(displayNames).size).toBe(foxIds.length);
     expect(formatFoxDisplayName("fox_001")).toBe("Лиса 1");

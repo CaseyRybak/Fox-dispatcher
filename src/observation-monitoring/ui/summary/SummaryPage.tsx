@@ -12,8 +12,6 @@ import {
   type SummaryViewModel,
 } from "@/observation-monitoring/application/create-summary-view-model";
 import {
-  formatFoxDisplayName,
-  formatFoxDisplayNameList,
   formatFoxIdentityLabel,
   hasDistinctFoxDisplayName,
 } from "@/observation-monitoring/application/fox-display-name";
@@ -116,12 +114,10 @@ export function SummaryPage({
                 <div className="leader-result">
                   <div className="leader-result__identity">
                     <h2 className="leader-result__fox" id="leader-title">
-                      {formatFoxDisplayNameList(
-                        leaders.map(({ foxId }) => foxId),
-                      )}
+                      {formatFoxNameList(leaders.map(({ foxName }) => foxName))}
                     </h2>
-                    {leaders.some(({ foxId }) =>
-                      hasDistinctFoxDisplayName(foxId),
+                    {leaders.some(({ foxId, foxName }) =>
+                      hasDistinctFoxDisplayName(foxId, foxName),
                     ) && (
                       <p className="data-id">
                         {leaders.map(({ foxId }) => foxId).join(" · ")}
@@ -221,16 +217,17 @@ export function SummaryPage({
 
             <div className="assessment-side">
               <aside
-                aria-label={`Расчёт: ${formatFoxIdentityLabel(selectedFox.foxId)}`}
+                aria-label={`Расчёт: ${formatFoxIdentityLabel(selectedFox.foxId, selectedFox.foxName)}`}
                 className="calculation-panel"
               >
                 <div className="calculation-panel__heading">
                   <div>
                     <p className="eyebrow">Расчет индекса</p>
-                    <h2>{formatFoxDisplayName(selectedFox.foxId)}</h2>
-                    {hasDistinctFoxDisplayName(selectedFox.foxId) && (
-                      <p className="data-id">{selectedFox.foxId}</p>
-                    )}
+                    <h2>{selectedFox.foxName}</h2>
+                    {hasDistinctFoxDisplayName(
+                      selectedFox.foxId,
+                      selectedFox.foxName,
+                    ) && <p className="data-id">{selectedFox.foxId}</p>}
                   </div>
                   <p>
                     Индекс <strong>{selectedFox.scoreLabel}</strong>
@@ -243,16 +240,16 @@ export function SummaryPage({
                   role="group"
                 >
                   <ContributionRow
-                    detail={`${selectedFox.meanSuspicionExactLabel} × ${viewModel.suspicionWeightPercent}%`}
+                    detail={`${selectedFox.meanSuspicionLabel} × ${viewModel.suspicionWeightPercent}%`}
                     label="Средняя подозрительность по всем наблюдениям"
                     percent={selectedFox.suspicionContributionPercent}
-                    value={selectedFox.suspicionContributionExactLabel}
+                    value={selectedFox.suspicionContributionLabel}
                   />
                   <ContributionRow
                     detail={`${selectedFox.preyRatioLabel} × 10 × ${viewModel.preyWeightPercent}%`}
                     label="Наличие добычи"
                     percent={selectedFox.preyContributionPercent}
-                    value={selectedFox.preyContributionExactLabel}
+                    value={selectedFox.preyContributionLabel}
                   />
                 </div>
               </aside>
@@ -285,7 +282,7 @@ function LeaderReason({
   readonly leader: RankedFoxViewModel;
   readonly showFoxName: boolean;
 }) {
-  const foxName = formatFoxDisplayName(leader.foxId);
+  const foxName = leader.foxName;
 
   return (
     <section
@@ -299,10 +296,10 @@ function LeaderReason({
           <dt>Средняя подозрительность по всем наблюдениям</dt>
           <dd>
             <span>
-              {leader.meanSuspicionExactLabel} · {leader.observationCount}{" "}
+              {leader.meanSuspicionLabel} · {leader.observationCount}{" "}
               {formatObservationCount(leader.observationCount)}
             </span>
-            <strong>В индексе {leader.suspicionContributionExactLabel}</strong>
+            <strong>В индексе {leader.suspicionContributionLabel}</strong>
           </dd>
         </div>
         <div>
@@ -312,7 +309,7 @@ function LeaderReason({
               В {leader.preyObservationCount} из {leader.observationCount}{" "}
               наблюдений
             </span>
-            <strong>В индексе {leader.preyContributionExactLabel}</strong>
+            <strong>В индексе {leader.preyContributionLabel}</strong>
           </dd>
         </div>
       </dl>
@@ -331,7 +328,7 @@ function IndexComposition({ leader }: { readonly leader: RankedFoxViewModel }) {
         roundedContributionTotal;
   const preyBarPercent = Math.max(0, leader.scoreTenths - suspicionBarPercent);
   const remainderPercent = Math.max(0, 100 - leader.scoreTenths);
-  const foxName = formatFoxDisplayName(leader.foxId);
+  const foxName = leader.foxName;
 
   return (
     <figure
@@ -355,12 +352,11 @@ function IndexComposition({ leader }: { readonly leader: RankedFoxViewModel }) {
       <figcaption className="index-composition__legend">
         <span>
           <i aria-hidden="true" data-signal="suspicion" />
-          Подозрительность{" "}
-          <strong>{leader.suspicionContributionExactLabel}</strong>
+          Подозрительность <strong>{leader.suspicionContributionLabel}</strong>
         </span>
         <span>
           <i aria-hidden="true" data-signal="prey" />
-          Добыча <strong>{leader.preyContributionExactLabel}</strong>
+          Добыча <strong>{leader.preyContributionLabel}</strong>
         </span>
         <span>
           <i aria-hidden="true" data-signal="remainder" />
@@ -416,8 +412,8 @@ function SuspicionCalculationExplainer({
         <div className="calculation-explainer__leader" key={leader.foxId}>
           {hasMultipleLeaders && (
             <header className="calculation-explainer__leader-heading">
-              <h4>{formatFoxDisplayName(leader.foxId)}</h4>
-              {hasDistinctFoxDisplayName(leader.foxId) && (
+              <h4>{leader.foxName}</h4>
+              {hasDistinctFoxDisplayName(leader.foxId, leader.foxName) && (
                 <p className="data-id">{leader.foxId}</p>
               )}
             </header>
@@ -446,12 +442,15 @@ function CalculationSteps({
   readonly nested: boolean;
   readonly viewModel: SummaryViewModel;
 }) {
-  const foxName = formatFoxDisplayName(leader.foxId);
-  const foxNameAfterFor = hasDistinctFoxDisplayName(leader.foxId)
+  const foxName = leader.foxName;
+  const foxNameAfterFor = hasDistinctFoxDisplayName(
+    leader.foxId,
+    leader.foxName,
+  )
     ? foxName.replace(/^Лиса /u, "Лисы ")
     : foxName;
-  const exactScoreIsDisplayed = leader.scoreExactLabel === leader.scoreLabel;
   const StepHeading = nested ? "h5" : "h4";
+  const equalitySign = leader.calculationIsRounded ? "≈" : "=";
 
   return (
     <ol className="calculation-explainer__steps">
@@ -463,13 +462,11 @@ function CalculationSteps({
             {leader.observationCount}.
           </span>
           <br />
-          <span>
-            Средняя подозрительность - {leader.meanSuspicionExactLabel}.
-          </span>
+          <span>Средняя подозрительность - {leader.meanSuspicionLabel}.</span>
         </p>
         <strong className="calculation-explainer__formula">
-          {leader.meanSuspicionExactLabel} × {viewModel.suspicionWeightPercent}%
-          = {leader.suspicionContributionExactLabel}
+          {leader.meanSuspicionLabel} × {viewModel.suspicionWeightPercent}%{" "}
+          {equalitySign} {leader.suspicionContributionLabel}
         </strong>
       </li>
       <li>
@@ -480,23 +477,23 @@ function CalculationSteps({
         </p>
         <strong className="calculation-explainer__formula">
           {leader.preyRatioLabel} × 10 × {viewModel.preyWeightPercent}% ={" "}
-          {leader.preyContributionExactLabel}
+          {leader.preyContributionLabel}
         </strong>
       </li>
       <li>
         <StepHeading>Итоговый индекс</StepHeading>
         <p>Складываем значения двух параметров.</p>
         <strong className="calculation-explainer__formula">
-          {leader.suspicionContributionExactLabel} +{" "}
-          {leader.preyContributionExactLabel} = {leader.scoreExactLabel}
-          {exactScoreIsDisplayed ? " из 10" : ""}
+          {leader.calculationIsRounded ? (
+            <>Итог без промежуточного округления ≈ {leader.scoreLabel} из 10</>
+          ) : (
+            <>
+              {leader.suspicionContributionLabel} +{" "}
+              {leader.preyContributionLabel} = {leader.scoreLabel} из 10
+            </>
+          )}
         </strong>
-        {!exactScoreIsDisplayed && (
-          <p>
-            Точный результат - {leader.scoreExactLabel}. На экране -{" "}
-            {leader.scoreLabel} из 10.
-          </p>
-        )}
+        {leader.calculationIsRounded && <p>Значения округлены до десятых.</p>}
       </li>
     </ol>
   );
@@ -743,7 +740,7 @@ function RankingRow({
   return (
     <li className={className}>
       <button
-        aria-label={`Показать расчёт: ${formatFoxDisplayName(assessment.foxId)}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; оценка ${assessment.meanSuspicionLabel}; добыча в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.colorSummaryLabel}; наблюдений ${assessment.observationCount}; идентификатор ${assessment.foxId}`}
+        aria-label={`Показать расчёт: ${assessment.foxName}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; подозрительность ${assessment.meanSuspicionLabel}; добыча в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.colorSummaryLabel}; наблюдений ${assessment.observationCount}; идентификатор ${assessment.foxId}`}
         aria-pressed={isSelected}
         className="ranking-row__button"
         onClick={() => onSelect(assessment.foxId)}
@@ -754,10 +751,11 @@ function RankingRow({
         </span>
         <span className="ranking-row__identity">
           <span className="ranking-row__name">
-            <strong>{formatFoxDisplayName(assessment.foxId)}</strong>
-            {hasDistinctFoxDisplayName(assessment.foxId) && (
-              <span className="data-id">{assessment.foxId}</span>
-            )}
+            <strong>{assessment.foxName}</strong>
+            {hasDistinctFoxDisplayName(
+              assessment.foxId,
+              assessment.foxName,
+            ) && <span className="data-id">{assessment.foxId}</span>}
           </span>
           <span className="ranking-row__latest">
             <span
@@ -772,7 +770,7 @@ function RankingRow({
           </span>
         </span>
         <span className="ranking-row__basis">
-          <span>оценка {assessment.meanSuspicionLabel}</span>
+          <span>подозрительность {assessment.meanSuspicionLabel}</span>
           <span>
             добыча в {assessment.preyObservationCount} из{" "}
             {assessment.observationCount}
@@ -840,9 +838,7 @@ function PolicyControl({
             {viewModel.leaders.length > 1 ? "Текущие лидеры" : "Текущий лидер"}
           </span>
           <strong>
-            {formatFoxDisplayNameList(
-              viewModel.leaders.map(({ foxId }) => foxId),
-            )}
+            {formatFoxNameList(viewModel.leaders.map(({ foxName }) => foxName))}
           </strong>
           <span>{viewModel.leader.scoreLabel} из 10</span>
         </section>
@@ -1010,6 +1006,26 @@ function formatPositionCount(count: number): string {
           : "позиций";
 
   return `${count} ${word}`;
+}
+
+function formatFoxNameList(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? "";
+
+  const numberedNames = names.map((name) => /^Лиса (.+)$/u.exec(name));
+  if (numberedNames.every((match) => match !== null)) {
+    return `Лисы ${joinRussianList(
+      numberedNames.map((match) => match?.[1] ?? ""),
+    )}`;
+  }
+
+  return joinRussianList(names);
+}
+
+function joinRussianList(values: readonly string[]): string {
+  if (values.length <= 1) return values[0] ?? "";
+  if (values.length === 2) return `${values[0]} и ${values[1]}`;
+
+  return `${values.slice(0, -1).join(", ")} и ${values.at(-1)}`;
 }
 
 function handleWeightChange(
