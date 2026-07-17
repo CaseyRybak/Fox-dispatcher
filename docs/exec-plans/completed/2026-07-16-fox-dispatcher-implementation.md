@@ -186,7 +186,7 @@ The input includes time but no date. Copy uses `текущая выборка` a
 
 ### 3. Filters define the whole report scope
 
-Search by `fox_id` and filters for location, color, and prey update metrics, ranking, location activity, evidence, and raw observations together. A persistent scope label states `Отчёт по N из M наблюдений`. Removable filter chips and `Сбросить всё` make the scope explicit.
+Search by fox identity and filters for location, color, and prey update metrics, ranking, evidence, and raw observations together. A persistent scope label states `Показано лис: X из Y` using unique `fox_id` values. Removable filter chips and `Сбросить всё` make the scope explicit.
 
 The inspector selects the leader initially, preserves an explicit user selection while that fox remains in scope, and falls back to the current leader or an empty inspector when mutations or filters remove it. Automatic fallback announces status without moving focus.
 
@@ -429,7 +429,7 @@ Implementation steps:
 3. Render time-based evidence markers without drawing a movement path.
 4. Render location activity with counts, percentages, and explicit metric definition.
 5. Apply fox search, location, color, and prey filters to the whole report.
-6. Show `Отчёт по N из M наблюдений` and recover cleanly from a zero-result selection.
+6. Show `Показано лис: X из Y` and recover cleanly from a zero-result selection.
 7. Preserve explicit fox selection while it remains in scope; otherwise fall back without moving focus and announce the new inspector state.
 
 Verification commands:

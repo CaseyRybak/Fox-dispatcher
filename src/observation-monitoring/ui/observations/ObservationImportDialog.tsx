@@ -210,7 +210,7 @@ export function ObservationImportDialog({
           <ul>
             {validationError.issues.map((issue, index) => (
               <li key={`${issue.path}-${issue.message}-${index}`}>
-                <code>{issue.path}</code> — {issue.message}
+                <code>{issue.path}</code> - {issue.message}
               </li>
             ))}
           </ul>
@@ -259,7 +259,7 @@ export function ObservationImportDialog({
               <dt>Время</dt>
               <dd>
                 {preview.preview.timeRange
-                  ? `${preview.preview.timeRange.start}–${preview.preview.timeRange.end}`
+                  ? `${preview.preview.timeRange.start}-${preview.preview.timeRange.end}`
                   : "Нет записей"}
               </dd>
             </div>

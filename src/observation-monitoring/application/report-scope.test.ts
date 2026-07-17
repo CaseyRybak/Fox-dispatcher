@@ -126,12 +126,14 @@ describe("report scope", () => {
     const viewModel = createSummaryViewModel(observations, 20, {
       selectedFoxId: "fox_004",
       totalObservationCount: reportObservations.length,
+      totalFoxCount: 4,
     });
 
     expect(viewModel.scope).toEqual({
-      filteredObservationCount: 3,
-      label: "Отчёт по 3 из 5 наблюдений",
+      filteredFoxCount: 2,
+      label: "Показано лис: 2 из 4",
       totalObservationCount: 5,
+      totalFoxCount: 4,
     });
     expect(viewModel.ranking.map(({ foxId }) => foxId)).toEqual([
       "fox_001",
@@ -160,6 +162,7 @@ describe("report scope", () => {
     const viewModel = createSummaryViewModel(observations, 20, {
       selectedFoxId: "fox_003",
       totalObservationCount: reportObservations.length,
+      totalFoxCount: 4,
     });
 
     expect(viewModel.leader?.foxId).toBe("fox_001");

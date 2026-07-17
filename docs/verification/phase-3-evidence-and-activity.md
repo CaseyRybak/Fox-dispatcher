@@ -17,7 +17,7 @@ Published final-corrections revision: `699d457a84d8f3fdc8ff5ae7f0b9d15c5ed0aa9c`
 Phase 3 connects every report result to one explicit observation scope:
 
 - fox search and exact location, color, and prey filters update metrics, ranking, evidence, location activity, recent observations, and the Observations ledger together;
-- the persistent label states `Отчёт по N из M наблюдений`, active filters have removable named chips, and reset restores the full source set;
+- the persistent label now states `Показано лис: X из Y` using unique fox identities, active filters have removable named chips, and reset restores the full source set;
 - ranking rows are keyboard-selectable native buttons, expose selected state, and update the selected-fox contribution and raw-evidence inspector;
 - an explicit fox selection survives weight recalculation while that fox remains in scope; an excluded fox falls back to the scoped leader without moving focus;
 - every accepted filter command produces one atomic polite announcement, including the new selected fox when fallback occurs;

@@ -8,7 +8,6 @@ import {
 
 import {
   formatObservationCount,
-  type LocationActivityViewModel,
   type RankedFoxViewModel,
   type SummaryViewModel,
 } from "@/observation-monitoring/application/create-summary-view-model";
@@ -84,7 +83,7 @@ export function SummaryPage({
             <p>
               {isDatasetEmpty
                 ? "В журнале нет записей. Откройте управление данными, чтобы добавить наблюдение, импортировать JSON или вернуть стартовый набор."
-                : "Измените или сбросьте фильтры — исходный набор остаётся без изменений."}
+                : "Измените или сбросьте фильтры - исходный набор остаётся без изменений."}
             </p>
             {isDatasetEmpty ? (
               <a className="primary-action" href="#observations">
@@ -266,21 +265,6 @@ export function SummaryPage({
               </section>
             </div>
           </div>
-
-          <div className="report-context-grid">
-            <LocationActivity
-              activeLocation={filters.location}
-              locations={viewModel.locationActivity}
-              onSelectLocation={(location) =>
-                onFiltersChange({
-                  ...filters,
-                  location: filters.location === location ? "" : location,
-                })
-              }
-              scopeCount={viewModel.scope.filteredObservationCount}
-            />
-            <RecentObservations viewModel={viewModel} />
-          </div>
         </>
       )}
     </div>
@@ -344,8 +328,12 @@ function SuspicionCalculationExplainer({
             наблюдениям и наличия добычи.
           </p>
           <p>
+            Количество наблюдений не добавляет баллы самостоятельно. Оно влияет
+            на среднюю подозрительность и долю наблюдений с добычей.
+          </p>
+          <p>
             При стартовых настройках средняя подозрительность лисы имеет 80%
-            веса в итоговом индексе, а наличие добычи — 20%. Вес параметров
+            веса в итоговом индексе, а наличие добычи - 20%. Вес параметров
             можно изменить ниже. Параметры наблюдений и количество лис можно
             изменить в разделе <a href="#observations">«Параметры»</a>.
           </p>
@@ -376,9 +364,7 @@ function SuspicionCalculationExplainer({
       ))}
 
       <p className="calculation-explainer__boundary">
-        Количество наблюдений не добавляет баллы самостоятельно. Оно влияет на
-        среднюю подозрительность и долю наблюдений с добычей. Цвет, локация и
-        время в расчёте индекса не участвуют.
+        Цвет, локация и время в расчёте индекса не участвуют.
       </p>
     </section>
   );
@@ -407,7 +393,7 @@ function CalculationSteps({
         <p>
           Для {foxNameAfterFor} объединены {leader.observationCount}{" "}
           {formatObservationCount(leader.observationCount)}. Средняя
-          подозрительность — {leader.meanSuspicionExactLabel}.
+          подозрительность - {leader.meanSuspicionExactLabel}.
         </p>
         <strong className="calculation-explainer__formula">
           {leader.meanSuspicionExactLabel} × {viewModel.suspicionWeightPercent}%
@@ -435,7 +421,7 @@ function CalculationSteps({
         </strong>
         {!exactScoreIsDisplayed && (
           <p>
-            Точный результат — {leader.scoreExactLabel}. На экране —{" "}
+            Точный результат - {leader.scoreExactLabel}. На экране -{" "}
             {leader.scoreLabel} из 10.
           </p>
         )}
@@ -554,7 +540,7 @@ function ScopeToolbar({
           <input
             autoComplete="off"
             onChange={(event) => updateFilter("foxQuery", event.target.value)}
-            placeholder="Лиса 1 или fox_001"
+            placeholder="Например, Лиса 1 или fox_001"
             type="search"
             value={filters.foxQuery}
           />
@@ -751,7 +737,7 @@ function PolicyControl({
       </div>
       <input
         aria-describedby="prey-weight-help"
-        aria-valuetext={`${viewModel.preyWeightPercent}% — влияние подозрительности ${viewModel.suspicionWeightPercent}%, наличие добычи ${viewModel.preyWeightPercent}%`}
+        aria-valuetext={`${viewModel.preyWeightPercent}% - влияние подозрительности ${viewModel.suspicionWeightPercent}%, наличие добычи ${viewModel.preyWeightPercent}%`}
         id="prey-weight"
         max="100"
         min="0"
@@ -907,101 +893,6 @@ function ExactWeightControl({
         <span aria-hidden="true">%</span>
       </div>
     </div>
-  );
-}
-
-function LocationActivity({
-  activeLocation,
-  locations,
-  onSelectLocation,
-  scopeCount,
-}: {
-  readonly activeLocation: string;
-  readonly locations: readonly LocationActivityViewModel[];
-  readonly onSelectLocation: (location: string) => void;
-  readonly scopeCount: number;
-}) {
-  return (
-    <section
-      className="context-panel location-panel"
-      aria-labelledby="location-activity-title"
-    >
-      <div className="context-panel__heading">
-        <div>
-          <p className="eyebrow">Распределение записей</p>
-          <h2 id="location-activity-title">Активность по локациям</h2>
-        </div>
-        <p>Количество наблюдений в текущей выборке.</p>
-      </div>
-      <ul className="location-list">
-        {locations.map((activity) => {
-          const style = {
-            "--location-width": `${activity.percentage}%`,
-          } as CSSProperties;
-
-          return (
-            <li key={activity.location}>
-              <button
-                aria-label={`Фильтровать по локации ${activity.location}, ${activity.observationCount} из ${scopeCount}, ${activity.percentageLabel}`}
-                aria-pressed={activeLocation === activity.location}
-                onClick={() => onSelectLocation(activity.location)}
-                type="button"
-              >
-                <span className="location-row__label">
-                  <strong>{activity.location}</strong>
-                  <span>
-                    {activity.observationCount} из {scopeCount} ·{" "}
-                    {activity.percentageLabel}
-                  </span>
-                </span>
-                <span aria-hidden="true" className="location-row__track">
-                  <span style={style} />
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
-function RecentObservations({
-  viewModel,
-}: {
-  readonly viewModel: SummaryViewModel;
-}) {
-  return (
-    <section
-      className="context-panel recent-panel"
-      aria-labelledby="recent-observations-title"
-    >
-      <div className="context-panel__heading">
-        <div>
-          <p className="eyebrow">Текущая область</p>
-          <h2 id="recent-observations-title">Последние наблюдения</h2>
-        </div>
-        <a href="#observations">Все наблюдения</a>
-      </div>
-      <ol className="recent-list">
-        {viewModel.recentObservations.map((observation) => (
-          <li key={observation.id}>
-            <time>{observation.time}</time>
-            <span>
-              <strong>{formatFoxDisplayName(observation.foxId)}</strong>
-              {hasDistinctFoxDisplayName(observation.foxId) && (
-                <span className="data-id">{observation.foxId}</span>
-              )}
-              <span>{observation.location}</span>
-            </span>
-            <span>
-              <strong>{observation.suspicionLevel} / 10</strong>
-              <span>{observation.preyLabel}</span>
-            </span>
-          </li>
-        ))}
-      </ol>
-    </section>
   );
 }
 

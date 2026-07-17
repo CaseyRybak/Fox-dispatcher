@@ -34,7 +34,6 @@ The owner subsequently authorized Phase 2. The scoring work was then reviewed ag
 | Accessible hash navigation | focused test covers all destinations, language, title, current link, heading focus, Back/Forward, and skip-link route preservation | Pass |
 | Layer boundaries | twelve production source files plus one positive and thirteen negative fixtures, including root imports, shared isolation, and browser globals | Pass |
 | Production build | TypeScript and Vite build on the pinned runtime | Pass |
-| Runtime notices | `public/third-party-notices.txt` is copied byte-for-byte to `dist/` | Pass |
 | Reproducible browser smoke | `npm run test:browser` builds, starts the production preview, and checks the three routes in Chrome | Added after the historical gate; sandbox execution is socket-blocked |
 | Full repository gate | `npm run verify` | Passed for the corrected Phase 1/2 snapshot; current Phase 3 blockers are recorded separately |
 
@@ -44,7 +43,6 @@ The owner subsequently authorized Phase 2. The scoring work was then reviewed ag
 - `src/observation-monitoring/ui/ApplicationShell.tsx` focuses the current main region through a React ref without changing the route hash.
 - `eslint.config.js`, `scripts/check-boundaries.mjs`, and `scripts/boundary-fixtures/` enforce the documented matrix and report fixture evidence even when production code fails.
 - `src/app/styles.css` restores `moss-muted` to `#607269` and uses `pine-structure` on tinted metric/table backgrounds.
-- `public/third-party-notices.txt` bundles the exact React, React DOM, Scheduler, Zod, Vite-runtime, Onest, and Unbounded notices and is linked from the application footer.
 - `scripts/run-phase-1-browser-smoke.mjs` and `scripts/phase-1-browser-smoke.js` make the Phase 1 browser checks reproducible through `npm run test:browser`.
 - `@types/node` now uses the Node 24 definitions branch, matching the pinned Node 24 runtime instead of exposing Node 26-only APIs to TypeScript.
 
@@ -84,7 +82,6 @@ Tests       19 passed (19)
 npm run build
 Exit 0: TypeScript and Vite production build passed.
 
-cmp public/third-party-notices.txt dist/third-party-notices.txt
 Exit 0: production notice matches its source.
 
 npm run check:boundaries

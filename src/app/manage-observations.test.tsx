@@ -88,7 +88,7 @@ describe("observation management", () => {
     expect(within(summary).getByText("Индекс 8,0 из 10")).toBeInTheDocument();
   });
 
-  it("recalculates filtered scope, options, activity, recency, and the selected calculation from one edit", async () => {
+  it("recalculates filtered scope, options, and the selected calculation from one edit", async () => {
     const user = userEvent.setup();
     window.history.replaceState(null, "", "#summary");
     render(<App />);
@@ -112,7 +112,7 @@ describe("observation management", () => {
       within(editor).getByRole("button", { name: "Сохранить наблюдение" }),
     );
 
-    expect(screen.getByText("Отчёт по 2 из 5 наблюдений")).toBeInTheDocument();
+    expect(screen.getByText("Показано лис: 1 из 4")).toBeInTheDocument();
     expect(
       screen.queryByText("obs_005", { selector: "td" }),
     ).not.toBeInTheDocument();
@@ -122,26 +122,13 @@ describe("observation management", () => {
       screen.getByRole("option", { name: "Речной берег" }),
     ).toBeInTheDocument();
     expect(
-      within(
-        screen.getByRole("region", { name: "Активность по локациям" }),
-      ).getByRole("button", {
-        name: "Фильтровать по локации Северная поляна, 2 из 2, 100%",
-      }),
-    ).toBeInTheDocument();
+      screen.queryByRole("region", { name: "Активность по локациям" }),
+    ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Сбросить всё" }));
     expect(
-      within(
-        screen.getByRole("region", { name: "Активность по локациям" }),
-      ).getByRole("button", {
-        name: "Фильтровать по локации Речной берег, 1 из 5, 20%",
-      }),
-    ).toBeInTheDocument();
-    expect(
-      within(
-        screen.getByRole("region", { name: "Последние наблюдения" }),
-      ).getAllByRole("listitem")[0],
-    ).toHaveTextContent("13:45Лиса 4fox_004Речной берег");
+      screen.queryByRole("region", { name: "Последние наблюдения" }),
+    ).not.toBeInTheDocument();
 
     await user.click(
       screen.getByRole("button", {
@@ -388,7 +375,7 @@ describe("observation management", () => {
 
     expect(
       screen.getByText(
-        "Сохранённые данные повреждены — автосохранение приостановлено",
+        "Сохранённые данные повреждены - автосохранение приостановлено",
       ),
     ).toBeVisible();
   });
@@ -444,7 +431,7 @@ describe("observation management", () => {
     expect(screen.getByText("10 / 10")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Не удалось сохранить — изменения останутся до закрытия страницы",
+        "Не удалось сохранить - изменения останутся до закрытия страницы",
       ),
     ).toBeVisible();
     expect(screen.getByRole("status")).toHaveTextContent(
@@ -515,14 +502,14 @@ describe("observation management", () => {
     const scope = screen.getByRole("region", {
       name: "Активная область наблюдений",
     });
-    expect(scope).toHaveTextContent("Отчёт по 3 из 5 наблюдений");
+    expect(scope).toHaveTextContent("Показано лис: 2 из 4");
     expect(scope).toHaveTextContent("На Сводке включены фильтры");
 
     await user.click(
       within(scope).getByRole("button", { name: "Показать все наблюдения" }),
     );
 
-    const caption = screen.getByText("Отчёт по 5 из 5 наблюдений", {
+    const caption = screen.getByText("Показано лис: 4 из 4", {
       selector: "caption",
     });
     expect(caption).toHaveFocus();

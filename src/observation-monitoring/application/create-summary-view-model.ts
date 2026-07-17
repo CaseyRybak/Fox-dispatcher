@@ -63,9 +63,10 @@ export interface RecentObservationViewModel {
 }
 
 export interface SummaryScopeViewModel {
-  readonly filteredObservationCount: number;
+  readonly filteredFoxCount: number;
   readonly label: string;
   readonly totalObservationCount: number;
+  readonly totalFoxCount: number;
 }
 
 export interface SummaryViewModel {
@@ -84,6 +85,7 @@ export interface SummaryViewModel {
 export interface SummaryViewModelOptions {
   readonly selectedFoxId?: string;
   readonly totalObservationCount?: number;
+  readonly totalFoxCount?: number;
 }
 
 export const DEFAULT_PREY_WEIGHT_PERCENT =
@@ -112,6 +114,7 @@ export function createSummaryViewModel(
     ranking.find(({ foxId }) => foxId === options.selectedFoxId) ?? ranking[0];
   const totalObservationCount =
     options.totalObservationCount ?? observations.length;
+  const totalFoxCount = options.totalFoxCount ?? report.uniqueFoxCount;
 
   return {
     leader: ranking[0],
@@ -148,9 +151,10 @@ export function createSummaryViewModel(
       .slice(0, 3)
       .map(createRecentObservationViewModel),
     scope: {
-      filteredObservationCount: observations.length,
-      label: `Отчёт по ${observations.length} из ${totalObservationCount} наблюдений`,
+      filteredFoxCount: report.uniqueFoxCount,
+      label: `Показано лис: ${report.uniqueFoxCount} из ${totalFoxCount}`,
       totalObservationCount,
+      totalFoxCount,
     },
     selectedFox: selectedRankingItem,
     suspicionWeightPercent: 100 - preyWeightPercent,
@@ -175,11 +179,11 @@ export function createPolicyAnnouncement(
     previousLeaderFoxIds.every((foxId, index) => foxId === leaderFoxIds[index]);
 
   if (leaderFoxIds.length > 1) {
-    return `${weightChange} ${leadersAreUnchanged ? "Лидеры не изменились:" : "Новые лидеры —"} ${formatFoxIdentityList(leaderFoxIds)}, индекс ${leader.scoreLabel}.`;
+    return `${weightChange} ${leadersAreUnchanged ? "Лидеры не изменились:" : "Новые лидеры -"} ${formatFoxIdentityList(leaderFoxIds)}, индекс ${leader.scoreLabel}.`;
   }
 
   if (!leadersAreUnchanged) {
-    return `${weightChange} Новый лидер — ${formatFoxIdentityLabel(leader.foxId)}, индекс ${leader.scoreLabel}.`;
+    return `${weightChange} Новый лидер - ${formatFoxIdentityLabel(leader.foxId)}, индекс ${leader.scoreLabel}.`;
   }
 
   return `${weightChange} Лидер не изменился: ${formatFoxIdentityLabel(leader.foxId)}, индекс ${leader.scoreLabel}.`;
@@ -210,8 +214,8 @@ function createRankedFoxViewModel(
   const scoreLabel = formatTenths(roundFractionToTenths(assessment.score));
   const scoreExplanation =
     scoreExactLabel === scoreLabel
-      ? `Итоговый индекс — ${scoreExactLabel}.`
-      : `Точный индекс — ${scoreExactLabel}, на экране — ${scoreLabel}.`;
+      ? `Итоговый индекс - ${scoreExactLabel}.`
+      : `Точный индекс - ${scoreExactLabel}, на экране - ${scoreLabel}.`;
 
   return {
     color: assessment.latestObservation.color,
@@ -219,7 +223,7 @@ function createRankedFoxViewModel(
       colorCount > 1
         ? `${assessment.latestObservation.color} · ${formatColorCount(colorCount)}`
         : assessment.latestObservation.color,
-    explanation: `Средняя оценка по ${assessment.observationCount} ${formatObservationDativeCount(assessment.observationCount)} — ${meanSuspicionExactLabel}; вклад оценки — ${suspicionContributionExactLabel}. Добыча отмечена в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; вклад добычи — ${preyContributionExactLabel}. ${scoreExplanation}`,
+    explanation: `Средняя оценка по ${assessment.observationCount} ${formatObservationDativeCount(assessment.observationCount)} - ${meanSuspicionExactLabel}; вклад оценки - ${suspicionContributionExactLabel}. Добыча отмечена в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; вклад добычи - ${preyContributionExactLabel}. ${scoreExplanation}`,
     foxId: assessment.foxId,
     latestLocation: assessment.latestObservation.location,
     latestTime: assessment.latestObservation.time,

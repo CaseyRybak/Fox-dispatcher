@@ -63,7 +63,10 @@ describe("interactive suspicion summary", () => {
       "Индекс складывается из двух частей: средней подозрительности по всем наблюдениям и наличия добычи.",
     );
     expect(explanation).toHaveTextContent(
-      "При стартовых настройках средняя подозрительность лисы имеет 80% веса в итоговом индексе, а наличие добычи — 20%. Вес параметров можно изменить ниже. Параметры наблюдений и количество лис можно изменить в разделе «Параметры».",
+      "Количество наблюдений не добавляет баллы самостоятельно. Оно влияет на среднюю подозрительность и долю наблюдений с добычей.",
+    );
+    expect(explanation).toHaveTextContent(
+      "При стартовых настройках средняя подозрительность лисы имеет 80% веса в итоговом индексе, а наличие добычи - 20%. Вес параметров можно изменить ниже. Параметры наблюдений и количество лис можно изменить в разделе «Параметры».",
     );
     expect(
       within(explanation).getByRole("heading", {
@@ -75,7 +78,7 @@ describe("interactive suspicion summary", () => {
     expect(within(explanation).queryByText("02")).not.toBeInTheDocument();
     expect(within(explanation).queryByText("03")).not.toBeInTheDocument();
     expect(explanation).toHaveTextContent(
-      "Для Лисы 1 объединены 2 наблюдения. Средняя подозрительность — 8,5.",
+      "Для Лисы 1 объединены 2 наблюдения. Средняя подозрительность - 8,5.",
     );
     expect(explanation).toHaveTextContent("8,5 × 80% = 6,8");
     expect(explanation).toHaveTextContent(
@@ -84,7 +87,7 @@ describe("interactive suspicion summary", () => {
     expect(explanation).toHaveTextContent("1/2 × 10 × 20% = 1");
     expect(explanation).toHaveTextContent("6,8 + 1 = 7,8 из 10");
     expect(explanation).toHaveTextContent(
-      "Количество наблюдений не добавляет баллы самостоятельно. Оно влияет на среднюю подозрительность и долю наблюдений с добычей. Цвет, локация и время в расчёте индекса не участвуют.",
+      "Цвет, локация и время в расчёте индекса не участвуют.",
     );
 
     expect(
@@ -202,7 +205,7 @@ describe("interactive suspicion summary", () => {
     );
     expect(
       screen.getByRole("region", { name: "Расчет индекса подозрительности" }),
-    ).toHaveTextContent("Точный результат — 14/15. На экране — 0,9 из 10.");
+    ).toHaveTextContent("Точный результат - 14/15. На экране - 0,9 из 10.");
     expect(screen.getByText("рыжая · 2 цвета · 10:00")).toBeInTheDocument();
     expect(screen.getByText("4/15")).toBeInTheDocument();
     expect(screen.getByText("2/3")).toBeInTheDocument();
@@ -277,7 +280,7 @@ describe("interactive suspicion summary", () => {
         .every((row) => row.classList.contains("ranking-row--leader")),
     ).toBe(true);
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Вес добычи изменён с 95% до 100%. Новые лидеры — Лисы 3 и 5, идентификаторы fox_003 и fox_005, индекс 10,0.",
+      "Вес добычи изменён с 95% до 100%. Новые лидеры - Лисы 3 и 5, идентификаторы fox_003 и fox_005, индекс 10,0.",
     );
   });
 
@@ -431,12 +434,12 @@ describe("interactive suspicion summary", () => {
     fireEvent.pointerUp(slider);
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Вес добычи изменён с 20% до 30%. Новый лидер — Лиса 3, идентификатор fox_003, индекс 7,9.",
+      "Вес добычи изменён с 20% до 30%. Новый лидер - Лиса 3, идентификатор fox_003, индекс 7,9.",
     );
     expect(
       screen.getByRole("region", { name: "Последнее изменение отчёта" }),
     ).toHaveTextContent(
-      "Вес добычи изменён с 20% до 30%. Новый лидер — Лиса 3, идентификатор fox_003, индекс 7,9.",
+      "Вес добычи изменён с 20% до 30%. Новый лидер - Лиса 3, идентификатор fox_003, индекс 7,9.",
     );
 
     const exactControl = screen.getByRole("spinbutton", {
@@ -457,7 +460,7 @@ describe("interactive suspicion summary", () => {
     expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
     expect(slider).toHaveValue("20");
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Вес добычи изменён с 35% до 20%. Новый лидер — Лиса 1, идентификатор fox_001, индекс 7,8.",
+      "Вес добычи изменён с 35% до 20%. Новый лидер - Лиса 1, идентификатор fox_001, индекс 7,8.",
     );
   });
 
@@ -475,7 +478,7 @@ describe("interactive suspicion summary", () => {
 
     fireEvent.blur(slider);
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Вес добычи изменён с 20% до 30%. Новый лидер — Лиса 3, идентификатор fox_003, индекс 7,9.",
+      "Вес добычи изменён с 20% до 30%. Новый лидер - Лиса 3, идентификатор fox_003, индекс 7,9.",
     );
   });
 
@@ -575,7 +578,7 @@ describe("interactive suspicion summary", () => {
     await user.selectOptions(locationFilter, "Северная поляна");
 
     expect(locationFilter).toHaveFocus();
-    expect(screen.getByText("Отчёт по 3 из 5 наблюдений")).toBeInTheDocument();
+    expect(screen.getByText("Показано лис: 2 из 4")).toBeInTheDocument();
     expect(
       within(
         screen.getByRole("list", { name: "Рейтинг подозрительности" }),
@@ -587,7 +590,7 @@ describe("interactive suspicion summary", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Фильтры применены: 3 из 5 наблюдений. Выбрана Лиса 1, идентификатор fox_001.",
+      "Фильтры применены: 2 лис из 4. Выбрана Лиса 1, идентификатор fox_001.",
     );
     expect(
       screen.getByRole("button", {
@@ -595,10 +598,8 @@ describe("interactive suspicion summary", () => {
       }),
     ).toBeInTheDocument();
     expect(
-      within(
-        screen.getByRole("region", { name: "Активность по локациям" }),
-      ).getByText("3 из 3 · 100%"),
-    ).toBeInTheDocument();
+      screen.queryByRole("region", { name: "Активность по локациям" }),
+    ).not.toBeInTheDocument();
 
     await user.type(
       screen.getByRole("searchbox", { name: "Найти лису" }),
@@ -610,11 +611,11 @@ describe("interactive suspicion summary", () => {
         name: "В этой выборке ничего не найдено",
       }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Отчёт по 0 из 5 наблюдений")).toBeInTheDocument();
+    expect(screen.getByText("Показано лис: 0 из 4")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Сбросить всё" }));
 
-    expect(screen.getByText("Отчёт по 5 из 5 наблюдений")).toBeInTheDocument();
+    expect(screen.getByText("Показано лис: 4 из 4")).toBeInTheDocument();
     expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
   });
 
@@ -672,7 +673,7 @@ describe("interactive suspicion summary", () => {
       }),
     );
 
-    expect(screen.getByText("Отчёт по 5 из 5 наблюдений")).toHaveFocus();
+    expect(screen.getByText("Показано лис: 4 из 4")).toHaveFocus();
   });
 
   it("searches by the unique fox name shown in the interface", async () => {
@@ -680,11 +681,14 @@ describe("interactive suspicion summary", () => {
     render(<App />);
 
     const search = screen.getByRole("searchbox", { name: "Найти лису" });
-    expect(search).toHaveAttribute("placeholder", "Лиса 1 или fox_001");
+    expect(search).toHaveAttribute(
+      "placeholder",
+      "Например, Лиса 1 или fox_001",
+    );
 
     await user.type(search, "Лиса 1");
 
-    expect(screen.getByText("Отчёт по 2 из 5 наблюдений")).toBeInTheDocument();
+    expect(screen.getByText("Показано лис: 1 из 4")).toBeInTheDocument();
     expect(
       within(
         screen.getByRole("list", { name: "Рейтинг подозрительности" }),
@@ -693,7 +697,7 @@ describe("interactive suspicion summary", () => {
     expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
   });
 
-  it("recovers an empty scoped ledger and toggles a location bar", async () => {
+  it("recovers an empty scoped ledger without restoring removed context panels", async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -706,7 +710,7 @@ describe("interactive suspicion summary", () => {
     await user.type(screen.getByRole("searchbox", { name: "Найти лису" }), "x");
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Фильтры применены: 0 из 5 наблюдений.",
+      "Фильтры применены: 0 лис из 4.",
     );
     expect(screen.getByRole("status").firstElementChild).not.toBe(
       firstAnnouncement,
@@ -721,23 +725,14 @@ describe("interactive suspicion summary", () => {
 
     await user.click(screen.getByRole("button", { name: "Сбросить фильтры" }));
 
-    expect(screen.getByText("Отчёт по 5 из 5 наблюдений")).toHaveFocus();
+    expect(screen.getByText("Показано лис: 4 из 4")).toHaveFocus();
     await user.click(screen.getByRole("link", { name: "Сводка" }));
-
-    const location = screen.getByRole("button", {
-      name: /^Фильтровать по локации Северная поляна, 3 из 5/,
-    });
-    await user.click(location);
-
-    expect(screen.getByText("Отчёт по 3 из 5 наблюдений")).toBeInTheDocument();
-
-    await user.click(
-      screen.getByRole("button", {
-        name: /^Фильтровать по локации Северная поляна, 3 из 3/,
-      }),
-    );
-
-    expect(screen.getByText("Отчёт по 5 из 5 наблюдений")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Активность по локациям" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Последние наблюдения" }),
+    ).not.toBeInTheDocument();
   });
 });
 

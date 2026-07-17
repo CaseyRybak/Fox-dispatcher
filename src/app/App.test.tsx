@@ -16,15 +16,20 @@ describe("application shell", () => {
     ).toBeInTheDocument();
     expect(
       screen
-        .getByRole("link", { name: "Лисий диспетчер — сводка" })
+        .getByRole("link", { name: "Лисий диспетчер - сводка" })
         .querySelector("img.brand__mark"),
     ).toHaveAttribute("src", "/favicon.svg");
     expect(
-      screen.getByRole("link", { name: "Лицензии компонентов" }),
-    ).toHaveAttribute("href", "/third-party-notices.txt");
+      screen.queryByRole("link", { name: "Лицензии компонентов" }),
+    ).not.toBeInTheDocument();
+    const footer = screen.getByRole("contentinfo");
     expect(
-      screen.getByText("Fox Dispatcher · explainable scoring"),
+      within(footer).getByText("Fox Dispatcher · explainable scoring"),
     ).toHaveAttribute("lang", "en");
+    expect(footer.querySelector("img")).toHaveAttribute("src", "/favicon.svg");
+    expect(footer).toHaveTextContent(
+      "© 2026 Лисий диспетчер - полевой журнал наблюдений",
+    );
     expect(
       screen.getByRole("heading", {
         level: 1,
@@ -40,6 +45,12 @@ describe("application shell", () => {
     expect(
       within(summary).getByRole("heading", { level: 2, name: "Лиса 1" }),
     ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Активность по локациям" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Последние наблюдения" }),
+    ).not.toBeInTheDocument();
 
     window.location.hash = "#observations";
     fireEvent(window, new HashChangeEvent("hashchange"));

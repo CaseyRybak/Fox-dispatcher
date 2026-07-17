@@ -6,7 +6,7 @@ async (page) => {
       throw new Error(message);
     }
   };
-  const scopeLabel = () => page.getByText(/Отчёт по \d+ из 5 наблюдений/);
+  const scopeLabel = () => page.getByText(/Показано лис: \d+ из 4/);
   const assertScope = async (expected) => {
     await page.getByText(expected, { exact: true }).waitFor();
     assert(
@@ -28,7 +28,7 @@ async (page) => {
     if (await reset.count()) {
       await reset.click();
     }
-    await assertScope("Отчёт по 5 из 5 наблюдений");
+    await assertScope("Показано лис: 4 из 4");
   };
   const assertNoPageOverflow = async () => {
     const widths = await page.evaluate(() => ({
@@ -55,7 +55,7 @@ async (page) => {
   await page
     .getByRole("heading", { level: 1, name: "Самая подозрительная лиса" })
     .waitFor();
-  await assertScope("Отчёт по 5 из 5 наблюдений");
+  await assertScope("Показано лис: 4 из 4");
   await page.screenshot({
     fullPage: true,
     path: "output/playwright/phase-3/desktop-summary-1440px.png",
@@ -108,19 +108,19 @@ async (page) => {
 
   const foxSearch = page.getByRole("searchbox", { name: "Найти лису" });
   await foxSearch.fill("fox_001");
-  await assertScope("Отчёт по 2 из 5 наблюдений");
-  await assertFilterAnnouncement("Фильтры применены: 2 из 5 наблюдений.");
+  await assertScope("Показано лис: 1 из 4");
+  await assertFilterAnnouncement("Фильтры применены: 1 лис из 4.");
   await resetFilters();
 
   await foxSearch.fill("Лиса 1");
-  await assertScope("Отчёт по 2 из 5 наблюдений");
-  await assertFilterAnnouncement("Фильтры применены: 2 из 5 наблюдений.");
+  await assertScope("Показано лис: 1 из 4");
+  await assertFilterAnnouncement("Фильтры применены: 1 лис из 4.");
   await resetFilters();
 
   const location = page.getByRole("combobox", { name: "Локация" });
   await location.selectOption("Северная поляна");
-  await assertScope("Отчёт по 3 из 5 наблюдений");
-  await assertFilterAnnouncement("Фильтры применены: 3 из 5 наблюдений.");
+  await assertScope("Показано лис: 2 из 4");
+  await assertFilterAnnouncement("Фильтры применены: 2 лис из 4.");
   assert(
     (await page
       .getByRole("list", { name: "Рейтинг подозрительности" })
@@ -132,23 +132,23 @@ async (page) => {
 
   const color = page.getByRole("combobox", { name: "Цвет" });
   await color.selectOption("серебристая");
-  await assertScope("Отчёт по 1 из 5 наблюдений");
-  await assertFilterAnnouncement("Фильтры применены: 1 из 5 наблюдений.");
+  await assertScope("Показано лис: 1 из 4");
+  await assertFilterAnnouncement("Фильтры применены: 1 лис из 4.");
   await resetFilters();
 
   await page.getByRole("radio", { name: "Есть" }).click();
-  await assertScope("Отчёт по 2 из 5 наблюдений");
-  await assertFilterAnnouncement("Фильтры применены: 2 из 5 наблюдений.");
+  await assertScope("Показано лис: 2 из 4");
+  await assertFilterAnnouncement("Фильтры применены: 2 лис из 4.");
   await resetFilters();
 
   await foxSearch.fill("fox_001");
   await location.selectOption("Северная поляна");
   await color.selectOption("рыжая");
   await page.getByRole("radio", { name: "Нет" }).click();
-  await assertScope("Отчёт по 1 из 5 наблюдений");
+  await assertScope("Показано лис: 1 из 4");
   assert(
     (await page.getByRole("status").textContent()) ===
-      "Фильтры применены: 1 из 5 наблюдений.",
+      "Фильтры применены: 1 лис из 4.",
     "The combined filter did not produce one atomic scope announcement.",
   );
 
@@ -168,20 +168,20 @@ async (page) => {
   await page
     .getByRole("heading", { name: "В этой выборке ничего не найдено" })
     .waitFor();
-  await assertScope("Отчёт по 0 из 5 наблюдений");
+  await assertScope("Показано лис: 0 из 4");
   assert(
     await foxSearch.evaluate(
       (element) => element === element.ownerDocument.activeElement,
     ),
     "The zero-result filter moved focus away from its control.",
   );
-  await page.getByRole("link", { name: "Параметры" }).click();
+  await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await page.getByRole("heading", { level: 1, name: "Параметры" }).waitFor();
   await page
     .getByRole("heading", { name: "В этой выборке ничего не найдено" })
     .waitFor();
   await page.getByRole("button", { name: "Сбросить фильтры" }).click();
-  await assertScope("Отчёт по 5 из 5 наблюдений");
+  await assertScope("Показано лис: 4 из 4");
   assert(
     await page
       .locator("caption")
@@ -198,15 +198,13 @@ async (page) => {
     .waitFor();
 
   await page
-    .getByRole("button", {
-      name: "Фильтровать по локации Северная поляна, 3 из 5",
-    })
-    .click();
-  await page.getByRole("link", { name: "Все наблюдения" }).click();
+    .getByRole("combobox", { name: "Локация" })
+    .selectOption("Северная поляна");
+  await assertScope("Показано лис: 2 из 4");
+  await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await page.getByRole("heading", { level: 1, name: "Параметры" }).waitFor();
   assert(
-    (await page.locator("caption").textContent()) ===
-      "Отчёт по 3 из 5 наблюдений",
+    (await page.locator("caption").textContent()) === "Показано лис: 2 из 4",
     "The Observations destination did not preserve report scope.",
   );
   assert(

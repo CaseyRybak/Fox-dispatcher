@@ -41,7 +41,7 @@ describe("observation import and export", () => {
     const alert = within(dialog).getByRole("alert");
     expect(alert).toHaveFocus();
     expect(alert).toHaveTextContent(
-      "[2].suspicion_level — ожидается целое число от 0 до 10",
+      "[2].suspicion_level - ожидается целое число от 0 до 10",
     );
     expect(
       within(dialog).queryByRole("button", { name: /Заменить/ }),
@@ -95,7 +95,7 @@ describe("observation import and export", () => {
     expect(preview).toHaveTextContent("2 наблюдения");
     expect(preview).toHaveTextContent("2 лисы");
     expect(preview).toHaveTextContent("2 локации");
-    expect(preview).toHaveTextContent("09:05–11:15");
+    expect(preview).toHaveTextContent("09:05-11:15");
 
     await user.click(
       within(dialog).getByRole("button", { name: "Заменить на 2 наблюдения" }),
@@ -105,7 +105,7 @@ describe("observation import and export", () => {
       screen.queryByRole("dialog", { name: "Импорт наблюдений" }),
     ).not.toBeInTheDocument();
     expect(
-      screen.getByText("Отчёт по 2 из 2 наблюдений", { selector: "caption" }),
+      screen.getByText("Показано лис: 2 из 2", { selector: "caption" }),
     ).toHaveFocus();
     expect(
       screen.queryByText("obs_001", { selector: "td" }),
@@ -138,7 +138,7 @@ describe("observation import and export", () => {
       "Северная поляна",
     );
     await user.click(screen.getByRole("link", { name: "Параметры" }));
-    expect(screen.getByText("Отчёт по 3 из 5 наблюдений")).toBeInTheDocument();
+    expect(screen.getByText("Показано лис: 2 из 4")).toBeInTheDocument();
 
     await user.click(
       screen.getByRole("button", { name: "Экспортировать все наблюдения" }),
@@ -322,7 +322,7 @@ describe("advanced storage recovery", () => {
 
     expect(
       screen.getByText(
-        "Сохранённые данные повреждены — автосохранение приостановлено",
+        "Сохранённые данные повреждены - автосохранение приостановлено",
       ),
     ).toBeInTheDocument();
     const recovery = screen.getByRole("region", {
@@ -388,7 +388,7 @@ describe("advanced storage recovery", () => {
 
     expect(
       screen.getByText(
-        "Сохранение версии 42 не открыто — автосохранение приостановлено",
+        "Сохранение версии 42 не открыто - автосохранение приостановлено",
       ),
     ).toBeInTheDocument();
     expect(

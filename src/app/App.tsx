@@ -57,9 +57,9 @@ const destinations = new Set<Destination>([
   "worklog",
 ]);
 const destinationTitles: Readonly<Record<Destination, string>> = {
-  summary: "Сводка — Лисий диспетчер",
-  observations: "Параметры — Лисий диспетчер",
-  worklog: "AI Worklog — Лисий диспетчер",
+  summary: "Сводка - Лисий диспетчер",
+  observations: "Параметры - Лисий диспетчер",
+  worklog: "AI Worklog - Лисий диспетчер",
 };
 
 interface BootstrapState {
@@ -104,14 +104,14 @@ function initializeDashboard(): BootstrapState {
       dashboard,
       persistenceBlocked: true,
       persistenceMessage:
-        "Хранилище недоступно — изменения останутся до закрытия страницы",
+        "Хранилище недоступно - изменения останутся до закрытия страницы",
     };
   }
   if (loaded.status === "unsupported-version") {
     return {
       dashboard,
       persistenceBlocked: true,
-      persistenceMessage: `Сохранение версии ${loaded.schemaVersion} не открыто — автосохранение приостановлено`,
+      persistenceMessage: `Сохранение версии ${loaded.schemaVersion} не открыто - автосохранение приостановлено`,
       recovery: {
         kind: "unsupported-version",
         rawValue: loaded.rawValue,
@@ -123,7 +123,7 @@ function initializeDashboard(): BootstrapState {
     dashboard,
     persistenceBlocked: true,
     persistenceMessage:
-      "Сохранённые данные повреждены — автосохранение приостановлено",
+      "Сохранённые данные повреждены - автосохранение приостановлено",
     recovery: { kind: "corrupt", rawValue: loaded.rawValue },
   };
 }
@@ -190,6 +190,7 @@ export function App({
         {
           selectedFoxId,
           totalObservationCount: dashboard.observations.length,
+          totalFoxCount: countUniqueFoxes(dashboard.observations),
         },
       ),
     [dashboard, scopedObservations, selectedFoxId],
@@ -228,6 +229,7 @@ export function App({
       {
         selectedFoxId,
         totalObservationCount: dashboard.observations.length,
+        totalFoxCount: countUniqueFoxes(dashboard.observations),
       },
     );
     const persistenceWarning = pendingPolicyPersistenceWarningRef.current;
@@ -252,14 +254,15 @@ export function App({
       {
         selectedFoxId,
         totalObservationCount: dashboard.observations.length,
+        totalFoxCount: countUniqueFoxes(dashboard.observations),
       },
     );
     const nextSelectedFoxId = nextViewModel.selectedFox?.foxId;
 
     announce(
       createFilterAnnouncement(
-        nextObservations.length,
-        dashboard.observations.length,
+        nextViewModel.scope.filteredFoxCount,
+        nextViewModel.scope.totalFoxCount,
         selectedFoxId,
         nextSelectedFoxId,
       ),
@@ -337,7 +340,7 @@ export function App({
     setPersistenceMessage(
       clearResult.status === "cleared"
         ? "Стартовые данные будут сохранены в этом браузере"
-        : "Хранилище недоступно — изменения останутся до закрытия страницы",
+        : "Хранилище недоступно - изменения останутся до закрытия страницы",
     );
     acceptObservationSet(
       resetObservations(dashboard.observations, starterObservations),
@@ -369,7 +372,7 @@ export function App({
     announce(
       result.status === "exported"
         ? `Экспорт подготовлен: ${dashboard.observations.length} ${observationCountWord(dashboard.observations.length)}.`
-        : "Экспорт не удалось подготовить. Данные не изменены — повторите действие.",
+        : "Экспорт не удалось подготовить. Данные не изменены - повторите действие.",
     );
   }
 
@@ -386,6 +389,7 @@ export function App({
       {
         selectedFoxId,
         totalObservationCount: observations.length,
+        totalFoxCount: countUniqueFoxes(observations),
       },
     );
 
@@ -421,7 +425,7 @@ export function App({
     persistenceBlockedRef.current = true;
     setPersistenceBlocked(true);
     setPersistenceMessage(
-      "Не удалось сохранить — изменения останутся до закрытия страницы",
+      "Не удалось сохранить - изменения останутся до закрытия страницы",
     );
     return "Не удалось сохранить: изменения остаются только в памяти.";
   }
@@ -486,6 +490,12 @@ function observationCountWord(count: number) {
   return "наблюдений";
 }
 
+function countUniqueFoxes(
+  observations: PersistedDashboardState["observations"],
+): number {
+  return new Set(observations.map(({ fox_id }) => fox_id)).size;
+}
+
 function createObservationMutationAnnouncement(
   message: string,
   previousSelectedFoxId: string | undefined,
@@ -509,17 +519,17 @@ function createObservationMutationAnnouncement(
 }
 
 function createFilterAnnouncement(
-  filteredObservationCount: number,
-  totalObservationCount: number,
+  filteredFoxCount: number,
+  totalFoxCount: number,
   previousFoxId: string | undefined,
   nextFoxId: string | undefined,
 ): string {
-  const scope = `Фильтры применены: ${filteredObservationCount} из ${totalObservationCount} наблюдений.`;
+  const scope = `Фильтры применены: ${filteredFoxCount} лис из ${totalFoxCount}.`;
   if (previousFoxId === nextFoxId) return scope;
   if (nextFoxId)
     return `${scope} Выбрана ${formatFoxIdentityLabel(nextFoxId)}.`;
   if (previousFoxId) {
-    return `${scope} ${formatFoxIdentityLabel(previousFoxId)} исключена; в области нет наблюдений.`;
+    return `${scope} ${formatFoxIdentityLabel(previousFoxId)} исключена; в области нет лис.`;
   }
   return scope;
 }

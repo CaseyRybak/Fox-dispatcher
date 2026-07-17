@@ -34,7 +34,7 @@ describe("hash navigation", () => {
 
     expect(summaryHeading).not.toHaveFocus();
     expect(document.documentElement).toHaveAttribute("lang", "ru");
-    expect(document.title).toBe("Сводка — Лисий диспетчер");
+    expect(document.title).toBe("Сводка - Лисий диспетчер");
     expect(screen.getByRole("link", { name: "Сводка" })).toHaveAttribute(
       "aria-current",
       "page",
@@ -47,7 +47,7 @@ describe("hash navigation", () => {
       name: "Параметры",
     });
     await waitFor(() => expect(observationsHeading).toHaveFocus());
-    expect(document.title).toBe("Параметры — Лисий диспетчер");
+    expect(document.title).toBe("Параметры - Лисий диспетчер");
     expect(screen.getByRole("link", { name: "Параметры" })).toHaveAttribute(
       "aria-current",
       "page",
@@ -59,7 +59,7 @@ describe("hash navigation", () => {
       name: "AI Worklog",
     });
     await waitFor(() => expect(worklogHeading).toHaveFocus());
-    expect(document.title).toBe("AI Worklog — Лисий диспетчер");
+    expect(document.title).toBe("AI Worklog - Лисий диспетчер");
     expect(screen.getByRole("link", { name: "AI Worklog" })).toHaveAttribute(
       "aria-current",
       "page",
@@ -72,7 +72,7 @@ describe("hash navigation", () => {
         screen.getByRole("heading", { level: 1, name: "Параметры" }),
       ).toHaveFocus();
     });
-    expect(document.title).toBe("Параметры — Лисий диспетчер");
+    expect(document.title).toBe("Параметры - Лисий диспетчер");
     expect(screen.getByRole("link", { name: "Параметры" })).toHaveAttribute(
       "aria-current",
       "page",
@@ -85,7 +85,7 @@ describe("hash navigation", () => {
         screen.getByRole("heading", { level: 1, name: "AI Worklog" }),
       ).toHaveFocus();
     });
-    expect(document.title).toBe("AI Worklog — Лисий диспетчер");
+    expect(document.title).toBe("AI Worklog - Лисий диспетчер");
     expect(screen.getByRole("link", { name: "AI Worklog" })).toHaveAttribute(
       "aria-current",
       "page",
@@ -110,7 +110,7 @@ describe("hash navigation", () => {
     expect(
       screen.getByRole("heading", { level: 1, name: "Параметры" }),
     ).toBeInTheDocument();
-    expect(document.title).toBe("Параметры — Лисий диспетчер");
+    expect(document.title).toBe("Параметры - Лисий диспетчер");
   });
 
   it("keeps one live-status node mounted across destinations", async () => {

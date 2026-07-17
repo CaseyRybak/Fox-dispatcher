@@ -127,7 +127,7 @@ export function ApplicationShell({
           <a
             className="brand"
             href="#summary"
-            aria-label="Лисий диспетчер — сводка"
+            aria-label="Лисий диспетчер - сводка"
           >
             <img
               alt=""
@@ -230,11 +230,17 @@ export function ApplicationShell({
       </p>
 
       <footer className="site-footer">
-        <p lang="en">Fox Dispatcher · explainable scoring</p>
-        <p>Индекс рассчитывается локально из оценки и признака добычи.</p>
-        <p>
-          <a href="/third-party-notices.txt">Лицензии компонентов</a>
+        <p className="site-footer__brand">
+          <img
+            alt=""
+            aria-hidden="true"
+            height="18"
+            src="/favicon.svg"
+            width="18"
+          />
+          <span lang="en">Fox Dispatcher · explainable scoring</span>
         </p>
+        <p>© 2026 Лисий диспетчер - полевой журнал наблюдений</p>
       </footer>
     </div>
   );
