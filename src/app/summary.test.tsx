@@ -20,7 +20,9 @@ describe("interactive suspicion summary", () => {
 
     const leader = getLeaderHeading("Лиса 1");
     expect(leader).toBeInTheDocument();
-    const reportScope = screen.getByRole("region", { name: "Область отчёта" });
+    const reportScope = screen.getByRole("region", {
+      name: "Фильтры рейтинга",
+    });
     expect(
       screen.queryByText("Все показатели используют одну область."),
     ).not.toBeInTheDocument();
@@ -239,7 +241,8 @@ describe("interactive suspicion summary", () => {
     expect(screen.getByText("0,3 × 80%")).toBeInTheDocument();
   });
 
-  it("shows decimal contributions after a third observation is added to a fox", () => {
+  it("shows decimal contributions and summarizes multiple fox locations", async () => {
+    const user = userEvent.setup();
     window.localStorage.setItem(
       "fox-dispatcher.dashboard",
       JSON.stringify({
@@ -300,6 +303,16 @@ describe("interactive suspicion summary", () => {
     expect(selectedCalculation).not.toHaveTextContent("2/3");
     expect(screen.getByText("6,5 из 10")).toBeInTheDocument();
     expect(screen.getByText("Итоговый индекс = 6,5 из 10")).toBeInTheDocument();
+    const rankingRow = screen.getByRole("button", {
+      name: /^Показать расчёт: Лиса 1, индекс 6,5/u,
+    });
+    expect(rankingRow).toHaveTextContent("Несколько локаций");
+    expect(rankingRow).not.toHaveTextContent("Туманная тропа");
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: "Локация" }),
+      "Северная поляна",
+    );
+    expect(rankingRow).toHaveTextContent("Несколько локаций");
     expect(screen.queryByText(/≈/u)).not.toBeInTheDocument();
   });
 
@@ -528,7 +541,7 @@ describe("interactive suspicion summary", () => {
       "Вес добычи изменён с 20% до 30%. Новый лидер - Лиса 3, идентификатор fox_003, индекс 7,9.",
     );
     expect(
-      screen.getByRole("region", { name: "Последнее изменение отчёта" }),
+      screen.getByRole("region", { name: "Последнее изменение на Сводке" }),
     ).toHaveTextContent(
       "Вес добычи изменён с 20% до 30%. Новый лидер - Лиса 3, идентификатор fox_003, индекс 7,9.",
     );
@@ -662,7 +675,7 @@ describe("interactive suspicion summary", () => {
     ).toBeInTheDocument();
   });
 
-  it("applies report-wide filters, falls back cleanly, and resets the scope", async () => {
+  it("filters the visible ranking, falls back cleanly, and resets the list", async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -690,7 +703,7 @@ describe("interactive suspicion summary", () => {
       }),
     ).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Фильтры применены: 2 лис из 4. Выбрана Лиса 1, идентификатор fox_001.",
+      "Фильтры рейтинга применены: 2 лис из 4. Выбрана Лиса 1, идентификатор fox_001.",
     );
     expect(
       screen.getByRole("button", {
@@ -708,15 +721,48 @@ describe("interactive suspicion summary", () => {
 
     expect(
       screen.getByRole("heading", {
-        name: "В этой выборке ничего не найдено",
+        name: "По фильтрам лисы не найдены",
       }),
     ).toBeInTheDocument();
+    expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
     expect(screen.getByText("Показано лис: 0 из 4")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Сбросить всё" }));
 
     expect(screen.getByText("Показано лис: 4 из 4")).toBeInTheDocument();
     expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
+  });
+
+  it("filters only the visible ranking without changing the full report", async () => {
+    const user = userEvent.setup();
+    render(<App />);
+
+    await user.click(screen.getByRole("radio", { name: "Есть" }));
+
+    expect(screen.getByText("Показано лис: 2 из 4")).toBeInTheDocument();
+    expect(
+      within(
+        screen.getByRole("list", { name: "Рейтинг подозрительности" }),
+      ).getAllByRole("listitem"),
+    ).toHaveLength(2);
+    expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
+    expect(
+      within(
+        screen.getByRole("region", { name: "Самая подозрительная лиса" }),
+      ).getByText("8,5 · 2 наблюдения"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("complementary", {
+        name: "Расчёт: Лиса 1, идентификатор fox_001",
+      }),
+    ).toHaveTextContent("8,5 × 80% = 6,8");
+    expect(screen.getByText("7,8 из 10")).toBeInTheDocument();
+    expect(
+      screen.getByText("Уникальные лисы").nextElementSibling,
+    ).toHaveTextContent("4");
+    expect(
+      screen.getByText("Основная локация").nextElementSibling,
+    ).toHaveTextContent("Северная поляна3 из 5 наблюдений");
   });
 
   it("moves focus predictably while report filter chips are removed", async () => {
@@ -810,7 +856,7 @@ describe("interactive suspicion summary", () => {
     await user.type(screen.getByRole("searchbox", { name: "Найти лису" }), "x");
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Фильтры применены: 0 лис из 4.",
+      "Фильтры рейтинга применены: 0 лис из 4.",
     );
     expect(screen.getByRole("status").firstElementChild).not.toBe(
       firstAnnouncement,
@@ -825,9 +871,10 @@ describe("interactive suspicion summary", () => {
     ).not.toBeInTheDocument();
     await user.click(screen.getByRole("link", { name: "Сводка" }));
     expect(
-      screen.getByRole("heading", { name: "В этой выборке ничего не найдено" }),
+      screen.getByRole("heading", { name: "По фильтрам лисы не найдены" }),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Сбросить фильтры" }));
+    expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Сбросить всё" }));
     expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
     expect(
       screen.queryByRole("region", { name: "Активность по локациям" }),

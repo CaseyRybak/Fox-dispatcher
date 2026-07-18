@@ -47,7 +47,6 @@ export function SummaryPage({
   const leaders = viewModel.leaders;
   const selectedFox = viewModel.selectedFox;
   const hasFilters = hasActiveReportFilters(filters);
-  const isDatasetEmpty = viewModel.scope.totalObservationCount === 0;
 
   const commitCurrentWeight = () => {
     onPreyWeightCommit(viewModel.preyWeightPercent);
@@ -74,28 +73,15 @@ export function SummaryPage({
           <section className="empty-report" aria-labelledby="empty-title">
             <p className="eyebrow">Текущая область</p>
             <h1 id="empty-title" tabIndex={-1}>
-              {isDatasetEmpty
-                ? "Наблюдений пока нет"
-                : "В этой выборке ничего не найдено"}
+              Наблюдений пока нет
             </h1>
             <p>
-              {isDatasetEmpty
-                ? "В журнале нет записей. Откройте управление данными, чтобы добавить наблюдение, импортировать JSON или вернуть стартовый набор."
-                : "Измените или сбросьте фильтры - исходный набор остаётся без изменений."}
+              В журнале нет записей. Откройте управление данными, чтобы добавить
+              наблюдение, импортировать JSON или вернуть стартовый набор.
             </p>
-            {isDatasetEmpty ? (
-              <a className="primary-action" href="#observations">
-                Открыть управление данными
-              </a>
-            ) : hasFilters ? (
-              <button
-                className="primary-action"
-                onClick={() => onFiltersChange(DEFAULT_REPORT_FILTERS)}
-                type="button"
-              >
-                Сбросить фильтры
-              </button>
-            ) : null}
+            <a className="primary-action" href="#observations">
+              Открыть управление данными
+            </a>
           </section>
           {scopeToolbar}
         </>
@@ -197,22 +183,32 @@ export function SummaryPage({
                 <p>{formatPositionCount(viewModel.ranking.length)}</p>
               </header>
 
-              <ol
-                className="ranking-list"
-                aria-label="Рейтинг подозрительности"
-              >
-                {viewModel.ranking.map((assessment) => (
-                  <RankingRow
-                    assessment={assessment}
-                    isLeader={leaders.some(
-                      ({ foxId }) => foxId === assessment.foxId,
-                    )}
-                    isSelected={assessment.foxId === selectedFox.foxId}
-                    key={assessment.foxId}
-                    onSelect={onSelectFox}
-                  />
-                ))}
-              </ol>
+              {viewModel.ranking.length > 0 ? (
+                <ol
+                  className="ranking-list"
+                  aria-label="Рейтинг подозрительности"
+                >
+                  {viewModel.ranking.map((assessment) => (
+                    <RankingRow
+                      assessment={assessment}
+                      isLeader={leaders.some(
+                        ({ foxId }) => foxId === assessment.foxId,
+                      )}
+                      isSelected={assessment.foxId === selectedFox.foxId}
+                      key={assessment.foxId}
+                      onSelect={onSelectFox}
+                    />
+                  ))}
+                </ol>
+              ) : (
+                <div className="ranking-empty">
+                  <h3>По фильтрам лисы не найдены</h3>
+                  <p>
+                    Измените или сбросьте фильтры — итоговый отчёт рассчитан по
+                    всем наблюдениям.
+                  </p>
+                </div>
+              )}
             </section>
 
             <div className="assessment-side">
@@ -577,7 +573,7 @@ function ScopeToolbar({
   return (
     <section
       className="scope-toolbar"
-      aria-label="Область отчёта"
+      aria-label="Фильтры рейтинга"
       ref={toolbarRef}
     >
       <div className="scope-toolbar__summary">
@@ -739,7 +735,7 @@ function RankingRow({
   return (
     <li className={className}>
       <button
-        aria-label={`Показать расчёт: ${assessment.foxName}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; подозрительность ${assessment.meanSuspicionLabel}; добыча в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; последняя запись ${assessment.latestTime}, ${assessment.latestLocation}; цвет ${assessment.colorSummaryLabel}; наблюдений ${assessment.observationCount}; идентификатор ${assessment.foxId}`}
+        aria-label={`Показать расчёт: ${assessment.foxName}, индекс ${assessment.scoreLabel}; позиция ${assessment.rank}; подозрительность ${assessment.meanSuspicionLabel}; добыча в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; последняя запись ${assessment.latestTime}; локации: ${assessment.locationSummaryLabel}; цвет ${assessment.colorSummaryLabel}; наблюдений ${assessment.observationCount}; идентификатор ${assessment.foxId}`}
         aria-pressed={isSelected}
         className="ranking-row__button"
         onClick={() => onSelect(assessment.foxId)}
@@ -765,7 +761,7 @@ function RankingRow({
             {assessment.colorSummaryLabel} · {assessment.latestTime}
           </span>
           <span className="ranking-row__location">
-            {assessment.latestLocation}
+            {assessment.locationSummaryLabel}
           </span>
         </span>
         <span className="ranking-row__basis">

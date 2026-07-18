@@ -29,9 +29,9 @@ Core domain language:
 
 - **Observation** — one source record with observation identity, fox identity and name, location, color, prey presence, suspicion level, and time.
 - **Scoring policy** — prey influence and its complementary suspicion influence.
-- **Observation selection** — the report scope after Summary filters.
-- **Fox assessment** — the deterministic aggregate for one fox in that selection.
-- **Report** — ranked assessments, summary metrics, leading-location data, exact score values, and calculation scope.
+- **Observation selection** — the visible ranking subset after Summary filters; it does not change the full suspicion report.
+- **Fox assessment** — the deterministic aggregate for one fox across all its accepted observations, including full-journal display context such as its set of locations.
+- **Report** — full-journal ranked assessments, summary metrics, leading-location data, and exact score values.
 - **Evidence volume** — observation count used by mean and prey-rate aggregates, not an independent bonus.
 
 ## Layer map
@@ -102,7 +102,7 @@ All imported and persisted values pass runtime validation before becoming accept
 
 React renders application view models and emits user intent through application callbacks:
 
-- **Summary** owns report filters, leader or exact co-leaders, unique-fox and leading-location context, calculation explanation, selectable ranking, and scoring-weight controls.
+- **Summary** owns ranking-visibility filters, leader or exact co-leaders from the full journal, unique-fox and leading-location context, calculation explanation, selectable ranking, and scoring-weight controls.
 - **Parameters** is the navigation destination for the `Observations` route. Its visible heading is `Наблюдения`; it presents the full editable ledger, CRUD, reset, import/export, persistence status, and recovery without consuming or displaying Summary-filter state.
 - **AI Worklog** renders the approved six-card projection: stage, date, goal, human decision, and AI contribution. The validated source retains change, verification, and immutable evidence references for repository checks without rendering them in the site UI.
 
@@ -116,10 +116,11 @@ starter / persisted / imported values
                 │
                 ├─ application commands ─> accepted next state ─> persistence
                 │
-                └─ filters ─> pure domain report ─> view models ─> React UI
+                ├─ pure domain report ─> full-result view model ─> React UI
+                └─ filters ─> visible ranking IDs ───────────────> React UI
 ```
 
-One accepted observation array and one scoring policy are authoritative. Summary filters derive a report selection for counts, ranking, bars, and explanations. The editable ledger derives from the full accepted array rather than the filtered selection or an independent copy.
+One accepted observation array and one scoring policy are authoritative. The complete suspicion report, metrics, ranking scores, bars, and explanations derive from that full array. Summary filters derive only the `fox_id` values visible in the ranking list; they never become calculation input. The editable ledger also derives from the full accepted array rather than the filtered visibility set or an independent copy.
 
 ## Stable invariants
 
@@ -129,6 +130,7 @@ One accepted observation array and one scoring policy are authoritative. Summary
 - The prey weight is an integer percentage from 0 through 100 in five-point steps.
 - Ranking and co-leader detection use exact values and deterministic tie-breaks.
 - Observation count affects mean suspicion and prey rate but has no independent bonus or penalty; location, color, and time do not enter the score.
+- Ranking location context is derived from every accepted observation for that fox: one place keeps its name, while more than one is presented as `Несколько локаций`; visibility filters do not rewrite this aggregate.
 - Accepted state changes pass application validation before persistence.
 
 Detailed field limits, scoring examples, UI states, and acceptance scenarios live in the product specification.

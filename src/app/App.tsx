@@ -25,7 +25,7 @@ import {
   type ObservationDraft,
 } from "@/observation-monitoring/application/observation-management";
 import {
-  applyReportFilters,
+  collectMatchingFoxIds,
   createReportFilterOptions,
   DEFAULT_REPORT_FILTERS,
   type ReportFilters,
@@ -173,8 +173,8 @@ export function App({
     () => createReportFilterOptions(dashboard.observations),
     [dashboard.observations],
   );
-  const scopedObservations = useMemo(
-    () => applyReportFilters(dashboard.observations, reportFilters),
+  const visibleFoxIds = useMemo(
+    () => collectMatchingFoxIds(dashboard.observations, reportFilters),
     [dashboard.observations, reportFilters],
   );
   const overview = useMemo(
@@ -184,15 +184,16 @@ export function App({
   const summaryViewModel = useMemo(
     () =>
       createSummaryViewModel(
-        scopedObservations,
+        dashboard.observations,
         dashboard.scoringPolicy.preyWeightPercent,
         {
           selectedFoxId,
           totalObservationCount: dashboard.observations.length,
           totalFoxCount: countUniqueFoxes(dashboard.observations),
+          visibleFoxIds,
         },
       ),
-    [dashboard, scopedObservations, selectedFoxId],
+    [dashboard, selectedFoxId, visibleFoxIds],
   );
 
   useEffect(() => {
@@ -226,12 +227,13 @@ export function App({
     if (committedWeightRef.current === nextPreyWeightPercent) return;
 
     const committedViewModel = createSummaryViewModel(
-      scopedObservations,
+      dashboard.observations,
       nextPreyWeightPercent,
       {
         selectedFoxId,
         totalObservationCount: dashboard.observations.length,
         totalFoxCount: countUniqueFoxes(dashboard.observations),
+        visibleFoxIds,
       },
     );
     const persistenceWarning = pendingPolicyPersistenceWarningRef.current;
@@ -246,17 +248,18 @@ export function App({
   }
 
   function changeReportFilters(nextFilters: ReportFilters) {
-    const nextObservations = applyReportFilters(
+    const nextVisibleFoxIds = collectMatchingFoxIds(
       dashboard.observations,
       nextFilters,
     );
     const nextViewModel = createSummaryViewModel(
-      nextObservations,
+      dashboard.observations,
       dashboard.scoringPolicy.preyWeightPercent,
       {
         selectedFoxId,
         totalObservationCount: dashboard.observations.length,
         totalFoxCount: countUniqueFoxes(dashboard.observations),
+        visibleFoxIds: nextVisibleFoxIds,
       },
     );
     const nextSelectedFoxId = nextViewModel.selectedFox?.foxId;
@@ -380,14 +383,15 @@ export function App({
     clearUndo = true,
     filters = reportFilters,
   ) {
-    const nextScopedObservations = applyReportFilters(observations, filters);
+    const nextVisibleFoxIds = collectMatchingFoxIds(observations, filters);
     const nextViewModel = createSummaryViewModel(
-      nextScopedObservations,
+      observations,
       dashboard.scoringPolicy.preyWeightPercent,
       {
         selectedFoxId,
         totalObservationCount: observations.length,
         totalFoxCount: countUniqueFoxes(observations),
+        visibleFoxIds: nextVisibleFoxIds,
       },
     );
 
@@ -530,7 +534,7 @@ function createFilterAnnouncement(
   previousFoxId: string | undefined,
   nextFoxId: string | undefined,
 ): string {
-  const scope = `Фильтры применены: ${filteredFoxCount} лис из ${totalFoxCount}.`;
+  const scope = `Фильтры рейтинга применены: ${filteredFoxCount} лис из ${totalFoxCount}.`;
   if (previousFoxId === nextFoxId) return scope;
   if (nextFoxId)
     return `${scope} Выбрана ${formatFoxIdentityLabel(nextFoxId)}.`;

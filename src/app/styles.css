@@ -894,6 +894,23 @@ h3 {
   border-top: 1px solid var(--ledger-line);
 }
 
+.ranking-empty {
+  padding: 28px 30px;
+  border-top: 1px solid var(--ledger-line);
+}
+
+.ranking-empty h3,
+.ranking-empty p {
+  margin: 0;
+}
+
+.ranking-empty p {
+  margin-top: 8px;
+  color: var(--moss-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .ranking-row {
   border-bottom: 1px solid var(--ledger-line);
 }

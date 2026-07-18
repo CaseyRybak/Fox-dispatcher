@@ -85,7 +85,7 @@ describe("observation management", () => {
     expect(within(summary).getByText("8,0 из 10")).toBeInTheDocument();
   });
 
-  it("recalculates filtered scope, options, and the selected calculation from one edit", async () => {
+  it("updates filter options and the selected calculation from one edit", async () => {
     const user = userEvent.setup();
     window.history.replaceState(null, "", "#summary");
     render(<App />);

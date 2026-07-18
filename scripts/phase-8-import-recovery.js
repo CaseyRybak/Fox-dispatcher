@@ -127,7 +127,7 @@ async (page) => {
     await reportCaption.evaluate(
       (element) => element === element.ownerDocument.activeElement,
     ),
-    "Accepted import did not focus the updated report scope.",
+    "Accepted import did not focus the updated Summary.",
   );
   await page.reload();
   await page.getByText("obs_102", { exact: true }).waitFor();

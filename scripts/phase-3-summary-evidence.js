@@ -23,6 +23,16 @@ async (page) => {
       `Expected filter announcement starting with "${expected}", received "${message}".`,
     );
   };
+  const assertGlobalLeader = async () => {
+    const result = page.getByRole("region", {
+      name: "Самая подозрительная лиса",
+    });
+    await result.getByRole("heading", { level: 2, name: "Лиса 3" }).waitFor();
+    assert(
+      (await result.textContent())?.includes("7,9 из 10"),
+      "A ranking filter changed the full-report leader or score.",
+    );
+  };
   const resetFilters = async () => {
     const reset = page.getByRole("button", { name: "Сбросить всё" });
     if (await reset.count()) {
@@ -109,18 +119,21 @@ async (page) => {
   const foxSearch = page.getByRole("searchbox", { name: "Найти лису" });
   await foxSearch.fill("fox_001");
   await assertScope("Показано лис: 1 из 4");
-  await assertFilterAnnouncement("Фильтры применены: 1 лис из 4.");
+  await assertFilterAnnouncement("Фильтры рейтинга применены: 1 лис из 4.");
+  await assertGlobalLeader();
   await resetFilters();
 
   await foxSearch.fill("Лиса 1");
   await assertScope("Показано лис: 1 из 4");
-  await assertFilterAnnouncement("Фильтры применены: 1 лис из 4.");
+  await assertFilterAnnouncement("Фильтры рейтинга применены: 1 лис из 4.");
+  await assertGlobalLeader();
   await resetFilters();
 
   const location = page.getByRole("combobox", { name: "Локация" });
   await location.selectOption("Северная поляна");
   await assertScope("Показано лис: 2 из 4");
-  await assertFilterAnnouncement("Фильтры применены: 2 лис из 4.");
+  await assertFilterAnnouncement("Фильтры рейтинга применены: 2 лис из 4.");
+  await assertGlobalLeader();
   assert(
     (await page
       .getByRole("list", { name: "Рейтинг подозрительности" })
@@ -133,12 +146,14 @@ async (page) => {
   const color = page.getByRole("combobox", { name: "Цвет" });
   await color.selectOption("серебристая");
   await assertScope("Показано лис: 1 из 4");
-  await assertFilterAnnouncement("Фильтры применены: 1 лис из 4.");
+  await assertFilterAnnouncement("Фильтры рейтинга применены: 1 лис из 4.");
+  await assertGlobalLeader();
   await resetFilters();
 
   await page.getByRole("radio", { name: "Есть" }).click();
   await assertScope("Показано лис: 2 из 4");
-  await assertFilterAnnouncement("Фильтры применены: 2 лис из 4.");
+  await assertFilterAnnouncement("Фильтры рейтинга применены: 2 лис из 4.");
+  await assertGlobalLeader();
   await resetFilters();
 
   await foxSearch.fill("fox_001");
@@ -148,7 +163,7 @@ async (page) => {
   await assertScope("Показано лис: 1 из 4");
   assert(
     (await page.getByRole("status").textContent()) ===
-      "Фильтры применены: 1 лис из 4.",
+      "Фильтры рейтинга применены: 1 лис из 4.",
     "The combined filter did not produce one atomic scope announcement.",
   );
 
@@ -166,9 +181,10 @@ async (page) => {
   await resetFilters();
   await foxSearch.fill("missing");
   await page
-    .getByRole("heading", { name: "В этой выборке ничего не найдено" })
+    .getByRole("heading", { name: "По фильтрам лисы не найдены" })
     .waitFor();
   await assertScope("Показано лис: 0 из 4");
+  await assertGlobalLeader();
   assert(
     await foxSearch.evaluate(
       (element) => element === element.ownerDocument.activeElement,
@@ -189,9 +205,10 @@ async (page) => {
   );
   await page.getByRole("link", { name: "Сводка", exact: true }).click();
   await page
-    .getByRole("heading", { name: "В этой выборке ничего не найдено" })
+    .getByRole("heading", { name: "По фильтрам лисы не найдены" })
     .waitFor();
-  await page.getByRole("button", { name: "Сбросить фильтры" }).click();
+  await assertGlobalLeader();
+  await page.getByRole("button", { name: "Сбросить всё" }).click();
   await assertScope("Показано лис: 4 из 4");
 
   await page
@@ -228,6 +245,46 @@ async (page) => {
     path: "output/playwright/phase-3/mobile-summary-320px.png",
   });
 
+  await page.evaluate(() => {
+    const storageKey = "fox-dispatcher.dashboard";
+    const rawValue = globalThis.localStorage.getItem(storageKey);
+    if (rawValue === null) {
+      throw new Error("Persisted dashboard state is missing.");
+    }
+
+    const dashboard = JSON.parse(rawValue);
+    dashboard.observations.push({
+      color: "рыжая",
+      fox_id: "fox_001",
+      fox_name: "Лиса 1",
+      has_prey: false,
+      id: "obs_006",
+      location: "Моховой овраг",
+      suspicion_level: 7,
+      time: "23:23",
+    });
+    globalThis.localStorage.setItem(storageKey, JSON.stringify(dashboard));
+  });
+  await page.reload();
+  await page
+    .getByRole("heading", { level: 1, name: "Самая подозрительная лиса" })
+    .waitFor();
+  const multiLocationFox = page.getByRole("button", {
+    name: /^Показать расчёт: Лиса 1,/,
+  });
+  assert(
+    (await multiLocationFox.textContent())?.includes("Несколько локаций"),
+    "A fox observed in several locations did not receive the aggregate label.",
+  );
+  await page.getByRole("button", { name: "Показать фильтры" }).click();
+  await page
+    .getByRole("combobox", { name: "Локация" })
+    .selectOption("Северная поляна");
+  assert(
+    (await multiLocationFox.textContent())?.includes("Несколько локаций"),
+    "The location filter rewrote the fox's full-journal location summary.",
+  );
+
   assert(
     browserErrors.length === 0,
     `Browser errors were recorded:\n${browserErrors.join("\n")}`,
@@ -236,6 +293,7 @@ async (page) => {
   return {
     combinedFilterCount: 1,
     consoleErrors: browserErrors.length,
+    multiLocationLabel: "Несколько локаций",
     northClearing: { foxes: 2, observations: 3 },
     selectionPreservedAtWeight: 30,
     viewport: 320,

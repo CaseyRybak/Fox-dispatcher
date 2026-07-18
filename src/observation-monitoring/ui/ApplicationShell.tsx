@@ -173,7 +173,7 @@ export function ApplicationShell({
         )}
         {destination === "summary" && announcement && (
           <section
-            aria-label="Последнее изменение отчёта"
+            aria-label="Последнее изменение на Сводке"
             className="global-report-update"
           >
             <span className="report-update__signal" aria-hidden="true" />

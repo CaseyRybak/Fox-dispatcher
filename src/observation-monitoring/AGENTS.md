@@ -4,7 +4,7 @@
 
 ## Current slice
 
-Phase 3 is published on `main` in `9834af5`; its consistency hardening was published in `1b2bb24`, and the final focus and runner-guard corrections were published with Phase 4 in `699d457`. Summary filters connect ranking, selected-fox calculation, location activity, and recent observations into one report scope. The Parameters destination deliberately keeps the full authoritative observation ledger visible without displaying or controlling Summary-filter state.
+Phase 3 is published on `main` in `9834af5`; its consistency hardening was published in `1b2bb24`, and the final focus and runner-guard corrections were published with Phase 4 in `699d457`. Summary filters now derive only the `fox_id` values visible in the ranking; the leader, metrics, scores, explanations, and selected-fox arithmetic remain derived from the full authoritative journal. The Parameters destination also keeps that full journal visible without displaying or controlling Summary-filter state.
 
 Phase 4 is complete and published in `699d457`. Phase 5 was published in `0021c6d`, with consistency hardening in `df434c9`: application commands validate and mutate one authoritative observation set; browser adapters generate secure IDs and persist a strict version-1 envelope; the Observations UI adds editing, deletion, undo, starter reset, status, deterministic sorting, focus recovery, and live feedback. Phase 6 is complete and published in `579b146`: the ledger switches to sortable mobile field cards, editor and reset flows use native modal dialogs, and focused accessibility/browser gates cover the reviewer journey. Phase 7 is complete: application/deployment policy revision `170ee1d` passed the recorded public Vercel reviewer journey; the protected-preview and mobile-coverage boundaries are explicit in the [release evidence](../../docs/verification/release-evidence.md). Phase 8 was published and deployed in `89c0f49`: atomic import/export and raw corrupt/future-version recovery passed focused, production-browser, axe, and 320 px checks.
 
@@ -16,8 +16,8 @@ Current post-Phase-8 behavior keeps location activity and recent-observation val
 - `domain/scoring-policy.ts` — validated integer prey-weight policy from 0 through 100 in steps of 5.
 - `domain/suspicion-report.ts` — pure exact report aggregation, full co-leader detection, deterministic ordering, and decimal half-up display rounding.
 - `application/create-observation-set-overview.ts` — read-only view model consumed by the shell.
-- `application/create-summary-view-model.ts` — presentation-ready scope, ranking, exact co-leaders, metrics, contributions, selected-fox calculation, location activity, recent observations, and policy-announcement copy.
-- `application/report-scope.ts` — deterministic fox, location, color, and prey filtering plus full-dataset filter options.
+- `application/create-summary-view-model.ts` — presentation-ready full-report leader/co-leaders, metrics, contributions, selected-fox calculation, per-fox full-journal location summaries, location activity, recent observations, and an optionally filtered ranking projection.
+- `application/report-scope.ts` — deterministic fox, location, color, and prey matching for visible ranking identities plus full-dataset filter options.
 - `application/public-worklog.ts` — public checkpoint and evidence values shared across the adapter/UI boundary.
 - `application/observation-management.ts` — atomic add/edit/delete/undo/reset behavior and the six-field editor contract.
 - `application/dashboard-state-store.ts` — outbound persistence result and state types.
@@ -28,7 +28,7 @@ Current post-Phase-8 behavior keeps location activity and recent-observation val
 - `adapters/public-worklog/public-worklog.ts` — strict 5-7 checkpoint Zod parser and immutable bundled source.
 - `adapters/starter-data/starter-observations.ts` — Zod boundary for the bundled starter JSON.
 - `ui/ApplicationShell.tsx` — navigation and destination composition.
-- `ui/summary/SummaryPage.tsx` — scope controls, leader/co-leader outcome, leading-location context, calculation explanation, selectable ranking, and synchronized prey-weight controls.
+- `ui/summary/SummaryPage.tsx` — ranking-visibility controls, full-report leader/co-leader outcome, leading-location context, calculation explanation, selectable ranking, and synchronized prey-weight controls.
 - `ui/observations/ObservationsPage.tsx`, `ObservationEditor.tsx`, and `ObservationImportDialog.tsx` — editable ledger/cards, validated modal forms, import preview, export actions, delete/undo/reset, storage recovery, status, and focus recovery.
 - `ui/ai-worklog/WorklogPage.tsx` — semantic six-card public timeline rendering the approved stage, date, goal, human-decision, and AI-contribution fields.
 
@@ -44,7 +44,7 @@ Current post-Phase-8 behavior keeps location activity and recent-observation val
 - Adapter tests prove the bundled fixture contains the exact five starter records and four fox identities.
 - Scoring tests prove exact starter arithmetic, policy boundaries, half-up rounding, deterministic tie-breaks, and input-order invariance.
 - Component tests prove the 80/20 result, immediate preview, one committed live announcement, exact input, and reset behavior.
-- Report-scope and component tests prove the North Clearing 3-of-5/2-fox Summary selection, the unchanged full Parameters ledger, combined filters, explicit fox selection, fallback, zero results, reset behavior, atomic announcements, and deterministic chip-removal focus.
+- Report-scope and component tests prove that North Clearing shows two ranking positions while the 3-of-5 leading-location metric and full-report leader remain unchanged; a fox observed in several places keeps the `Несколько локаций` label even under a location filter. They also cover the full Parameters ledger, combined filters, explicit fox selection, fallback, zero visible results, reset behavior, atomic announcements, and deterministic chip-removal focus.
 - The repository `npm run verify` entry point collects formatting, lint, tests, typecheck, and production build evidence.
 - [Phase 2 verification evidence](../../docs/verification/phase-2-explainable-ranking.md) records the production-preview and 320 px browser results.
 - [Phase 3 evidence](../../docs/verification/phase-3-evidence-and-activity.md) records focused tests, the full gate, reproducible production-browser flow, console result, and desktop/mobile visual artifacts.

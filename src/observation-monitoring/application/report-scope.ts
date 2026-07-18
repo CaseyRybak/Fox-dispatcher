@@ -57,6 +57,15 @@ export function applyReportFilters(
   });
 }
 
+export function collectMatchingFoxIds(
+  observations: readonly Observation[],
+  filters: ReportFilters,
+): ReadonlySet<string> {
+  return new Set(
+    applyReportFilters(observations, filters).map(({ fox_id }) => fox_id),
+  );
+}
+
 function collectExactFoxIds(
   observations: readonly Observation[],
   normalizedQuery: string,

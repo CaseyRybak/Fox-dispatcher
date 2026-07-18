@@ -22,8 +22,8 @@ export interface RankedFoxViewModel {
   readonly explanation: string;
   readonly foxId: string;
   readonly foxName: string;
-  readonly latestLocation: string;
   readonly latestTime: string;
+  readonly locationSummaryLabel: string;
   readonly meanSuspicionLabel: string;
   readonly observationCount: number;
   readonly preyContributionLabel: string;
@@ -87,6 +87,7 @@ export interface SummaryViewModelOptions {
   readonly selectedFoxId?: string;
   readonly totalObservationCount?: number;
   readonly totalFoxCount?: number;
+  readonly visibleFoxIds?: ReadonlySet<string>;
 }
 
 export const DEFAULT_PREY_WEIGHT_PERCENT =
@@ -102,24 +103,33 @@ export function createSummaryViewModel(
     createScoringPolicy(preyWeightPercent),
   );
   const colorsByFox = collectColorsByFox(observations);
-  const ranking = report.assessments.map((assessment, index) =>
+  const locationsByFox = collectLocationsByFox(observations);
+  const completeRanking = report.assessments.map((assessment, index) =>
     createRankedFoxViewModel(
       assessment,
       index,
       colorsByFox.get(assessment.foxId)?.size ?? 1,
+      locationsByFox.get(assessment.foxId)?.size ?? 1,
     ),
   );
+  const visibleFoxIds = options.visibleFoxIds;
+  const ranking = visibleFoxIds
+    ? completeRanking.filter(({ foxId }) => visibleFoxIds.has(foxId))
+    : completeRanking;
   const leadingLocation = report.locationActivity[0];
   const leaderFoxIds = new Set(report.leaders.map(({ foxId }) => foxId));
   const selectedRankingItem =
-    ranking.find(({ foxId }) => foxId === options.selectedFoxId) ?? ranking[0];
+    ranking.find(({ foxId }) => foxId === options.selectedFoxId) ??
+    ranking[0] ??
+    completeRanking.find(({ foxId }) => foxId === options.selectedFoxId) ??
+    completeRanking[0];
   const totalObservationCount =
     options.totalObservationCount ?? observations.length;
   const totalFoxCount = options.totalFoxCount ?? report.uniqueFoxCount;
 
   return {
-    leader: ranking[0],
-    leaders: ranking.filter(({ foxId }) => leaderFoxIds.has(foxId)),
+    leader: completeRanking[0],
+    leaders: completeRanking.filter(({ foxId }) => leaderFoxIds.has(foxId)),
     locationActivity: report.locationActivity.map((activity) => ({
       location: activity.location,
       observationCount: activity.observationCount,
@@ -152,8 +162,8 @@ export function createSummaryViewModel(
       .slice(0, 3)
       .map(createRecentObservationViewModel),
     scope: {
-      filteredFoxCount: report.uniqueFoxCount,
-      label: `Показано лис: ${report.uniqueFoxCount} из ${totalFoxCount}`,
+      filteredFoxCount: ranking.length,
+      label: `Показано лис: ${ranking.length} из ${totalFoxCount}`,
       totalObservationCount,
       totalFoxCount,
     },
@@ -194,6 +204,7 @@ function createRankedFoxViewModel(
   assessment: FoxAssessment,
   index: number,
   colorCount: number,
+  locationCount: number,
 ): RankedFoxViewModel {
   const meanSuspicionLabel = formatTenths(
     roundFractionToTenths(assessment.meanSuspicion),
@@ -226,8 +237,11 @@ function createRankedFoxViewModel(
     explanation: `Средняя оценка по ${assessment.observationCount} ${formatObservationDativeCount(assessment.observationCount)} - ${meanSuspicionLabel}; вклад оценки - ${suspicionContributionLabel}. Добыча отмечена в ${assessment.preyObservationCount} из ${assessment.observationCount} наблюдений; вклад добычи - ${preyContributionLabel}. Итоговый индекс - ${scoreLabel}.`,
     foxId: assessment.foxId,
     foxName: formatFoxDisplayName(assessment.foxId, assessment.foxName),
-    latestLocation: assessment.latestObservation.location,
     latestTime: assessment.latestObservation.time,
+    locationSummaryLabel:
+      locationCount > 1
+        ? "Несколько локаций"
+        : assessment.latestObservation.location,
     meanSuspicionLabel,
     observationCount: assessment.observationCount,
     preyContributionLabel,
@@ -261,6 +275,21 @@ function collectColorsByFox(
   }
 
   return colorsByFox;
+}
+
+function collectLocationsByFox(
+  observations: readonly Observation[],
+): ReadonlyMap<string, ReadonlySet<string>> {
+  const locationsByFox = new Map<string, Set<string>>();
+
+  for (const observation of observations) {
+    const locations =
+      locationsByFox.get(observation.fox_id) ?? new Set<string>();
+    locations.add(observation.location);
+    locationsByFox.set(observation.fox_id, locations);
+  }
+
+  return locationsByFox;
 }
 
 function formatColorCount(count: number): string {

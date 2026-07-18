@@ -4,6 +4,7 @@ import type { Observation } from "@/observation-monitoring/domain/observation";
 
 import {
   applyReportFilters,
+  collectMatchingFoxIds,
   createReportFilterOptions,
   DEFAULT_REPORT_FILTERS,
 } from "./report-scope";
@@ -57,8 +58,8 @@ const reportObservations = [
   },
 ] satisfies readonly Observation[];
 
-describe("report scope", () => {
-  it("applies North Clearing to the whole report as 3 observations and 2 foxes", () => {
+describe("ranking filters", () => {
+  it("matches 3 observations and 2 foxes for North Clearing", () => {
     const observations = applyReportFilters(reportObservations, {
       ...DEFAULT_REPORT_FILTERS,
       location: "Северная поляна",
@@ -118,15 +119,16 @@ describe("report scope", () => {
     });
   });
 
-  it("builds one focused report from the filtered observations", () => {
-    const observations = applyReportFilters(reportObservations, {
+  it("builds a full report with a filtered visible ranking", () => {
+    const visibleFoxIds = collectMatchingFoxIds(reportObservations, {
       ...DEFAULT_REPORT_FILTERS,
       location: "Северная поляна",
     });
-    const viewModel = createSummaryViewModel(observations, 20, {
+    const viewModel = createSummaryViewModel(reportObservations, 20, {
       selectedFoxId: "fox_004",
       totalObservationCount: reportObservations.length,
       totalFoxCount: 4,
+      visibleFoxIds,
     });
 
     expect(viewModel.scope).toEqual({
@@ -140,29 +142,43 @@ describe("report scope", () => {
       "fox_004",
     ]);
     expect(viewModel.selectedFox?.foxId).toBe("fox_004");
-    expect(viewModel.locationActivity).toEqual([
+    expect(viewModel.leader).toMatchObject({
+      foxId: "fox_001",
+      scoreLabel: "7,8",
+    });
+    expect(viewModel.metrics).toEqual([
+      { label: "Уникальные лисы", value: "4" },
+      {
+        detail: "3 из 5 наблюдений",
+        label: "Основная локация",
+        value: "Северная поляна",
+      },
+    ]);
+    expect(viewModel.locationActivity[0]).toEqual(
       expect.objectContaining({
         location: "Северная поляна",
         observationCount: 3,
-        percentageLabel: "100%",
+        percentageLabel: "60%",
       }),
-    ]);
+    );
+    expect(viewModel.locationActivity).toHaveLength(3);
     expect(viewModel.recentObservations.map(({ id }) => id)).toEqual([
       "obs_005",
+      "obs_004",
       "obs_003",
-      "obs_001",
     ]);
   });
 
-  it("falls back to the scoped leader when the requested fox is absent", () => {
-    const observations = applyReportFilters(reportObservations, {
+  it("falls back to the first visible fox when the requested fox is hidden", () => {
+    const visibleFoxIds = collectMatchingFoxIds(reportObservations, {
       ...DEFAULT_REPORT_FILTERS,
       location: "Северная поляна",
     });
-    const viewModel = createSummaryViewModel(observations, 20, {
+    const viewModel = createSummaryViewModel(reportObservations, 20, {
       selectedFoxId: "fox_003",
       totalObservationCount: reportObservations.length,
       totalFoxCount: 4,
+      visibleFoxIds,
     });
 
     expect(viewModel.leader?.foxId).toBe("fox_001");
