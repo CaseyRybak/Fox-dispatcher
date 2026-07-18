@@ -5,6 +5,8 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { reserveAvailablePort } from "./browser-preview-port.mjs";
+
 const require = createRequire(import.meta.url);
 const repositoryRoot = fileURLToPath(new URL("..", import.meta.url));
 const vitePackageRoot = path.dirname(require.resolve("vite/package.json"));
@@ -46,20 +48,20 @@ mkdirSync(path.join(repositoryRoot, "output", "playwright", "phase-7"), {
 mkdirSync(path.join(repositoryRoot, "output", "playwright", "phase-8"), {
   recursive: true,
 });
-const port = 4173;
-const localBaseUrl = `http://127.0.0.1:${port}`;
 const configuredBaseUrl = process.env.FOX_SMOKE_BASE_URL?.trim();
+const usesExternalBaseUrl = Boolean(configuredBaseUrl);
+const port = usesExternalBaseUrl ? 4173 : await reserveAvailablePort(4173);
+const localBaseUrl = `http://127.0.0.1:${port}`;
 const baseUrl = configuredBaseUrl
   ? validateExternalBaseUrl(configuredBaseUrl)
   : localBaseUrl;
-const usesExternalBaseUrl = baseUrl !== localBaseUrl;
 const requiresRevision = smokeProgramName === "phase-7-release-smoke.js";
 const expectedRevision =
   usesExternalBaseUrl && requiresRevision
     ? validateExpectedRevision(process.env.FOX_SMOKE_EXPECTED_REVISION)
     : "local";
 const smokeSource = readFileSync(smokeProgram, "utf8").trim().replace(/;$/, "");
-const localBaseUrlDeclaration = `const baseUrl = "${localBaseUrl}";`;
+const localBaseUrlDeclaration = 'const baseUrl = "http://127.0.0.1:4173";';
 const localRevisionDeclaration = `const expectedRevision = "local";`;
 if (!smokeSource.includes(localBaseUrlDeclaration)) {
   throw new Error(
@@ -167,11 +169,18 @@ const preview = usesExternalBaseUrl
         stdio: ["ignore", "inherit", "inherit"],
       },
     );
+let previewSpawnError;
+preview?.once("error", (error) => {
+  previewSpawnError = error;
+});
 
 async function waitForPreview() {
   const deadline = Date.now() + 15_000;
 
   while (Date.now() < deadline) {
+    if (previewSpawnError) {
+      throw previewSpawnError;
+    }
     if (preview?.exitCode !== null && preview?.exitCode !== undefined) {
       throw new Error(`Vite preview exited with code ${preview.exitCode}.`);
     }
@@ -179,6 +188,9 @@ async function waitForPreview() {
     try {
       const response = await fetch(baseUrl);
       if (response.ok) {
+        if (preview?.exitCode !== null && preview?.exitCode !== undefined) {
+          throw new Error(`Vite preview exited with code ${preview.exitCode}.`);
+        }
         return;
       }
     } catch {

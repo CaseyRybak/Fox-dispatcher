@@ -66,7 +66,7 @@ describe("targeted accessibility contract", () => {
 
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
     const ledger = screen.getByRole("list", {
-      name: "Наблюдения текущей выборки",
+      name: "Полный журнал наблюдений",
     });
     expect(within(ledger).getAllByRole("listitem")).toHaveLength(5);
     const sortControl = screen.getByRole("combobox", {
@@ -83,6 +83,8 @@ describe("targeted accessibility contract", () => {
     ).toEqual([
       { label: "Время: сначала поздние", value: "time-descending" },
       { label: "Время: сначала ранние", value: "time-ascending" },
+      { label: "Запись: по возрастанию ID", value: "id-ascending" },
+      { label: "Запись: по убыванию ID", value: "id-descending" },
       { label: "Лиса: от А до Я", value: "foxName-ascending" },
       { label: "Лиса: от Я до А", value: "foxName-descending" },
       { label: "Локация: от А до Я", value: "location-ascending" },
@@ -189,7 +191,7 @@ describe("targeted accessibility contract", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("list", { name: "Наблюдения текущей выборки" }),
+        screen.getByRole("list", { name: "Полный журнал наблюдений" }),
       ).toBeInTheDocument();
     });
     expect(window.history.length).toBe(editorHistoryLength);

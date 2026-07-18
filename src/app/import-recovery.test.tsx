@@ -139,8 +139,8 @@ describe("observation import and export", () => {
     );
     await user.click(screen.getByRole("link", { name: "Параметры" }));
     expect(
-      screen.getByRole("region", { name: "Активная область наблюдений" }),
-    ).toHaveTextContent("Показано лис: 2 из 4");
+      screen.queryByRole("region", { name: "Активная область наблюдений" }),
+    ).not.toBeInTheDocument();
 
     await user.click(
       screen.getByRole("button", { name: "Экспортировать все наблюдения" }),

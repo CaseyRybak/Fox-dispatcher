@@ -167,7 +167,7 @@ export function App({
   const committedLeaderRef = useRef(
     initialSummary.leaders.map(({ foxId }) => foxId),
   );
-  const initialDestinationRef = useRef(destination);
+  const previousDestinationRef = useRef(destination);
 
   const reportFilterOptions = useMemo(
     () => createReportFilterOptions(dashboard.observations),
@@ -178,8 +178,8 @@ export function App({
     [dashboard.observations, reportFilters],
   );
   const overview = useMemo(
-    () => createObservationSetOverview(scopedObservations),
-    [scopedObservations],
+    () => createObservationSetOverview(dashboard.observations),
+    [dashboard.observations],
   );
   const summaryViewModel = useMemo(
     () =>
@@ -204,9 +204,12 @@ export function App({
   useEffect(() => {
     document.documentElement.lang = "ru";
     document.title = destinationTitles[destination];
-    if (destination !== initialDestinationRef.current) {
-      document.querySelector<HTMLElement>("#main-content h1")?.focus();
+    if (destination === previousDestinationRef.current) {
+      return;
     }
+
+    previousDestinationRef.current = destination;
+    document.querySelector<HTMLElement>("#main-content h1")?.focus();
   }, [destination]);
 
   function changePreyWeight(nextPreyWeightPercent: number) {

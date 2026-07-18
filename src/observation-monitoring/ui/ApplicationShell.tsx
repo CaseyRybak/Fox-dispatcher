@@ -14,11 +14,9 @@ import type {
   ObservationDraft,
   ObservationMutationResult,
 } from "@/observation-monitoring/application/observation-management";
-import {
-  DEFAULT_REPORT_FILTERS,
-  hasActiveReportFilters,
-  type ReportFilterOptions,
-  type ReportFilters,
+import type {
+  ReportFilterOptions,
+  ReportFilters,
 } from "@/observation-monitoring/application/report-scope";
 import { WorklogPage } from "@/observation-monitoring/ui/ai-worklog/WorklogPage";
 import { ObservationsPage } from "@/observation-monitoring/ui/observations/ObservationsPage";
@@ -195,7 +193,6 @@ export function ApplicationShell({
         )}
         {destination === "observations" && (
           <ObservationsPage
-            hasActiveFilters={hasActiveReportFilters(filters)}
             lastDeletion={lastDeletion}
             onAdd={onAddObservation}
             onDelete={onDeleteObservation}
@@ -203,7 +200,6 @@ export function ApplicationShell({
             onEdit={onEditObservation}
             onExport={onExportObservations}
             onReadImportFile={onReadImportFile}
-            onResetFilters={() => onFiltersChange(DEFAULT_REPORT_FILTERS)}
             onResetStarter={onResetStarter}
             onReplaceImportedObservations={onReplaceImportedObservations}
             onSelectRecoveryRaw={onSelectRecoveryRaw}
@@ -211,7 +207,6 @@ export function ApplicationShell({
             overview={overview}
             persistenceMessage={persistenceMessage}
             recovery={recovery}
-            scopeLabel={summary.scope.label}
             onValidateImport={onValidateImport}
           />
         )}

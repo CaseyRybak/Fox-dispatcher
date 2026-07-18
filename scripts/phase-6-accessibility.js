@@ -100,9 +100,7 @@ async (page) => {
 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("link", { name: "Параметры", exact: true }).click();
-  await page
-    .getByRole("list", { name: "Наблюдения текущей выборки" })
-    .waitFor();
+  await page.getByRole("list", { name: "Полный журнал наблюдений" }).waitFor();
   await scan("observations mobile cards");
   await page.getByRole("button", { name: "Добавить наблюдение" }).click();
   await page.getByRole("dialog", { name: "Новое наблюдение" }).waitFor();

@@ -16,7 +16,7 @@ The deployment should support short review cycles, production evidence, and an a
 
 Vercel is the deployment target.
 
-Planned integration:
+Implemented integration:
 
 ```text
 GitHub revision
@@ -37,7 +37,7 @@ Repository settings establish:
 - preview deployments: review branches or pull requests;
 - production deployment: `main`.
 
-Top-level navigation uses hash-addressed destinations initially, keeping reloads compatible with a static artifact. A `vercel.json` file becomes part of the repository when a tested routing, header, cache, or build override requires it.
+Top-level navigation uses hash-addressed destinations, keeping reloads compatible with a static artifact. The committed `vercel.json` owns the tested security headers and deployment policy.
 
 The production baseline requires tested response headers. The intended content policy uses self-hosted scripts, styles, fonts, and images; `connect-src 'none'`, `object-src 'none'`, `base-uri 'none'`, and `frame-ancestors 'none'` prevent runtime observation egress and embedding. `Referrer-Policy: no-referrer`, `X-Content-Type-Options: nosniff`, and a minimal `Permissions-Policy` are verified with the deployed artifact. Phase 7 may adjust only the resource directives demonstrated necessary by the production bundle.
 

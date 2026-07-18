@@ -450,7 +450,6 @@ function CalculationSteps({
     ? foxName.replace(/^Лиса /u, "Лисы ")
     : foxName;
   const StepHeading = nested ? "h5" : "h4";
-  const equalitySign = leader.calculationIsRounded ? "≈" : "=";
 
   return (
     <ol className="calculation-explainer__steps">
@@ -465,8 +464,8 @@ function CalculationSteps({
           <span>Средняя подозрительность - {leader.meanSuspicionLabel}.</span>
         </p>
         <strong className="calculation-explainer__formula">
-          {leader.meanSuspicionLabel} × {viewModel.suspicionWeightPercent}%{" "}
-          {equalitySign} {leader.suspicionContributionLabel}
+          {leader.meanSuspicionLabel} × {viewModel.suspicionWeightPercent}% ={" "}
+          {leader.suspicionContributionLabel}
         </strong>
       </li>
       <li>
@@ -485,7 +484,7 @@ function CalculationSteps({
         <p>Складываем значения двух параметров.</p>
         <strong className="calculation-explainer__formula">
           {leader.calculationIsRounded ? (
-            <>Итог без промежуточного округления ≈ {leader.scoreLabel} из 10</>
+            <>Итоговый индекс = {leader.scoreLabel} из 10</>
           ) : (
             <>
               {leader.suspicionContributionLabel} +{" "}
@@ -798,6 +797,34 @@ function PolicyControl({
   readonly viewModel: SummaryViewModel;
 }) {
   const isCompact = useMediaQuery("(max-width: 640px)");
+  const keyboardCommitTimerRef = useRef<
+    ReturnType<typeof setTimeout> | undefined
+  >(undefined);
+
+  const cancelKeyboardCommit = () => {
+    if (keyboardCommitTimerRef.current !== undefined) {
+      clearTimeout(keyboardCommitTimerRef.current);
+      keyboardCommitTimerRef.current = undefined;
+    }
+  };
+
+  const scheduleKeyboardCommit = (preyWeightPercent: number) => {
+    cancelKeyboardCommit();
+    keyboardCommitTimerRef.current = setTimeout(() => {
+      keyboardCommitTimerRef.current = undefined;
+      onPreyWeightCommit(preyWeightPercent);
+    }, 250);
+  };
+
+  useEffect(
+    () => () => {
+      if (keyboardCommitTimerRef.current !== undefined) {
+        clearTimeout(keyboardCommitTimerRef.current);
+      }
+    },
+    [],
+  );
+
   return (
     <fieldset className="policy-control">
       <legend className="visually-hidden">Настройка веса параметров</legend>
@@ -811,9 +838,32 @@ function PolicyControl({
         id="prey-weight"
         max="100"
         min="0"
-        onBlur={commitCurrentWeight}
+        onBlur={() => {
+          cancelKeyboardCommit();
+          commitCurrentWeight();
+        }}
         onChange={handleWeightChange(onPreyWeightChange)}
-        onPointerUp={commitCurrentWeight}
+        onKeyUp={(event) => {
+          if (
+            [
+              "ArrowDown",
+              "ArrowLeft",
+              "ArrowRight",
+              "ArrowUp",
+              "End",
+              "Home",
+              "PageDown",
+              "PageUp",
+            ].includes(event.key)
+          ) {
+            scheduleKeyboardCommit(Number(event.currentTarget.value));
+          }
+        }}
+        onPointerDown={cancelKeyboardCommit}
+        onPointerUp={() => {
+          cancelKeyboardCommit();
+          commitCurrentWeight();
+        }}
         step="5"
         type="range"
         value={viewModel.preyWeightPercent}
@@ -985,7 +1035,9 @@ function ContributionRow({
         <span>{label}</span>
         <strong>{value}</strong>
       </div>
-      <p>{detail}</p>
+      <p>
+        <span>{detail}</span> = {value}
+      </p>
       <span aria-hidden="true" className="contribution-row__track">
         <span style={style} />
       </span>

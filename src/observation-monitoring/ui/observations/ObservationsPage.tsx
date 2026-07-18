@@ -22,7 +22,6 @@ import { ObservationImportDialog } from "@/observation-monitoring/ui/observation
 import { useMediaQuery } from "@/observation-monitoring/ui/useMediaQuery";
 
 interface ObservationsPageProps {
-  readonly hasActiveFilters: boolean;
   readonly lastDeletion?: ObservationDeletionUndo;
   readonly onAdd: (draft: ObservationDraft) => ObservationMutationResult;
   readonly onDelete: (observationId: string) => void;
@@ -34,7 +33,6 @@ interface ObservationsPageProps {
   readonly onReadImportFile: (
     file: ObservationImportFile,
   ) => Promise<ObservationImportFileResult>;
-  readonly onResetFilters: () => void;
   readonly onResetStarter: () => void;
   readonly onReplaceImportedObservations: (
     observations: Extract<
@@ -52,7 +50,6 @@ interface ObservationsPageProps {
   readonly overview: ObservationSetOverview;
   readonly persistenceMessage: string;
   readonly recovery?: DashboardStateRecovery;
-  readonly scopeLabel: string;
 }
 
 type EditorState =
@@ -60,7 +57,13 @@ type EditorState =
   | { readonly mode: "edit"; readonly observation: ObservationListItem };
 
 type ObservationSortField =
-  "color" | "foxName" | "hasPrey" | "location" | "suspicionLevel" | "time";
+  | "color"
+  | "foxName"
+  | "hasPrey"
+  | "id"
+  | "location"
+  | "suspicionLevel"
+  | "time";
 
 interface ObservationSort {
   readonly direction: "ascending" | "descending";
@@ -72,7 +75,6 @@ type PendingFocus =
   | { readonly id: string; readonly kind: "observation" };
 
 export function ObservationsPage({
-  hasActiveFilters,
   lastDeletion,
   onAdd,
   onDelete,
@@ -80,7 +82,6 @@ export function ObservationsPage({
   onExport,
   onReadImportFile,
   onDismissUndo,
-  onResetFilters,
   onResetStarter,
   onReplaceImportedObservations,
   onSelectRecoveryRaw,
@@ -88,7 +89,6 @@ export function ObservationsPage({
   overview,
   persistenceMessage,
   recovery,
-  scopeLabel,
   onValidateImport,
 }: ObservationsPageProps) {
   const [editor, setEditor] = useState<EditorState>();
@@ -110,7 +110,6 @@ export function ObservationsPage({
   const recoveryRawRef = useRef<HTMLTextAreaElement>(null);
   const restoreResetFocusRef = useRef(false);
   const restoreFocusAfterResetRef = useRef(false);
-  const restoreFocusAfterFilterResetRef = useRef(false);
   const restoreImportFocusRef = useRef(false);
   const focusAfterRenderRef = useRef<PendingFocus | undefined>(undefined);
 
@@ -150,12 +149,6 @@ export function ObservationsPage({
     restoreFocusAfterResetRef.current = false;
     (scopeLabelRef.current ?? addButtonRef.current)?.focus();
   }, [overview.observationCount, overview.observations]);
-
-  useEffect(() => {
-    if (hasActiveFilters || !restoreFocusAfterFilterResetRef.current) return;
-    restoreFocusAfterFilterResetRef.current = false;
-    scopeLabelRef.current?.focus();
-  }, [hasActiveFilters]);
 
   useEffect(() => {
     const target = focusAfterRenderRef.current;
@@ -498,51 +491,7 @@ export function ObservationsPage({
         />
       )}
 
-      {hasActiveFilters && overview.observationCount > 0 && (
-        <section
-          aria-labelledby="observation-scope-title"
-          className="observation-scope-notice"
-        >
-          <div>
-            <p className="eyebrow">Область из Сводки</p>
-            <h2 id="observation-scope-title">Активная область наблюдений</h2>
-            <p>
-              {scopeLabel}. На Сводке включены фильтры, поэтому журнал показан
-              не полностью.
-            </p>
-          </div>
-          <button
-            className="secondary-action"
-            onClick={() => {
-              restoreFocusAfterFilterResetRef.current = true;
-              onResetFilters();
-            }}
-            type="button"
-          >
-            Показать все наблюдения
-          </button>
-        </section>
-      )}
-
-      {hasActiveFilters && overview.observationCount === 0 ? (
-        <section className="empty-report" aria-labelledby="ledger-empty-title">
-          <p className="eyebrow">{scopeLabel}</p>
-          <h2 id="ledger-empty-title">В этой выборке ничего не найдено</h2>
-          <p>
-            Набор не изменён. Сбросьте фильтры, чтобы вернуть все наблюдения.
-          </p>
-          <button
-            className="primary-action"
-            onClick={() => {
-              restoreFocusAfterResetRef.current = true;
-              onResetFilters();
-            }}
-            type="button"
-          >
-            Сбросить фильтры
-          </button>
-        </section>
-      ) : overview.observationCount === 0 ? (
+      {overview.observationCount === 0 ? (
         <section className="empty-report" aria-labelledby="ledger-empty-title">
           <p className="eyebrow">Пустой журнал</p>
           <h2 id="ledger-empty-title">Наблюдений пока нет</h2>
@@ -580,7 +529,12 @@ export function ObservationsPage({
                   onChange={changeSort}
                   sort={sort}
                 />
-                <th scope="col">Запись</th>
+                <SortableHeader
+                  field="id"
+                  label="Запись"
+                  onChange={changeSort}
+                  sort={sort}
+                />
                 <SortableHeader
                   field="foxName"
                   label="Лиса"
@@ -708,6 +662,16 @@ const mobileSortOptions: readonly {
     value: "time-ascending",
   },
   {
+    label: "Запись: по возрастанию ID",
+    sort: { direction: "ascending", field: "id" },
+    value: "id-ascending",
+  },
+  {
+    label: "Запись: по убыванию ID",
+    sort: { direction: "descending", field: "id" },
+    value: "id-descending",
+  },
+  {
     label: "Лиса: от А до Я",
     sort: { direction: "ascending", field: "foxName" },
     value: "foxName-ascending",
@@ -810,7 +774,7 @@ function MobileObservationLedger({
       </div>
 
       <ol
-        aria-label="Наблюдения текущей выборки"
+        aria-label="Полный журнал наблюдений"
         className="observation-card-list"
       >
         {observations.map((observation) => (

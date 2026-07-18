@@ -177,29 +177,22 @@ async (page) => {
   );
   await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await page.getByRole("heading", { level: 1, name: "Наблюдения" }).waitFor();
+  assert(
+    (await page.locator("tbody tr").count()) === 5,
+    "The full observation ledger changed with the empty Summary scope.",
+  );
+  assert(
+    (await page
+      .getByRole("region", { name: "Активная область наблюдений" })
+      .count()) === 0,
+    "Parameters exposed the active Summary filter.",
+  );
+  await page.getByRole("link", { name: "Сводка", exact: true }).click();
   await page
     .getByRole("heading", { name: "В этой выборке ничего не найдено" })
     .waitFor();
   await page.getByRole("button", { name: "Сбросить фильтры" }).click();
-  const restoredCaption = page.getByText("Всего наблюдений: 5", {
-    exact: true,
-    selector: "caption",
-  });
-  await restoredCaption.waitFor();
-  assert(
-    await restoredCaption.evaluate(
-      (element) => element === element.ownerDocument.activeElement,
-    ),
-    "Resetting the empty Observations ledger did not focus its restored scope.",
-  );
-  assert(
-    (await page.locator("tbody tr").count()) === 5,
-    "The empty Observations ledger did not recover all five records after reset.",
-  );
-  await page.getByRole("link", { name: "Сводка", exact: true }).click();
-  await page
-    .getByRole("heading", { level: 1, name: "Самая подозрительная лиса" })
-    .waitFor();
+  await assertScope("Показано лис: 4 из 4");
 
   await page
     .getByRole("combobox", { name: "Локация" })
@@ -208,12 +201,18 @@ async (page) => {
   await page.getByRole("link", { name: "Параметры", exact: true }).click();
   await page.getByRole("heading", { level: 1, name: "Наблюдения" }).waitFor();
   assert(
-    (await page.locator("caption").textContent()) === "Всего наблюдений: 3",
-    "The Observations destination did not preserve report scope.",
+    (await page.locator("caption").textContent()) === "Всего наблюдений: 5",
+    "The Observations destination did not retain the full ledger.",
   );
   assert(
-    (await page.locator("tbody tr").count()) === 3,
-    "The scoped observation ledger did not contain three records.",
+    (await page.locator("tbody tr").count()) === 5,
+    "The full observation ledger did not contain five records.",
+  );
+  assert(
+    (await page
+      .getByRole("region", { name: "Активная область наблюдений" })
+      .count()) === 0,
+    "Parameters exposed the retained Summary filter.",
   );
 
   await page.getByRole("link", { name: "Сводка", exact: true }).click();

@@ -116,7 +116,7 @@ async (page) => {
     if (mobileLedger) {
       assert(
         (await page
-          .getByRole("list", { name: "Наблюдения текущей выборки" })
+          .getByRole("list", { name: "Полный журнал наблюдений" })
           .getByRole("listitem")
           .count()) === 5,
         `${viewport.name} card ledger does not contain five starter records.`,
@@ -138,7 +138,7 @@ async (page) => {
   await mobileSort.selectOption("color-descending");
   assert(
     await page
-      .getByRole("list", { name: "Наблюдения текущей выборки" })
+      .getByRole("list", { name: "Полный журнал наблюдений" })
       .getByRole("listitem")
       .first()
       .getByText("obs_002", { exact: true })

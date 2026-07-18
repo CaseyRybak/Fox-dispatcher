@@ -103,8 +103,8 @@ All imported and persisted values pass runtime validation before becoming accept
 React renders application view models and emits user intent through application callbacks:
 
 - **Summary** owns report filters, leader or exact co-leaders, unique-fox and leading-location context, calculation explanation, selectable ranking, and scoring-weight controls.
-- **Parameters** is the navigation destination for the `Observations` route. Its visible heading is `Наблюдения`; it presents the full editable ledger, active-scope notice, CRUD, reset, import/export, persistence status, and recovery.
-- **AI Worklog** renders the validated public checkpoints and immutable evidence references.
+- **Parameters** is the navigation destination for the `Observations` route. Its visible heading is `Наблюдения`; it presents the full editable ledger, CRUD, reset, import/export, persistence status, and recovery without consuming or displaying Summary-filter state.
+- **AI Worklog** renders the approved six-card projection: stage, date, goal, human decision, and AI contribution. The validated source retains change, verification, and immutable evidence references for repository checks without rendering them in the site UI.
 
 ## Data flow
 
@@ -119,7 +119,7 @@ starter / persisted / imported values
                 └─ filters ─> pure domain report ─> view models ─> React UI
 ```
 
-One accepted observation array and one scoring policy are authoritative. Counts, ranking, bars, explanations, and the editable ledger derive from that state rather than maintaining independent copies.
+One accepted observation array and one scoring policy are authoritative. Summary filters derive a report selection for counts, ranking, bars, and explanations. The editable ledger derives from the full accepted array rather than the filtered selection or an independent copy.
 
 ## Stable invariants
 
@@ -137,7 +137,7 @@ Detailed field limits, scoring examples, UI states, and acceptance scenarios liv
 
 ### Public content
 
-The AI Worklog enters the production bundle from `docs/ai-worklog/public-checkpoints.json` through a strict adapter. Repository checks validate its record count, public-safe content, immutable evidence links, and referenced Git objects. The UI does not consume chat transcripts or local filesystem paths.
+The AI Worklog enters the production bundle from `docs/ai-worklog/public-checkpoints.json` through a strict adapter. Repository checks validate its six records, public-safe content, immutable evidence links, and referenced Git objects. The UI projects only the approved card fields and does not consume chat transcripts or local filesystem paths.
 
 ### Deployment
 

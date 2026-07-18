@@ -4,13 +4,13 @@ Fox Dispatcher is a local-first dashboard that turns editable fox observations i
 
 ## Current state
 
-Phases 0-8 and the post-release UI, scoring-explanation, identity, color-consistency, and documentation refinements are complete on `main`. There is no active execution plan. Historical phase results remain under `docs/verification/` and completed plans remain under `docs/exec-plans/completed/`.
+Phases 0-8 and the post-release UI, scoring-explanation, identity, color-consistency, audit-remediation, and documentation refinements are complete. There is no active execution plan. Historical phase results remain under `docs/verification/` and completed plans remain under `docs/exec-plans/completed/`.
 
 Production: [fox-dispatcher-brown.vercel.app](https://fox-dispatcher-brown.vercel.app/), deployed from `main` through the GitHub/Vercel integration.
 
 ## Start here
 
-- [Current implementation audit](docs/verification/2026-07-17-current-implementation-documentation-audit.md) — current behavior, documentation reconciliation, screenshot, and verification boundary.
+- [Current implementation audit](docs/verification/2026-07-18-audit-remediation.md) — current behavior, audit remediation, fresh gates, and verification boundary.
 - [Product specification](docs/product-specs/fox-dispatcher.md) — user outcomes, field semantics, scoring contract, states, and acceptance examples.
 - [Interface specification](docs/design-docs/interface.md) — information hierarchy, interactions, responsive behavior, visual language, and accessibility.
 - [Architecture](ARCHITECTURE.md) — bounded context, layers, dependency direction, ports, runtime boundaries, and data flow.

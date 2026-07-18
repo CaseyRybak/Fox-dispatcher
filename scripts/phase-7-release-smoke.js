@@ -129,6 +129,7 @@ async (page) => {
     (await page.locator(".worklog-entry").count()) === 6,
     "The deployed AI Worklog does not contain six checkpoints.",
   );
+  const worklogCheckpointCount = await page.locator(".worklog-entry").count();
   await page.screenshot({
     fullPage: true,
     path: "output/playwright/phase-7/production-worklog-1440px.png",
@@ -213,6 +214,6 @@ async (page) => {
       ...new Set(networkRequests.map(({ url }) => originOf(url))),
     ],
     viewport: 320,
-    worklogCheckpoints: 7,
+    worklogCheckpoints: worklogCheckpointCount,
   };
 };

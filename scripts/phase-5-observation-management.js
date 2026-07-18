@@ -198,6 +198,8 @@ async (page) => {
   assert(
     foxOneCalculationText.includes("5,9") &&
       foxOneCalculationText.includes("0,7") &&
+      foxOneCalculationText.includes("=") &&
+      !foxOneCalculationText.includes("≈") &&
       !foxOneCalculationText.includes("88/15") &&
       !foxOneCalculationText.includes("2/3"),
     `Repeating contributions leaked raw fractions: ${foxOneCalculationText}`,

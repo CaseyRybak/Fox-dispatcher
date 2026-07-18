@@ -1,5 +1,9 @@
 # Current implementation documentation audit
 
+> Historical snapshot. The current post-audit behavior and fresh verification
+> are recorded in
+> [2026-07-18 audit remediation](2026-07-18-audit-remediation.md).
+
 Date: 2026-07-17
 
 Scope: current `main` implementation after Phase 8 and the post-release Summary, identity, color, terminology, and observation-management refinements.

@@ -53,6 +53,24 @@ describe("hash navigation", () => {
       "page",
     );
 
+    await user.click(screen.getByRole("link", { name: "Сводка" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", {
+          level: 1,
+          name: "Самая подозрительная лиса",
+        }),
+      ).toHaveFocus(),
+    );
+    expect(document.title).toBe("Сводка - Лисий диспетчер");
+
+    await user.click(screen.getByRole("link", { name: "Параметры" }));
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { level: 1, name: "Наблюдения" }),
+      ).toHaveFocus(),
+    );
+
     await user.click(screen.getByRole("link", { name: "AI Worklog" }));
     const worklogHeading = await screen.findByRole("heading", {
       level: 1,

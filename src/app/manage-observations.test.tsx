@@ -95,6 +95,15 @@ describe("observation management", () => {
       "Северная поляна",
     );
     await user.click(screen.getByRole("link", { name: "Параметры" }));
+    expect(screen.getByRole("table")).toHaveAccessibleName(
+      "Всего наблюдений: 5",
+    );
+    expect(
+      screen.getByRole("button", { name: "Изменить obs_002" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Изменить obs_004" }),
+    ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Изменить obs_005" }));
     const editor = screen.getByRole("dialog", {
       name: "Изменить наблюдение obs_005",
@@ -110,11 +119,9 @@ describe("observation management", () => {
     );
 
     expect(
-      screen.getByRole("region", { name: "Активная область наблюдений" }),
-    ).toHaveTextContent("Показано лис: 1 из 4");
-    expect(
-      screen.queryByText("obs_005", { selector: "td" }),
+      screen.queryByRole("region", { name: "Активная область наблюдений" }),
     ).not.toBeInTheDocument();
+    expect(screen.getByText("obs_005", { selector: "td" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("link", { name: "Сводка" }));
     expect(
@@ -139,6 +146,34 @@ describe("observation management", () => {
         name: "Расчёт: Лиса 4, идентификатор fox_004",
       }),
     ).toHaveTextContent("Средняя подозрительность");
+  });
+
+  it("uses full-ledger fox profiles while Summary filters hide that fox", async () => {
+    const user = userEvent.setup();
+    window.history.replaceState(null, "", "#summary");
+    render(<App />);
+
+    await user.selectOptions(
+      screen.getByRole("combobox", { name: "Локация" }),
+      "Северная поляна",
+    );
+    await user.click(screen.getByRole("link", { name: "Параметры" }));
+    await user.click(
+      screen.getByRole("button", { name: "Добавить наблюдение" }),
+    );
+
+    const editor = screen.getByRole("dialog", { name: "Новое наблюдение" });
+    await user.type(
+      within(editor).getByRole("combobox", { name: "Имя лисы" }),
+      "Лиса 3",
+    );
+
+    expect(within(editor).getByRole("combobox", { name: "Цвет" })).toHaveValue(
+      "серебристая",
+    );
+    expect(
+      within(editor).getByRole("combobox", { name: "Цвет" }),
+    ).toHaveAttribute("readonly");
   });
 
   it("deletes the only fox_004 observation, exposes one-step undo, and restores it", async () => {
@@ -435,6 +470,12 @@ describe("observation management", () => {
       within(table).getByRole("columnheader", { name: /Лиса/ }),
     ).toHaveAttribute("aria-sort", "descending");
     expect(within(table).getAllByRole("row")[1]).toHaveTextContent("Лиса 4");
+
+    await user.click(within(table).getByRole("button", { name: "Запись" }));
+    expect(
+      within(table).getByRole("columnheader", { name: /Запись/ }),
+    ).toHaveAttribute("aria-sort", "ascending");
+    expect(within(table).getAllByRole("row")[1]).toHaveTextContent("obs_001");
   });
 
   it("shows invalid-storage status on the initial summary", () => {
@@ -525,7 +566,7 @@ describe("observation management", () => {
     );
   });
 
-  it("returns focus after starter reset when the retained filter has no matches", async () => {
+  it("returns focus after starter reset without exposing a retained Summary filter", async () => {
     const user = userEvent.setup();
     window.history.replaceState(null, "", "#summary");
     storeObservations([
@@ -548,17 +589,18 @@ describe("observation management", () => {
       screen.getByRole("button", { name: "Вернуть 5 стартовых наблюдений" }),
     );
 
+    expect(screen.getByRole("table")).toHaveAccessibleName(
+      "Всего наблюдений: 5",
+    );
     expect(
-      screen.getByRole("heading", {
-        name: "В этой выборке ничего не найдено",
-      }),
-    ).toBeInTheDocument();
+      screen.queryByRole("region", { name: "Активная область наблюдений" }),
+    ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Добавить наблюдение" }),
+      screen.getByText("Всего наблюдений: 5", { selector: "caption" }),
     ).toHaveFocus();
   });
 
-  it("makes a retained report filter explicit and offers a focused reset", async () => {
+  it("keeps retained Summary filters invisible in Parameters", async () => {
     const user = userEvent.setup();
     window.history.replaceState(null, "", "#summary");
     render(<App />);
@@ -569,23 +611,18 @@ describe("observation management", () => {
     );
     await user.click(screen.getByRole("link", { name: "Параметры" }));
 
-    const scope = screen.getByRole("region", {
-      name: "Активная область наблюдений",
-    });
-    expect(scope).toHaveTextContent("Показано лис: 2 из 4");
-    expect(scope).toHaveTextContent("На Сводке включены фильтры");
-
-    await user.click(
-      within(scope).getByRole("button", { name: "Показать все наблюдения" }),
-    );
-
-    const caption = screen.getByText("Всего наблюдений: 5", {
-      selector: "caption",
-    });
-    expect(caption).toHaveFocus();
     expect(
       screen.queryByRole("region", { name: "Активная область наблюдений" }),
     ).not.toBeInTheDocument();
+    expect(screen.getByRole("table")).toHaveAccessibleName(
+      "Всего наблюдений: 5",
+    );
+
+    await user.click(screen.getByRole("link", { name: "Сводка" }));
+    expect(screen.getByRole("combobox", { name: "Локация" })).toHaveValue(
+      "Северная поляна",
+    );
+    expect(screen.getByText("Показано лис: 2 из 4")).toBeInTheDocument();
   });
 
   it("dismisses the persistent undo message without restoring the record", async () => {

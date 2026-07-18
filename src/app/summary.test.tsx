@@ -1,6 +1,6 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "./App";
 
@@ -8,6 +8,10 @@ describe("interactive suspicion summary", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     window.history.replaceState(null, "", "#summary");
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("shows a concise leader summary and a plain-language exact calculation", async () => {
@@ -217,6 +221,13 @@ describe("interactive suspicion summary", () => {
     expect(
       screen.getByRole("region", { name: "Расчет индекса подозрительности" }),
     ).toHaveTextContent("Значения округлены до десятых.");
+    const explanation = screen.getByRole("region", {
+      name: "Расчет индекса подозрительности",
+    });
+    expect(explanation).toHaveTextContent("0,3 × 80% = 0,3");
+    expect(explanation).toHaveTextContent("1/3 × 10 × 20% = 0,7");
+    expect(explanation).toHaveTextContent("Итоговый индекс = 0,9 из 10");
+    expect(explanation).not.toHaveTextContent("≈");
     expect(screen.getByText("рыжая · 2 цвета · 10:00")).toBeInTheDocument();
     expect(screen.queryByText("4/15")).not.toBeInTheDocument();
     expect(screen.queryByText("2/3")).not.toBeInTheDocument();
@@ -281,16 +292,15 @@ describe("interactive suspicion summary", () => {
     const preyContribution = within(selectedCalculation)
       .getByText("Наличие добычи")
       .closest(".contribution-row");
-    expect(suspicionContribution).toHaveTextContent("7,3 × 80%");
+    expect(suspicionContribution).toHaveTextContent("7,3 × 80% = 5,9");
     expect(suspicionContribution).toHaveTextContent("5,9");
-    expect(preyContribution).toHaveTextContent("1/3 × 10 × 20%");
+    expect(preyContribution).toHaveTextContent("1/3 × 10 × 20% = 0,7");
     expect(preyContribution).toHaveTextContent("0,7");
     expect(selectedCalculation).not.toHaveTextContent("88/15");
     expect(selectedCalculation).not.toHaveTextContent("2/3");
     expect(screen.getByText("6,5 из 10")).toBeInTheDocument();
-    expect(
-      screen.getByText("Итог без промежуточного округления ≈ 6,5 из 10"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Итоговый индекс = 6,5 из 10")).toBeInTheDocument();
+    expect(screen.queryByText(/≈/u)).not.toBeInTheDocument();
   });
 
   it("shows every fox sharing the exact highest index", () => {
@@ -545,7 +555,8 @@ describe("interactive suspicion summary", () => {
     );
   });
 
-  it("announces a keyboard slider sequence only when the control is left", () => {
+  it("announces one stabilized keyboard slider result without requiring blur", () => {
+    vi.useFakeTimers();
     render(<App />);
 
     const slider = screen.getByRole("slider", { name: "Влияние добычи" });
@@ -556,6 +567,14 @@ describe("interactive suspicion summary", () => {
 
     expect(getLeaderHeading("Лиса 3")).toBeInTheDocument();
     expect(screen.getByRole("status")).toBeEmptyDOMElement();
+
+    act(() => vi.advanceTimersByTime(249));
+    expect(screen.getByRole("status")).toBeEmptyDOMElement();
+
+    act(() => vi.advanceTimersByTime(1));
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Вес добычи изменён с 20% до 30%. Новый лидер - Лиса 3, идентификатор fox_003, индекс 7,9.",
+    );
 
     fireEvent.blur(slider);
     expect(screen.getByRole("status")).toHaveTextContent(
@@ -778,7 +797,7 @@ describe("interactive suspicion summary", () => {
     expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
   });
 
-  it("recovers an empty scoped ledger without restoring removed context panels", async () => {
+  it("keeps an empty Summary filter local while Parameters shows the full ledger", async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -798,18 +817,18 @@ describe("interactive suspicion summary", () => {
     );
     await user.click(screen.getByRole("link", { name: "Параметры" }));
 
+    expect(screen.getByRole("table")).toHaveAccessibleName(
+      "Всего наблюдений: 5",
+    );
     expect(
-      screen.getByRole("heading", {
-        name: "В этой выборке ничего не найдено",
-      }),
-    ).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Сбросить фильтры" }));
-
-    expect(
-      screen.getByText("Всего наблюдений: 5", { selector: "caption" }),
-    ).toHaveFocus();
+      screen.queryByRole("region", { name: "Активная область наблюдений" }),
+    ).not.toBeInTheDocument();
     await user.click(screen.getByRole("link", { name: "Сводка" }));
+    expect(
+      screen.getByRole("heading", { name: "В этой выборке ничего не найдено" }),
+    ).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Сбросить фильтры" }));
+    expect(getLeaderHeading("Лиса 1")).toBeInTheDocument();
     expect(
       screen.queryByRole("region", { name: "Активность по локациям" }),
     ).not.toBeInTheDocument();
