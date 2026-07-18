@@ -42,38 +42,15 @@ async (page) => {
   const timeline = page.getByRole("region", { name: "Хронология работы с AI" });
   const checkpoints = timeline.getByRole("article");
   assert(
-    (await checkpoints.count()) === 7,
-    "Worklog did not render seven checkpoints.",
+    (await checkpoints.count()) === 6,
+    "Worklog did not render six checkpoints.",
   );
 
   const links = timeline.getByRole("link");
   assert(
-    (await links.count()) === 14,
-    "Worklog does not expose the 14 accepted evidence links.",
+    (await links.count()) === 0,
+    "Removed evidence links are still rendered in the Worklog.",
   );
-  for (const link of await links.all()) {
-    const href = await link.getAttribute("href");
-    assert(
-      /^https:\/\/github\.com\/CaseyRybak\/Fox-dispatcher\/blob\/[0-9a-f]{40}\//.test(
-        href ?? "",
-      ),
-      `Evidence link is not revision-pinned: ${href}.`,
-    );
-    assert(
-      (await link.getAttribute("target")) === "_blank",
-      "Evidence link does not open in a separate tab.",
-    );
-    assert(
-      (await link.getAttribute("rel")) === "noreferrer",
-      "Evidence link does not protect the opener/referrer boundary.",
-    );
-    assert(
-      /откроется в новой вкладке/i.test(
-        (await link.getAttribute("aria-label")) ?? "",
-      ) || /откроется в новой вкладке/i.test((await link.textContent()) ?? ""),
-      "Evidence link does not disclose that it opens a new tab.",
-    );
-  }
 
   const publicText = await timeline.textContent();
   assert(
@@ -108,7 +85,7 @@ async (page) => {
   return {
     checkpoints: await checkpoints.count(),
     consoleErrors: browserErrors.length,
-    evidenceLinks: await links.count(),
+    evidenceLinks: 0,
     viewport: 320,
   };
 };

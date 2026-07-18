@@ -21,7 +21,7 @@ const unsafePublicContent = [
   /(?:<|\b)(?:user|assistant|system)(?:>|\s*:)/i,
 ];
 
-const contentField = z.string().trim().min(1).max(560);
+const contentField = z.string().trim().min(1).max(720);
 const evidenceSchema = z.strictObject({
   label: z.string().trim().min(3).max(80),
   kind: z.enum([

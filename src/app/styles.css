@@ -2267,47 +2267,23 @@ dialog.reset-confirmation {
 }
 
 .worklog-hero {
-  display: grid;
-  grid-template-columns: minmax(0, 1.55fr) minmax(260px, 0.65fr);
-  gap: 48px;
-  align-items: end;
   padding: 18px 0 44px;
   border-bottom: 1px solid var(--ledger-line);
 }
 
 .worklog-hero__copy {
-  max-width: 780px;
+  max-width: 920px;
 }
 
 .worklog-hero__copy h1 {
-  margin: 12px 0 18px;
+  margin: 0 0 18px;
 }
 
 .worklog-hero__copy > p:last-child {
-  max-width: 720px;
   margin: 0;
   color: var(--moss-muted);
   font-size: clamp(16px, 1.6vw, 20px);
   line-height: 1.6;
-}
-
-.worklog-manifest {
-  display: grid;
-  gap: 9px;
-  padding: 22px 24px;
-  border-top: 3px solid var(--fox-signal);
-  color: var(--moss-muted);
-  background: var(--surface-paper);
-  box-shadow: var(--surface-shadow);
-  font-size: 12px;
-  line-height: 1.45;
-}
-
-.worklog-manifest strong {
-  color: var(--forest-ink);
-  font-family: "Unbounded Variable", sans-serif;
-  font-size: 14px;
-  letter-spacing: -0.03em;
 }
 
 .worklog-timeline {
@@ -2372,8 +2348,7 @@ dialog.reset-confirmation {
   padding: 28px 30px 24px;
 }
 
-.worklog-card__header p,
-.worklog-card__evidence > p {
+.worklog-card__header p {
   margin: 0 0 8px;
   color: var(--fox-signal);
   font-size: 11px;
@@ -2398,8 +2373,7 @@ dialog.reset-confirmation {
   font-variant-numeric: tabular-nums;
 }
 
-.worklog-card__responsibility,
-.worklog-card__outcome {
+.worklog-card__responsibility {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -2408,13 +2382,11 @@ dialog.reset-confirmation {
   border-top: 1px solid var(--ledger-line);
 }
 
-.worklog-card__responsibility section,
-.worklog-card__outcome section {
+.worklog-card__responsibility section {
   padding: 24px 30px;
 }
 
-.worklog-card__responsibility section + section,
-.worklog-card__outcome section + section {
+.worklog-card__responsibility section + section {
   border-left: 1px solid var(--ledger-line);
 }
 
@@ -2430,60 +2402,6 @@ dialog.reset-confirmation {
   color: var(--moss-muted);
   font-size: 14px;
   line-height: 1.65;
-}
-
-.worklog-card__outcome {
-  border-top: 1px solid var(--ledger-line);
-  background: #f2f6f3;
-}
-
-.worklog-card__evidence {
-  display: flex;
-  gap: 20px;
-  align-items: center;
-  padding: 18px 30px;
-  border-top: 1px solid var(--ledger-line);
-}
-
-.worklog-card__evidence > p {
-  flex: 0 0 auto;
-  margin: 0;
-  color: var(--moss-muted);
-}
-
-.worklog-card__evidence ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.worklog-card__evidence a {
-  display: inline-flex;
-  gap: 8px;
-  align-items: center;
-  min-height: 38px;
-  padding: 8px 11px;
-  border: 1px solid var(--ledger-line);
-  border-radius: 7px;
-  color: var(--pine-structure);
-  background: var(--surface-paper);
-  font-size: 12px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.worklog-card__evidence a:hover {
-  border-color: var(--pine-structure);
-}
-
-.worklog-card__evidence a span {
-  color: var(--moss-muted);
-  font-size: 10px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
 }
 
 .site-footer {
@@ -2550,11 +2468,6 @@ dialog.reset-confirmation {
   .observation-ledger__row > :nth-child(4),
   .observation-ledger__row > :nth-child(5) {
     display: none;
-  }
-
-  .worklog-hero {
-    grid-template-columns: 1fr;
-    gap: 24px;
   }
 
   .observation-page-heading {
@@ -2858,30 +2771,17 @@ dialog.reset-confirmation {
     grid-row: 1;
   }
 
-  .worklog-card__responsibility,
-  .worklog-card__outcome {
+  .worklog-card__responsibility {
     grid-template-columns: 1fr;
   }
 
-  .worklog-card__responsibility section,
-  .worklog-card__outcome section {
+  .worklog-card__responsibility section {
     padding: 20px 18px;
   }
 
-  .worklog-card__responsibility section + section,
-  .worklog-card__outcome section + section {
+  .worklog-card__responsibility section + section {
     border-top: 1px solid var(--ledger-line);
     border-left: 0;
-  }
-
-  .worklog-card__evidence {
-    display: grid;
-    gap: 10px;
-    padding: 18px;
-  }
-
-  .worklog-card__evidence a {
-    width: 100%;
   }
 
   .site-footer {

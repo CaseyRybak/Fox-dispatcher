@@ -126,8 +126,8 @@ async (page) => {
   await page.getByRole("link", { name: "AI Worklog", exact: true }).click();
   await page.getByRole("heading", { level: 1, name: "AI Worklog" }).waitFor();
   assert(
-    (await page.locator(".worklog-entry").count()) === 7,
-    "The deployed AI Worklog does not contain seven checkpoints.",
+    (await page.locator(".worklog-entry").count()) === 6,
+    "The deployed AI Worklog does not contain six checkpoints.",
   );
   await page.screenshot({
     fullPage: true,
@@ -160,8 +160,8 @@ async (page) => {
   await page.getByRole("link", { name: "AI Worklog", exact: true }).click();
   await page.getByRole("heading", { level: 1, name: "AI Worklog" }).waitFor();
   assert(
-    (await page.locator(".worklog-entry").count()) === 7,
-    "The deployed mobile AI Worklog does not contain seven checkpoints.",
+    (await page.locator(".worklog-entry").count()) === 6,
+    "The deployed mobile AI Worklog does not contain six checkpoints.",
   );
   await assertNoPageOverflow("Deployed AI Worklog at 320px");
 

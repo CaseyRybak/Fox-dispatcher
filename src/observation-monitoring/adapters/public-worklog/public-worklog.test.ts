@@ -21,8 +21,8 @@ const validCheckpoint = {
 };
 
 describe("public AI Worklog boundary", () => {
-  it("loads seven immutable, evidence-backed public checkpoints", () => {
-    expect(publicWorklog).toHaveLength(7);
+  it("loads six immutable, evidence-backed public checkpoints", () => {
+    expect(publicWorklog).toHaveLength(6);
     expect(Object.isFrozen(publicWorklog)).toBe(true);
 
     for (const checkpoint of publicWorklog) {
